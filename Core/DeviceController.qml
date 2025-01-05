@@ -99,7 +99,15 @@ I_DeviceController {
             if (system.isValidNetworkRequestRestart()) {
                 system.saveNetworkRequestRestart();
                 // Restart the app or device
-                uiSession.popUps.showRebootDevicePopup("Restarting Device due to network issue.", false);
+                uiSession.popUps.showCountDownPopUp(
+                            qsTr("  Restart Device  "),
+                            qsTr("Restarting Device due to network issue."),
+                            true,
+                            function () {
+                                if (system) {
+                                    system.rebootDevice();
+                                }
+                            });
             }
         }
     }
