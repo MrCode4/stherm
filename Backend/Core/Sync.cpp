@@ -78,8 +78,7 @@ void Sync::setSerialNumber(const QString &serialNumber)
     setting.setValue(cSerialNumberSetting, mSerialNumber);
 
     // Force to update with new settings
-    mLastPushTime = QDateTime();
-    mAutoModeLastPushTime = QDateTime();
+    resetFetchTime();
     // Fetch with new serial number
     emit serialNumberChanged();
 
@@ -131,7 +130,7 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
                     // Update SN for get settings
                     mSerialNumber = sn;
                     // Force to update with new settings
-                    mLastPushTime = QDateTime();
+                    resetFetchTime();
                     // Fetch with new serial number
                     emit serialNumberChanged();
 
@@ -653,6 +652,12 @@ void Sync::installDevice(const QVariantMap &data)
 
     TRACE << QJsonDocument(reqData).toJson();
     callPostApi(baseUrl() + "/api/technicians/device/install", QJsonDocument(reqData).toJson(), callback);
+}
+
+void Sync::resetFetchTime()
+{
+    mLastPushTime = QDateTime();
+    mAutoModeLastPushTime = QDateTime();
 }
 
 void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)

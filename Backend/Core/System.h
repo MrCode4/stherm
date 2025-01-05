@@ -130,6 +130,9 @@ public:
     Q_INVOKABLE void setInitialSetupWithNoWIFI(const bool &initialSetupNoWIFI);
     Q_INVOKABLE bool initialSetupWithNoWIFI();
 
+    //! Device starts after being forgotten.
+    Q_INVOKABLE bool isForgottenDeviceStarted();
+
     void wifiConnected(bool hasInternet);
 
     //! Getters
@@ -259,6 +262,8 @@ public:
     Q_INVOKABLE bool alternativeNoWiFiFlow();
 
     Q_INVOKABLE bool isBusylogSender() const;
+    Q_INVOKABLE void setIsForgottenDevice(const bool &isDeviceForgotten);
+
     Q_INVOKABLE void saveNetworkLogs();
     Q_INVOKABLE bool sendNetworkLogs();
 

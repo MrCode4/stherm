@@ -402,7 +402,7 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
             }
 
             // in the cold outdoor heatpump can not function good so we use it only above threshold
-        } else if (mDataProvider->outdoorTemperatureF() > mDataProvider->dualFuelThreshodF()) {
+        } else if (mDataProvider->outdoorTemperatureF() > mDataProvider->dualFuelThresholdF()) {
             // Start the heat pump (Y wires)
             activeSysType = AppSpecCPP::SystemType::HeatPump;
         } else {
@@ -512,8 +512,11 @@ void Scheme::EmergencyLoop()
 
 void Scheme::OffLoop()
 {
-    //TODO
-    // we should check for system setup and if that is in default state, we should set relays off as well
+    // we check for system setup and if that is in default state, we should set relays off as well
+    // so we skip the waitloop to go for relays
+    if (mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::SysTUnknown)
+        return;
+
     waitLoop(-1, AppSpecCPP::ctMode);
 }
 
@@ -1735,9 +1738,9 @@ void Scheme::setSystemSetup()
         SCHEME_LOG << "systemRunDelayChanged: " << sys->systemRunDelay << sys->systemType;
     });
 
-    connect(sys, &SystemSetup::dualFuelThreshodChanged, this, [=] {
-        SCHEME_LOG << "dualFuelThreshodChanged" << mActiveSysTypeHeating << sys->systemMode;
-        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning()) << "dualFuelThreshodChanged" << mDataProvider->effectiveSystemMode();
+    connect(sys, &SystemSetup::dualFuelThresholdChanged, this, [=] {
+        SCHEME_LOG << "dualFuelThresholdChanged" << mActiveSysTypeHeating << sys->systemMode;
+        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning()) << "dualFuelThresholdChanged" << mDataProvider->effectiveSystemMode();
         // restart scheme if needed
         if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && sys->isAUXAuto) {
             checkForRestart();

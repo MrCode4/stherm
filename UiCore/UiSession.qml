@@ -149,6 +149,9 @@ Item {
     signal openUnlockPage();
     signal goToInitialSetupNoWIFIMode();
 
+    //! Open a page from home.
+    signal openPageFromHome(item: string);
+
     /* Signal Handlers
      * ****************************************************************************************/
 

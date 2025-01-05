@@ -34,13 +34,17 @@ class SystemSetup : public QSObjectCpp
     Q_PROPERTY(AppSpecCPP::DualFuelManualHeating dualFuelManualHeating  MEMBER dualFuelManualHeating NOTIFY dualFuelManualHeatingChanged FINAL)
     Q_PROPERTY(AppSpecCPP::DualFuelManualHeating dualFuelHeatingModeDefault  MEMBER dualFuelHeatingModeDefault NOTIFY dualFuelHeatingModeDefaultChanged FINAL)
 
+    // TODO: remove
     Q_PROPERTY(double dualFuelThreshod  MEMBER dualFuelThreshod NOTIFY dualFuelThreshodChanged FINAL)
+
+    Q_PROPERTY(double dualFuelThreshold  MEMBER dualFuelThreshold NOTIFY dualFuelThresholdChanged FINAL)
 
     Q_PROPERTY(int    emergencyMinimumTime           MEMBER emergencyMinimumTime  NOTIFY emergencyMinimumTimeChanged FINAL)
     Q_PROPERTY(bool   useAuxiliaryParallelHeatPump    MEMBER useAuxiliaryParallelHeatPump     NOTIFY useAuxiliaryParallelHeatPumpChanged FINAL)
     Q_PROPERTY(bool   driveAux1AndETogether           MEMBER driveAux1AndETogether            NOTIFY driveAux1AndETogetherChanged FINAL)
     Q_PROPERTY(bool   driveAuxAsEmergency MEMBER driveAuxAsEmergency  NOTIFY driveAuxAsEmergencyChanged FINAL)
     Q_PROPERTY(bool   auxiliaryHeating                MEMBER auxiliaryHeating                 NOTIFY auxiliaryHeatingChanged FINAL)
+    Q_PROPERTY(bool   runFanWithAuxiliary             MEMBER runFanWithAuxiliary              NOTIFY runFanWithAuxiliaryChanged FINAL)
 
 public:
     explicit SystemSetup(QSObjectCpp *parent = nullptr);
@@ -70,6 +74,9 @@ public:
     //! This is usually the outdoor temperature
     //! at which the heat pump becomes less efficient than the furnace.
     //! Celsius
+    double dualFuelThreshold;
+
+    // TODO: remove
     double dualFuelThreshod;
 
     bool   isAUXAuto;
@@ -91,6 +98,7 @@ public:
     bool driveAuxAsEmergency;
 
     bool auxiliaryHeating;
+    bool runFanWithAuxiliary;
 
 signals:
     void systemTypeChanged();
@@ -103,7 +111,11 @@ signals:
     void systemAccessoriesChanged();
     void isVacationChanged();
     void isSystemShutoffChanged();
+
+    // TODO: remove
     void dualFuelThreshodChanged();
+
+    void dualFuelThresholdChanged();
     void emergencyMinimumTimeChanged();
     void isAUXAutoChanged();
     void dualFuelManualHeatingChanged();
@@ -113,5 +125,9 @@ signals:
     void driveAux1AndETogetherChanged();
     void driveAuxAsEmergencyChanged();
     void auxiliaryHeatingChanged();
+    void runFanWithAuxiliaryChanged();
 
+private:
+    // TODO: remove
+    void _connectDualFuelThreshodChanged();
 };

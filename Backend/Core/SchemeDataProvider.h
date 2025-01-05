@@ -92,7 +92,7 @@ public:
 
     double outdoorTemperatureF() const;
 
-    double dualFuelThreshodF() const;
+    double dualFuelThresholdF() const;
 
     //! Since the heat pump and cool stages both determine the Y wires, they're essentially the same.
     int heatPumpStage() const;

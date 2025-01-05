@@ -14,8 +14,6 @@ Item {
     //! Is there any popup
     readonly property bool isTherePopup: _internal.popupQueue.length > 0
 
-    property bool mandatoryUpdate: false
-
     /* Children
      * ****************************************************************************************/
     QtObject {
@@ -89,8 +87,7 @@ Item {
         _internal.popupQueue.forEach((popup) => {
                                          //! Avoid to close the UpdateNotificationPopup on mandatory update mode
                                          //! Avoid to close the AlertNotifPopup
-                                         if (!(popup instanceof LimitedInitialSetupPopup) && !(popup instanceof MessagePopup) &&
-                                             !(popup instanceof AlertNotifPopup) && popup instanceof Popup && (!mandatoryUpdate || !(popup instanceof UpdateNotificationPopup))) {
+                                         if (popup instanceof Popup && (popup?.keepOpen ?? false) === false) {
                                              popup.close();
                                          }
                                      })

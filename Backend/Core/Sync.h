@@ -70,6 +70,8 @@ public:
 
     Q_INVOKABLE void installDevice(const QVariantMap &data);
 
+    Q_INVOKABLE void resetFetchTime();
+
     void getOutdoorTemperature();
 
     Q_INVOKABLE void clearSchedule(const int &scheduleID);
@@ -79,6 +81,7 @@ public:
     Q_INVOKABLE void addSchedule(const QString &scheduleUid, const QVariantMap &schedule);
 
     Q_INVOKABLE void resetFactory();
+
 
 public slots:
     void reportCommandResponse(ReportCommandCallback callback, const QString& command, const QString& data, int retryCount = 2);

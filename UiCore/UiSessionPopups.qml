@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
+import QtQuick.Dialogs
 
 import Ronia
 import Stherm
@@ -45,9 +46,6 @@ Item {
 
     /* Signal Handlers
      * ****************************************************************************************/
-
-    //! Open a page from home.
-    signal openPageFromHome(item: string);
 
     /* Children
      * ****************************************************************************************/
@@ -119,7 +117,7 @@ Item {
         mandatoryUpdate: deviceController.mandatoryUpdate
 
         onOpenUpdatePage: {
-            root.openPageFromHome("qrc:/Stherm/View/SystemUpdatePage.qml");
+            uiSession.openPageFromHome("qrc:/Stherm/View/SystemUpdatePage.qml");
         }
     }
 
@@ -130,6 +128,41 @@ Item {
 
     SuccessPopup {
         id: successPopup
+    }
+
+    property ConfirmPopup _systemSetupConfirmationPopup: null
+
+    Component {
+        id: _systemSetupConfirmationComponent
+
+        ConfirmPopup {
+            property var systemSetup
+            property bool applyChanges: false
+
+            title: "Update system setup"
+            message: ""
+            detailMessage: "The server and device system setups are out of sync. Do you want to update the device to match the server?<br>Please review the changes if applied."
+            buttons: MessageDialog.Cancel | MessageDialog.Apply
+            keepOpen: true
+
+            onButtonClicked: button => {
+                                 if (button === MessageDialog.Apply) {
+                                     applyChanges = true;
+                                     deviceController.applySystemSetupServer(systemSetup);
+                                     Qt.callLater(uiSession.openPageFromHome, "qrc:/Stherm/View/SystemSetupPage.qml");
+                                 }
+                             }
+
+            onClosed: {
+                if (!applyChanges) {
+                    //! To ensure device and server are sync.
+                    Qt.callLater(deviceController.updateEditMode, AppSpec.EMSystemSetup);
+                }
+
+                _systemSetupConfirmationPopup.destroy();
+                _systemSetupConfirmationPopup = null;
+            }
+        }
     }
 
     Popup {
@@ -406,5 +439,19 @@ Item {
     function showSendingLogProgress() {
         if (!sendingLogPopup.visible)
             uiSession.popupLayout.displayPopUp(sendingLogPopup);
+    }
+
+    function showSystemSetupUpdateConfirmation(settings: var) {
+        if (!_systemSetupConfirmationPopup) {
+            _systemSetupConfirmationPopup = _systemSetupConfirmationComponent.createObject(root);
+        }
+
+        if (!_systemSetupConfirmationPopup) {
+            console.log("_systemSetupConfirmationPopup is undefined!")
+        }
+
+        _systemSetupConfirmationPopup.systemSetup = settings;
+
+        uiSession.popupLayout.displayPopUp(_systemSetupConfirmationPopup);
     }
 }
