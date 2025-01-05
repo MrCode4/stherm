@@ -2182,13 +2182,13 @@ void NUVE::System::startAutoSendLogTimer(int interval)
             bool result = this->sendLog(false);
 
             if (result == true) {
-                SYS_LOG << "Sending log automatically: Sent successfully";
+                SYS_LOG << "Sending log automatically: Sending...";
                 stopAutoSendLogTimer();
 
             } else {
-                SYS_LOG << "Sending log automatically: Sent failed";
+                SYS_LOG << "Sending log automatically: Log Send Failed.";
 
-                SYS_LOG << "Sending log automatically: Retry again in 1 minute";
+                SYS_LOG << "Sending log automatically: Next attempt in 1 minute.";
                 startAutoSendLogTimer(1 * 60 * 1000); // 1 Minute
             }
         });
