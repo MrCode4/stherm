@@ -1583,7 +1583,6 @@ I_DeviceController {
             }
 
         } else {
-            applySystemSetupServer(settings);
             updateEditMode(AppSpec.EMSystemSetup);
             saveSettings();
         }
