@@ -117,10 +117,6 @@ double SchemeDataProvider::effectiveTemperature() const
         } else {
 
             // Use auto mode values by default and change later in schedule if needed.
-
-        } else {
-
-            // Use auto mode values by default and change later in schedule if needed.
             double minReqTemp = AppUtilities::getTruncatedvalue(mAutoMinReqTempF);
             double maxReqTemp = AppUtilities::getTruncatedvalue(mAutoMaxReqTempF);
 
