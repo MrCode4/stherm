@@ -392,7 +392,7 @@ private:
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
     bool removeDirectory(const QString &path);
 
-    void sendLogToServer(const QStringList &filenames, const bool &showAlert);
+    bool sendLogToServer(const QStringList &filenames, const bool &showAlert);
     bool checkSendLog(bool showAlert);
 
 private:
