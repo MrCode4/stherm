@@ -23,7 +23,7 @@ public:
     void initialize(std::function<void(QString)> errorHandler, const QString &subject, const QString &joiner = " <br>");
     virtual ~senderProcess() {}
 
-    bool busy() {
+    bool busy() const {
         return state() != QProcess::NotRunning || !mCallbacks.isEmpty();
     }
 
@@ -130,11 +130,10 @@ public:
     Q_INVOKABLE void setInitialSetupWithNoWIFI(const bool &initialSetupNoWIFI);
     Q_INVOKABLE bool initialSetupWithNoWIFI();
 
-    void wifiConnected(bool hasInternet);
+    //! Device starts after being forgotten.
+    Q_INVOKABLE bool isForgottenDeviceStarted();
 
-    //! Get Contractor Information
-    QVariantMap getContractorInfo() const;
-    bool fetchContractorInfo();
+    void wifiConnected(bool hasInternet);
 
     //! Getters
     QStringList availableVersions();
@@ -239,6 +238,14 @@ public:
     //! Forget device settings and sync settings
     Q_INVOKABLE void forgetDevice();
 
+    //! Remove folders/files like
+    //! - /mnt/log/latestVersion/
+    //! - /mnt/log/sensor/
+    //! - /mnt/log/log/
+    //! - /mnt/log/nrf_fw/
+    //! - /mnt/log/recovery/
+    Q_INVOKABLE bool removeLogPartition();
+
     //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);
 
@@ -254,6 +261,15 @@ public:
     Q_INVOKABLE void setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow);
     Q_INVOKABLE bool alternativeNoWiFiFlow();
 
+    Q_INVOKABLE bool isBusylogSender() const;
+    Q_INVOKABLE void setIsForgottenDevice(const bool &isDeviceForgotten);
+
+    Q_INVOKABLE void saveNetworkLogs();
+    Q_INVOKABLE bool sendNetworkLogs();
+
+    Q_INVOKABLE bool isValidNetworkRequestRestart();
+    Q_INVOKABLE void saveNetworkRequestRestart();
+
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);
@@ -261,7 +277,6 @@ protected slots:
 signals:
     void serialNumberReady();
     void areSettingsFetchedChanged(bool success);
-    void contractorInfoReady(const bool& getDataFromServerSuccessfully = true);
     void settingsReady(QVariantMap settings);
     void appDataReady(QVariantMap settings);
 
@@ -324,6 +339,12 @@ signals:
     void serviceTitanInformationReady(bool hasError, bool isActive,
                                       QString email, QString zipCode);
 
+    //! Log
+    void logAlert(QString msg);
+    void logPrepared(bool isSuccess);
+    void logSentSuccessfully();
+    void sendLogProgressChanged(quint8 percent);
+
 private:
     //! verify dounloaded files and prepare to set up.
     bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true,
@@ -374,6 +395,13 @@ private:
     void sendFirstRunLogFile();
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
+    bool removeDirectory(const QString &path);
+
+    bool sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog = false);
+    bool checkSendLog(bool showAlert);
+
+    void startAutoSendLogTimer(int interval = 15 * 60 * 1000);
+    void stopAutoSendLogTimer();
 
 private:
     Sync *mSync;
@@ -456,6 +484,10 @@ private:
     QString mLogRemoteFolder;
     QString mLogRemoteFolderUID;
     QMap<QString, QString> mLastReceivedCommands;
+
+    QTimer *mAutoSendLogtimer{nullptr};
+    bool    mFirstLogSent;
+
 };
 
 } // namespace NUVE

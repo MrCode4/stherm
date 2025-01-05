@@ -12,7 +12,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
 
 # Temperature scheme version and update date.
-set(TEMPERATURE_SCHEME_VERSION_C "V.3.1.0 (20.12.2024)")
+set(TEMPERATURE_SCHEME_VERSION_C "V.3.1.1 (31.12.2024)")
 set(FAKE_UID "" CACHE STRING "The fake UID used for testing purposes")
 set(FAKE_SERIALID "" CACHE STRING "The fake SERIAL ID used for testing purposes")
 set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT 3 "Delay counter for serial test")
@@ -178,6 +178,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/InitialFlowErrorPopup.qml
         UiCore/PopUps/SkipWIFIConnectionPopup.qml
         UiCore/PopUps/LimitedInitialSetupPopup.qml
+        UiCore/PopUps/SendingLogPopup.qml
 
         UiCore/ShortcutManager.qml
         UiCore/SimpleStackView.qml
@@ -327,6 +328,7 @@ qt6_add_qml_module(appStherm
 
         # Popups
         UiCore/PopUps/AlertNotifPopup.qml
+        UiCore/PopUps/BusyPopUp.qml
         UiCore/PopUps/HoldPopup.qml
         UiCore/PopUps/TempratureUnitPopup.qml
         UiCore/PopUps/TimeFormatPopup.qml
@@ -336,8 +338,8 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/UpdateInterruptionPopup.qml
         UiCore/PopUps/InstallConfirmationPopup.qml
         UiCore/PopUps/ErrorPopup.qml
-        UiCore/PopUps/RebootDevicePopup.qml
-        UiCore/PopUps/ResetDevicePopup.qml
+        UiCore/PopUps/CountDownPopup.qml
+
         UiCore/PopUps/UpdateNotificationPopup.qml
         UiCore/PopUps/InfoPopup.qml
         UiCore/PopUps/TestFailedPopup.qml
@@ -347,6 +349,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/MessagePopup.qml
         UiCore/PopUps/PerfTestPopup.qml
         UiCore/PopUps/ScheduleSystemModeErrorPopup.qml
+        UiCore/PopUps/ResetFactoryPopUp.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml

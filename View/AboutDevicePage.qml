@@ -23,6 +23,9 @@ BasePageView {
     property string appVesion: ""
     property bool showTestMode: false
 
+    //! true: Restart device after all wifis forgotten in this page.
+    property bool _restartDeviceAfterForgotWiFis: false
+
     /* Object properties
      * ****************************************************************************************/
     title: "Device Info"
@@ -35,6 +38,20 @@ BasePageView {
 
     /* Children
      * ****************************************************************************************/
+
+    Connections {
+        target: system
+        function onLogPrepared(isSuccess){
+            logBusyPop.close()
+            if (isSuccess){
+                uiSession.popUps.initSendingLogProgress();
+            } else {
+                logBusyPop.message = "File generation failed."
+                logBusyPop.open()
+            }
+        }
+    }
+
     ListView {
         id: _infoLv
 
@@ -117,63 +134,74 @@ BasePageView {
             Repeater {
                 model: [
                     {
-                        text: "Send Log", action: () => {
-                            if (NetworkInterface.hasInternet) logBusyPop.open();
+                        text: qsTr("Send Log"), action: () => {
+                            if (NetworkInterface.hasInternet) {
+                                if (system.isBusylogSender()) {
+                                    // Log sender is busy, open the progress bar.
+                                    uiSession.popUps.showSendingLogProgress();
+
+                                } else {
+                                    // Prepare the log
+                                    logBusyPop.message = "Preparing log, \nplease wait ..."
+                                    logBusyPop.open();
+                                }
+                            }
+
                             else system.alert("No Internet, Please check your connection before sending log.")
                         },
                         buddies: [
                             {
-                                text: "Update NRF", visible: system.testMode, action: () => {
+                                text: qsTr("Update NRF"), visible: system.testMode, action: () => {
                                     deviceController.deviceControllerCPP.updateNRFFirmware();
                                 }
                             }
                         ]
                     },
                     {
-                        text: "Test Mode", visible: root.showTestMode, action: () => {
+                        text: qsTr("Test Mode"), visible: root.showTestMode, action: () => {
                             if (root.StackView.view) {
+                                deviceController.postWarrantyReplacementFinsihed();
                                 uiSession.uiTestMode = true;
                                 root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {"uiSession": uiSession});
                             }
                         }
                     },
                     {
-                        text: "Restart Device", action: () => {
-                            rebootPopup.withForget = false;
-                            rebootPopup.open();
+                        text: qsTr("Restart Device"), action: () => {
+                            root.showCountDownPopUpForRestartDevice()
                         },
                         buddies: [
                             {
-                                text: "Restart App", visible: root.showTestMode || system.testMode, action: () => {
-                                    restartAppPopup.open();
+                                text: qsTr("Restart App"), visible: root.showTestMode || system.testMode, action: () => {
+                                    root.showCountDownPopUpForRestartApp()
                                 }
                             }
                         ]
 
                     },
                     {
-                        text: "Manage Endpoint", visible: root.showTestMode  || system.testMode, action: () => {
+                        text: qsTr("Manage Endpoint"), visible: root.showTestMode  || system.testMode, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/Menu/ManageEndpoint.qml", {"uiSession": uiSession});
                             }
                         }
                     },
                     {
-                        text: "Test Config", visible: system.testMode, action: () => {
+                        text: qsTr("Test Config"), visible: system.testMode, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/Test/TestConfigPage.qml", {"uiSession": uiSession});
                             }
                         }
                     },
                     {
-                        text: "No Wi-Fi Config", visible: system.testMode, action: () => {
+                        text: qsTr("No Wi-Fi Config"), visible: system.testMode, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/Menu/LimitedModeRemainigTimePage.qml", {"uiSession": uiSession});
                             }
                         }
                     },
                     {
-                        text: "Contractor Info Test", visible: deviceController.initialSetup, action: () => {
+                        text: qsTr("Contractor Info Test"), visible: deviceController.initialSetup, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {
                                                              "uiSession": uiSession,
@@ -183,37 +211,45 @@ BasePageView {
                         }
                     },
                     {
-                        text: "Forget Device", visible: deviceController.initialSetup, action: () => {
-                            rebootPopup.withForget = true;
-                            rebootPopup.open();
+                        text: qsTr("Forget Device"), visible: deviceController.initialSetup, action: () => {
+                            root.showCountDownPopUpForForgetDevice()
                         }
                     },
                     {
-                        text: "Exit", visible: system.testMode, action: () => {
-                            exitPopup.open();
+                        text: qsTr("Exit"), visible: system.testMode, action: () => {
+                            root.showCountDownPopUpForStopDevice()
                         },
                         buddies: [
                             {
                                 //! Forget device is visible in another row on initial setup
-                                text: "Forget Device", visible: !deviceController.initialSetup, action: () => {
-                                    rebootPopup.withForget = true;
-                                    rebootPopup.open();
+                                text: qsTr("Forget Device"), visible: !deviceController.initialSetup, action: () => {
+                                    root.showCountDownPopUpForForgetDevice()
                                 }
                             }
                         ]
+                    },
+                    {
+                        text: qsTr("Reset Factory"), visible: system.testMode, action: () => {
+                            resetFactoryPopUp.open();
+                        }
                     }
                 ]
 
                 RowLayout {
                     spacing: 16
                     Layout.alignment: Qt.AlignHCenter
-                    visible: modelData.visible == undefined || modelData.visible
+                    visible: modelData.visible ?? true
 
                     ButtonInverted {
                         leftPadding: 8
                         rightPadding: 8
                         text: modelData.text
-                        onClicked: if (modelData.action instanceof Function) modelData.action()
+
+                        onClicked: {
+                            if (modelData.action instanceof Function) {
+                                modelData.action()
+                            }
+                        }
                     }
 
                     Repeater {
@@ -222,56 +258,18 @@ BasePageView {
                             leftPadding: 8
                             rightPadding: 8
                             text: modelData.text
-                            visible: modelData.visible == undefined || modelData.visible
-                            onClicked: if (modelData.action instanceof Function) modelData.action()
+                            visible: modelData.visible ?? true
+
+                            onClicked: {
+                                if (modelData.action instanceof Function) {
+                                    modelData.action()
+                                }
+                            }
                         }
                     }
                 }
             }
         }
-    }
-
-    //! Reboot popup with count down timer to send reboot request to system
-    RebootDevicePopup {
-        id: rebootPopup
-
-        //! Enable forget device in this popup
-        property bool withForget: false
-
-        title : withForget ? "   Forget Device   " :  " Restart Device   "
-        anchors.centerIn: Template.Overlay.overlay
-
-        onStartAction: {
-            if (withForget) {
-                deviceController.forgetDevice();
-            }
-
-            if (system) {
-                system.rebootDevice();
-            }
-        }
-    }
-
-    //! Restart popup with count down timer to send restart request to system
-    RebootDevicePopup {
-        id: restartAppPopup
-
-        title: "   Restart App   "
-        infoText: "Restarting App..."
-        anchors.centerIn: Template.Overlay.overlay
-
-        onStartAction: {
-            if (system) {
-                system.systemCtlRestartApp();
-            }
-        }
-    }
-
-    //! Exit popup with count down timer to send exit request to system
-    ResetDevicePopup {
-        id: exitPopup
-        system: root.system
-        anchors.centerIn: Template.Overlay.overlay
     }
 
     FontMetrics {
@@ -280,7 +278,10 @@ BasePageView {
 
     Popup {
         id: logBusyPop
+        property string message: ""
+
         parent: Template.Overlay.overlay
+        closePolicy: Popup.NoAutoClose
         width: Math.max(implicitWidth, parent.width * 0.5)
         height: parent.height * 0.5
         anchors.centerIn: parent
@@ -289,14 +290,121 @@ BasePageView {
         onOpened: {
             //! Call sendLog()
             system.sendLog();
-            close();
         }
 
         contentItem: Label {
-            text: "Preparing log, \nplease wait ..."
-            horizontalAlignment: "AlignHCenter"
-            verticalAlignment: "AlignVCenter"
+            text: logBusyPop.message
+            horizontalAlignment: Label.AlignHCenter
+            verticalAlignment: Label.AlignVCenter
             lineHeight: 1.4
         }
+    }
+
+    ResetFactoryPopUp {
+        id: resetFactoryPopUp
+
+        onReset: {
+            busyPopUp.open();
+            deviceController.sync.resetFactory();
+            close();
+        }
+    }
+
+    BusyPopUp {
+        id: busyPopUp
+    }
+
+    AlertNotifPopup {
+        id: alertNotifPopup
+
+        message: Message {
+            message: qsTr("Failed to remove the device from the server. Please try again.")
+            type: Message.Alert
+        }
+    }
+
+    Connections {
+        target: deviceController?.sync ?? null
+
+        function onResetFactoryFinished(ok: bool, message: string) {
+            busyPopUp.close()
+            if(ok === true) {
+                root.showCountDownPopUpForResetFactory()
+            } else {
+                alertNotifPopup.open();
+            }
+        }
+    }
+
+    Connections {
+        target: NetworkInterface
+
+        enabled: root.visible
+
+        function onAllWiFiNetworksForgotten() {
+            if (root._restartDeviceAfterForgotWiFis)
+                deviceController.resetDeviceToFactory();
+        }
+    }
+
+    function showCountDownPopUpForForgetDevice() {
+        uiSession.popUps.showCountDownPopUp(
+                    qsTr("Forget Device"),
+                    qsTr("Restarting Device..."),
+                    true,
+                    function () {
+                        deviceController.forgetDevice();
+
+                        if (system) {
+                            system.rebootDevice();
+                        }
+                    });
+    }
+
+    function showCountDownPopUpForResetFactory() {
+        root._restartDeviceAfterForgotWiFis = true;
+        uiSession.popUps.showCountDownPopUp(
+                    qsTr("Reset Device to Factory Setting"),
+                    qsTr("Restarting Device..."),
+                    false,
+                    function () {
+                        NetworkInterface.forgetAllWifis();
+                    });
+    }
+
+    function showCountDownPopUpForRestartApp() {
+        uiSession.popUps.showCountDownPopUp(
+                    qsTr("Restart App"),
+                    qsTr("Restarting App..."),
+                    true,
+                    function () {
+                        if (system) {
+                            system.systemCtlRestartApp();
+                        }
+                    });
+    }
+
+    function showCountDownPopUpForRestartDevice() {
+        uiSession.popUps.showCountDownPopUp(
+                    qsTr("Restart Device"),
+                    qsTr("Restarting Device..."),
+                    true,
+                    function () {
+                        if (system) {
+                            system.rebootDevice();
+                        }
+                    });
+    }
+
+    function showCountDownPopUpForStopDevice() {
+        uiSession.popUps.showCountDownPopUp(
+                    qsTr("Stop Device"),
+                    qsTr("Stopping Device..."),
+                    true,
+                    function () {
+                        if (system) {
+                            system.stopDevice();
+                        }
+                    });
     }
 }

@@ -45,11 +45,13 @@ const QString m_InstalledUpdateDateSetting = QString("Stherm/UpdateDate");
 const QString m_SerialNumberSetting        = QString("Stherm/SerialNumber");
 const QString m_IsManualUpdateSetting      = QString("Stherm/IsManualUpdate");
 const QString m_IsFWServerUpdateSetting    = QString("Stherm/IsFWServerUpdate");
+const QString m_NetworkRequestRestartSetting = QString("Stherm/NetworkRequestRestart");
 
 const QString m_updateOnStartKey = "updateSequenceOnStart";
 const QString m_LimitedModeRemainigTime = "LimitedModeRemainigTime";
 const QString m_InitialSetupWithNoWIFI  = "InitialSetupWithNoWIFI";
 const QString m_alternativeNoWiFiFlow   = "alternativeNoWiFiFlow";
+const QString m_isDeviceForgotten       = "isDeviceForgotten";
 
 const QString Key_LastRebootAt = "LastRebootCommandAt";
 
@@ -61,6 +63,36 @@ const QString Cmd_PushLiveData = "push_live_data";
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
+}
+
+inline int parseProgress(const QString &in) {
+    QRegularExpression regex(R"((\d+)%\s+\d+)");
+    QRegularExpressionMatch match = regex.match(in);
+
+    if (match.hasMatch()) {
+        QString progress = match.captured(1);
+
+        bool ok;
+        auto progressValue = progress.toInt(&ok);
+
+        if(ok)
+            return progressValue;
+    }
+
+    // Attempt to parse error code
+    QRegularExpression errorRegex(R"(\(code (\d+)\))");
+    QRegularExpressionMatch errorMatch = errorRegex.match(in);
+    if (errorMatch.hasMatch()) {
+        bool ok;
+
+        int errorCode = errorMatch.captured(1).toInt(&ok);
+
+        //! rsync got error
+        if (errorCode != 0 || !ok)
+            return -2;
+    }
+
+    return -1;
 }
 
 //! isVersionNewer
@@ -99,7 +131,10 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     , mIsNightModeRunning(false)
     , mRestarting(false)
     , sshpassInstallCounter(0)
+    , mFirstLogSent(false)
 {
+    startAutoSendLogTimer(15 * 60 * 1000); // 15 Minutes
+
     mUpdateFilePath = qApp->applicationDirPath() + "/" + m_updateInfoFile;
 
     connect(mSync, &NUVE::Sync::settingsFetched, this, [this](bool success) {
@@ -107,7 +142,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         emit areSettingsFetchedChanged(success);
     });
     connect(mSync, &NUVE::Sync::serialNumberChanged, this, &NUVE::System::serialNumberChanged);
-    connect(mSync, &NUVE::Sync::contractorInfoReady, this, &NUVE::System::contractorInfoReady);
 
     connect(&mUpdateTimer, &QTimer::timeout, this, [=]() {
         if (!mIsNightModeRunning)
@@ -127,6 +161,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
     if (!mountDirectory("/mnt/log", "/mnt/log/log"))
         qWarning() << "unable to create logs folder";
+
+    if (!mountDirectory("/mnt/log", "/mnt/log/networkLogs"))
+        qWarning() << "unable to create networkLogs folder";
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
@@ -203,7 +240,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     downloaderTimer.setSingleShot(false);
 
     //! inits the connections of log sender responses
-    mLogSender.initialize([this](QString error){emit alert(error);}, "Log sender:", "\r\n");
+    mLogSender.initialize([this](QString error){emit logAlert(error);}, "Log sender:", "\r\n");
     //! inits the connections of file sender responses
     mFileSender.initialize([this](QString error){emit testPublishFinished(error);}, "Result sender:");
 
@@ -247,10 +284,23 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
     if (!serialNumber().isEmpty())
         onSerialNumberReady();
+
+    connect(&mLogSender, &QProcess::readyReadStandardOutput, this, [&]() {
+        if (isBusylogSender()) {
+            int progress = parseProgress(mLogSender.readAllStandardOutput());
+
+            // Send only valid values. readAllStandardOutput returns extra non-error outputs like `sending incremental file list\n` and file name.
+            if (progress > -1)
+                emit sendLogProgressChanged(progress);
+            else if (progress == -2)
+                emit alert("Sending log failed");
+        }
+    });
 }
 
 NUVE::System::~System()
 {
+    stopAutoSendLogTimer();
 }
 
 bool NUVE::System::areSettingsFetched() const {return mAreSettingsFetched;}
@@ -783,6 +833,10 @@ void NUVE::System::wifiConnected(bool hasInternet) {
         return;
     }
 
+    // To validate the network restart requests.
+    QSettings settings;
+    settings.remove(m_NetworkRequestRestartSetting);
+
     mUpdateTimer.start();
     if (!mIsNightModeRunning) {
 
@@ -898,6 +952,22 @@ bool NUVE::System::initialSetupWithNoWIFI()
     return settings.value(m_InitialSetupWithNoWIFI, false).toBool();
 }
 
+bool NUVE::System::isForgottenDeviceStarted()
+{
+    QSettings settings;
+    auto isDeviceForgotten = settings.value(m_isDeviceForgotten, true).toBool();
+
+    SYS_LOG << "Device starts after forgotten: " << isDeviceForgotten;
+
+    return isDeviceForgotten;
+}
+
+void NUVE::System::setIsForgottenDevice(const bool &isDeviceForgotten)
+{
+    QSettings settings;
+    settings.setValue(m_isDeviceForgotten, isDeviceForgotten);
+}
+
 void NUVE::System::setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow)
 {
     QSettings settings;
@@ -908,15 +978,6 @@ bool NUVE::System::alternativeNoWiFiFlow()
 {
     QSettings settings;
     return settings.value(m_alternativeNoWiFiFlow, false).toBool();
-}
-
-QVariantMap NUVE::System::getContractorInfo() const
-{
-    return mSync->getContractorInfo();
-}
-
-bool NUVE::System::fetchContractorInfo() {
-    return mSync->fetchContractorInfo();
 }
 
 QStringList NUVE::System::availableVersions()
@@ -1019,7 +1080,27 @@ void NUVE::System::forgetDevice()
 
     settings.remove(m_alternativeNoWiFiFlow);
 
+    settings.remove(m_isDeviceForgotten);
+
+    QFile::remove(qApp->applicationDirPath() + "/files_info.json");
+    QFile::remove(mUpdateFilePath);
+
     mSync->forgetDevice();
+}
+
+bool NUVE::System::removeLogPartition()
+{
+    QStringList directories = {"/mnt/update/latestVersion/",
+                               "/mnt/data/sensor/",
+                               "/mnt/log/log/",
+                               "/mnt/update/nrf_fw/",
+                               "/mnt/recovery/recovery/"};
+    bool ok = true;
+    for (const QString &dirPath : directories) {
+        ok &= removeDirectory(dirPath);
+    }
+
+    return ok;
 }
 
 void NUVE::System::setNightModeRunning(const bool running) {
@@ -1204,7 +1285,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         }
     };
 
-    // Fetch the file from web location    
+    // Fetch the file from web location
     if (!versionAddressInServer.startsWith("/")) versionAddressInServer = "/" + versionAddressInServer;
     QNetworkReply* reply = downloadFile(m_updateServerUrl + versionAddressInServer, callback, false);
     if (!reply) {
@@ -1798,21 +1879,20 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
     return true;
 }
 
+bool NUVE::System::isBusylogSender() const {
+    return mLogSender.busy();
+}
+
 bool NUVE::System::sendLog(bool showAlert)
 {
-    if (!installSSHPass()){
-        QString error("Device is not ready to send log!");
-        qWarning() << error;
-        if (showAlert) emit alert(error);
+    if (mLogSender.busy()){
+        QString error("Previous session is in progress.");
+        SYS_LOG << error << "State is :" << mLogSender.state() << mLogSender.keys();
         return false;
     }
 
-    if (mLogSender.busy()){
-        QString error("Previous session is in progress, please try again later.");
-        qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        if (showAlert) emit alert(error);
+    if (!checkSendLog(showAlert))
         return false;
-    }
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
@@ -1827,7 +1907,7 @@ bool NUVE::System::sendLog(bool showAlert)
             if (!error.isEmpty()) {
                 error = "error while creating log directory on remote: " + error;
                 qWarning() << error;
-                if (showAlert) emit alert(error);
+                if (showAlert) emit logAlert(error);
                 return;
             }
 
@@ -1840,8 +1920,9 @@ bool NUVE::System::sendLog(bool showAlert)
         mLogSender.setRole("dirLog", dirCreatorCallback);
 
         prepareLogDirectory(dirCreatorCallback);
-        return true;
     }
+
+    return true;
 }
 
 void NUVE::System::sendFirstRunLog()
@@ -1849,14 +1930,14 @@ void NUVE::System::sendFirstRunLog()
     if (!installSSHPass()) {
         QString error("Device is not ready to send log on First run!");
         qWarning() << error;
-        emit alert(error);
+        emit logAlert(error);
         return;
     }
 
-    if (mLogSender.busy()){
+    if (isBusylogSender()){
         QString error("Sending log on first run is in progress!");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        emit alert(error);
+        emit logAlert(error);
         return;
     }
 
@@ -1873,7 +1954,7 @@ void NUVE::System::sendFirstRunLog()
             if (!error.isEmpty()) {
                 error = "error while creating first run log directory on remote: " + error;
                 qWarning() << error;
-                emit alert(error);
+                emit logAlert(error);
                 return;
             }
 
@@ -1996,7 +2077,7 @@ QString NUVE::System::generateLog()
     {
         QString error("Unable to create log file.");
         qWarning() << error << exitCode;
-        emit alert(error);
+        emit logAlert(error);
         return "";
     }
 
@@ -2016,11 +2097,11 @@ void NUVE::System::sendFirstRunLogFile()
         if (!error.isEmpty()) {
             error = "error while sending first run log directory on remote: " + error;
             qWarning() << error;
-            emit alert(error);
+            emit logAlert(error);
             return;
         }
 
-        emit alert("Log is sent for first run error!");
+        emit logAlert("Log is sent for first run error!");
     };
 
     mLogSender.setRole("sendFirstRunLog", sendCallback);
@@ -2039,46 +2120,17 @@ bool NUVE::System::sendLogFile(bool showAlert)
     auto filename = generateLog();
     if (filename.isEmpty()) {
         if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-            SYS_LOG <<"Log file generation failed. Command cleared" <<Cmd_PushLogs;
+            SYS_LOG << "Log file generation failed. Command cleared" << Cmd_PushLogs;
             mLastReceivedCommands.remove(Cmd_PushLogs);
         }
+
+        emit logPrepared(false);
         return false;
     }
 
-    auto sendCallback = [=](QString error) {
-        auto role = mLogSender.property("role").toString();
-        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;        
+    emit logPrepared(true);
 
-        if (error.isEmpty()) {
-            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-                SYS_LOG <<"Reporting" <<Cmd_PushLogs;
-                auto callback = [this] (bool success, const QJsonObject& data) {
-                    mLastReceivedCommands.remove(Cmd_PushLogs);
-                    SYS_LOG <<"Log sending success. Command cleared" <<Cmd_PushLogs;
-                };
-                mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
-            }
-            if (showAlert) emit alert("Log is sent!");
-        }
-        else {
-            if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
-                SYS_LOG <<"Log sending failed. Command cleared" <<Cmd_PushLogs;
-                mLastReceivedCommands.remove(Cmd_PushLogs);
-            }
-            error = "error while sending log directory on remote: " + error;
-            qWarning() << error;
-            if (showAlert) emit alert(error);
-        }
-    };
-
-    mLogSender.setRole("sendLog", sendCallback);
-
-    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
-    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
-                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
-    TRACE << "sending log to server " << mLogRemoteFolder;
-    mLogSender.start("/bin/bash", {"-c", copyFile});
-    return true;
+    return sendLogToServer(QStringList(filename), showAlert, true);
 }
 
 void NUVE::System::sendResultsFile(const QString &filepath,
@@ -2114,6 +2166,69 @@ void NUVE::System::sendResultsFile(const QString &filepath,
     mFileSender.start("/bin/bash", {"-c", copyFile});
 }
 
+bool NUVE::System::removeDirectory(const QString &path)
+{
+    QDir dir(path);
+
+    if (dir.exists()) {
+        if (dir.removeRecursively()) {
+            TRACE << "Successfully removed:" << path;
+        } else {
+            TRACE << "Failed to remove:" << path;
+            return false;
+        }
+    } else {
+        TRACE << "Directory does not exist:" << path;
+    }
+
+    return true;
+}
+
+void NUVE::System::startAutoSendLogTimer(int interval)
+{
+    if (mFirstLogSent) {
+        stopAutoSendLogTimer();
+        return;
+    }
+
+    if (mAutoSendLogtimer == nullptr) {
+        mAutoSendLogtimer = new QTimer(this);
+
+        mAutoSendLogtimer->setSingleShot(true);
+        mAutoSendLogtimer->callOnTimeout([this]() {
+            SYS_LOG << "Sending log automatically: Start sending";
+            bool result = this->sendLog(false);
+
+            if (result == true) {
+                SYS_LOG << "Sending log automatically: Sending...";
+                stopAutoSendLogTimer();
+
+            } else {
+                SYS_LOG << "Sending log automatically: Log Send Failed.";
+
+                SYS_LOG << "Sending log automatically: Next attempt in 1 minute.";
+                startAutoSendLogTimer(1 * 60 * 1000); // 1 Minute
+            }
+        });
+    }
+
+    if (mAutoSendLogtimer)
+        mAutoSendLogtimer->start(interval);
+}
+
+void NUVE::System::stopAutoSendLogTimer()
+{
+    SYS_LOG << "Sending log automatically: Stopping timer";
+    if (mAutoSendLogtimer == nullptr) {
+        return;
+    }
+
+    mAutoSendLogtimer->stop();
+    mAutoSendLogtimer->disconnect();
+    mAutoSendLogtimer->deleteLater();
+    mAutoSendLogtimer = nullptr;
+}
+
 bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)
 {
     if (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag) {
@@ -2124,7 +2239,7 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
     SYS_LOG <<"Attempting command" << command <<tag;
 
     if (command == Cmd_PushLogs) {
-        if (mLogSender.busy()) {
+        if (isBusylogSender()) {
             SYS_LOG << "Log-sender is busy at this momemnt";
         }
         else {
@@ -2221,4 +2336,155 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
             mErrorHandler(error);
         }
     });
+}
+
+void NUVE::System::saveNetworkLogs() {
+    auto generatedFilename = generateLog();
+    if (generatedFilename.isEmpty())
+        return;
+
+    auto filename = generatedFilename;
+    auto newFileName = "/mnt/log/networkLogs/network_" + filename.remove("/mnt/log/log/");
+    if (!QFile::copy(generatedFilename, newFileName))
+        qWarning() << "unable to copy logs to network folder";
+}
+
+bool NUVE::System::sendNetworkLogs() {
+    if (mLogSender.busy()){
+        QString error("Previous session is in progress.");
+        SYS_LOG << error << "State is :" << mLogSender.state() << mLogSender.keys();
+        return true;
+    }
+
+    bool showAlert = false;
+
+    if (!checkSendLog(showAlert)) {
+        return false;
+    }
+
+    SYS_LOG << "checking for network logs";
+
+    QDir dir("/mnt/log/networkLogs/");
+    if (!dir.exists())
+        return false;
+
+    // Get a list of all files in the specified path
+    QStringList fileList = dir.entryList(QDir::Files);
+
+    if (fileList.isEmpty())
+        return false;
+
+    QStringList absFileList;
+    // Get absolute file paths
+    for (const QString& fileName : fileList) {
+        QString absoluteFilePath = dir.absoluteFilePath(fileName);
+        absFileList.append(absoluteFilePath);
+    }
+
+    auto initialized = mLogSender.property("initialized");
+    if (initialized.isValid() && initialized.toBool()) {
+        sendLogToServer(absFileList, false);
+
+    } else {
+        auto dirCreatorCallback = [=](QString error) {
+            auto role = mLogSender.property("role").toString();
+            TRACE_CHECK(role != "dirLog") << "role seems invalid" << role;
+
+            if (!error.isEmpty()) {
+                error = "error while creating log directory on remote: " + error;
+                qWarning() << error;
+                if (showAlert) emit logAlert(error);
+                return;
+            }
+
+            SYS_LOG << "Folder created in server successfully";
+            mLogSender.setProperty("initialized", true);
+
+            sendLogToServer(absFileList, false);
+        };
+
+        mLogSender.setRole("dirLog", dirCreatorCallback);
+
+        prepareLogDirectory(dirCreatorCallback);
+    }
+
+    return true;
+}
+
+bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog) {
+    auto sendCallback = [=](QString error) {
+        auto role = mLogSender.property("role").toString();
+        TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
+
+        if (error.isEmpty()) {
+            if (isRegularLog && mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG << "Reporting" << Cmd_PushLogs;
+                auto callback = [this] (bool success, const QJsonObject& data) {
+                    mLastReceivedCommands.remove(Cmd_PushLogs);
+                    SYS_LOG << "Log sending success. Command cleared" << Cmd_PushLogs;
+                };
+                mSync->reportCommandResponse(callback, Cmd_PushLogs, "log_sent");
+            }
+
+            if (showAlert) emit logSentSuccessfully();
+
+            // Delete logs that have been sent to the server.
+            foreach (auto file, filenames) {
+                if (!QFile::remove(file))
+                    qWarning() << "Could not remove the file: " << file;
+            }
+
+            if (isRegularLog) mFirstLogSent = true;
+
+        } else {
+            if (isRegularLog && mLastReceivedCommands.contains(Cmd_PushLogs)) {
+                SYS_LOG << "Log sending failed. Command cleared" << Cmd_PushLogs;
+                mLastReceivedCommands.remove(Cmd_PushLogs);
+            }
+
+            error = "error while sending log directory on remote: " + error;
+            qWarning() << error;
+            if (showAlert) emit logAlert(error);
+        }
+
+        startAutoSendLogTimer(1 * 60 * 1000);
+    };
+
+    mLogSender.setRole("sendLog", sendCallback);
+
+    // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+                       arg(m_logPassword, filenames.join(" "), m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    TRACE << "sending log to server " << mLogRemoteFolder;
+    mLogSender.start("/bin/bash", {"-c", copyFile});
+
+    return true;
+}
+
+bool NUVE::System::checkSendLog(bool showAlert)
+{
+    if (!installSSHPass()){
+        QString error("Device is not ready to send log!");
+        qWarning() << error;
+        if (showAlert) emit logAlert(error);
+        return false;
+    }
+
+    return true;
+}
+
+bool NUVE::System::isValidNetworkRequestRestart()
+{
+    QSettings settings;
+    int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt();
+
+    return networkRequestRestartTimes < 1;
+}
+
+void NUVE::System::saveNetworkRequestRestart()
+{
+    QSettings settings;
+    int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt() + 1;
+
+    settings.setValue(m_NetworkRequestRestartSetting, networkRequestRestartTimes);
 }

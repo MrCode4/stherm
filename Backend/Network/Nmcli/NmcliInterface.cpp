@@ -118,6 +118,21 @@ void NmcliInterface::connectToWifi(WifiInfo* wifi, const QString& password)
     }
 }
 
+bool NmcliInterface::autoConnectSavedWifiAsync(WifiInfo* wifi)
+{
+    if (!wifi) {
+        return false;
+    }
+
+    setBusy(true);
+
+    mCliWifi->connectToSavedWifi(wifi->ssid(), wifi->security(), "", [&] (QProcess*) {
+        setBusy(false);
+        emit autoConnectSavedInRangeWifiFinished(wifi);
+    });
+
+    return true;
+}
 bool NmcliInterface::connectSavedWifi(WifiInfo* wifi, const QString& password)
 {
     //! It's supposed that this private method is only called on a saved wifi, so no need to check
@@ -156,6 +171,8 @@ WifiInfo* NmcliInterface::connectedWifi()
 void NmcliInterface::forgetWifi(WifiInfo* wifi)
 {
     if (!wifi || !wifi->isSaved() || busy()) {
+        NC_DEBUG << "Worst case scenario: Error in forgetWifi" << wifi << busy();
+        NC_DEBUG_IF(wifi) << "Worst case scenario: Error in forgetWifi" << wifi->isSaved();
         return;
     }
 
@@ -551,55 +568,43 @@ void NmcliInterface::parseBssidToCorrectSsidMap(QProcess* process)
 
     QRegularExpressionMatchIterator wifiMatchIterator = wifiDetailsRegex.globalMatch(iwOutStr);
 
-    QString bssid{}, ssid{}, auth{};
+    QString bssid, ssid, auth;
 
-    enum IterationState { Continue = 0, Finalize, Done };
-
-    IterationState iterationState = IterationState::Continue;
-
-    while (iterationState != IterationState::Done) {
+    while (wifiMatchIterator.hasNext()) {
         QRegularExpressionMatch currentMatch = wifiMatchIterator.next();
 
-        bool isBSSIDChanged = (currentMatch.captured(1).isEmpty() == false)
-                              && (bssid.isEmpty() == false)
-                              && (bssid != currentMatch.captured(1).toUpper());
+        auto nextBssid = currentMatch.captured(1).toUpper();
 
-        // Check if the BSSID has changed or if this is the last iteration.
-        // If so, save the current SSID and authentication type to the respective maps if they are valid.
-        if (isBSSIDChanged == true || iterationState == IterationState::Finalize) {
-            QString replacedHexSSID = decodeHexToChars(ssid);
+        bool isNextWifi = (!nextBssid.isEmpty())
+                              && (!bssid.isEmpty())
+                              && (bssid != nextBssid.toUpper()) ||
+                          !wifiMatchIterator.hasNext();
 
-            bool isSSIDReplaced = (ssid.isEmpty() == false) && (replacedHexSSID != ssid)
-                                  && (bssid.isEmpty() == false);
-            if (isSSIDReplaced) {
-                mBssToCorrectSsidMap[bssid] = replacedHexSSID;
-            }
-
-            if ((auth.isEmpty() == false) && (bssid.isEmpty() == false)) {
-                mBssToCorrectSecurityMap[bssid] = auth;
-            }
-
-            bssid.clear();
-            ssid.clear();
-            auth.clear();
-        }
-
-        // Store new Wi-Fi details if captured by the regex.
-        if (currentMatch.captured(1).isEmpty() == false) {
-            bssid = currentMatch.captured(1).toUpper();
-        } else if (currentMatch.captured(2).isEmpty() == false) {
+        if (!currentMatch.captured(2).isEmpty()) {
             ssid = currentMatch.captured(2);
-        } else if (currentMatch.captured(3).isEmpty() == false) {
+
+        } else if (!currentMatch.captured(3).isEmpty()) {
             auth = currentMatch.captured(3);
         }
 
-        // Switch to Finalize when no matches remain, allowing final handling of the last Wi-Fi details.
-        if (wifiMatchIterator.hasNext() == false && iterationState == IterationState::Continue) {
-            iterationState = IterationState::Finalize;
+        if (isNextWifi && !bssid.isEmpty()) {
+            if (!ssid.isEmpty()) {
+                QString replacedHexSSID = decodeHexToChars(ssid);
+                mBssToCorrectSsidMap[bssid] = replacedHexSSID;
+            }
+
+            if (!auth.isEmpty()) {
+                mBssToCorrectSecurityMap[bssid] = auth;
+            }
+
+            auth.clear();
+            ssid.clear();
         }
-        else if (iterationState == IterationState::Finalize) {
-            iterationState = IterationState::Done;
+
+        if (!nextBssid.isEmpty()) {
+            bssid = nextBssid;
         }
+
     }
 
     //! Get the list of wifi connections

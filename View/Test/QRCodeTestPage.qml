@@ -31,11 +31,13 @@ BasePageView {
      * ****************************************************************************************/
 
     //! Reboot popup with count down timer to send reboot request to system
-    RebootDevicePopup {
+    CountDownPopup {
         id: rebootPopup
 
-        infoText: "Serial number is ready.\nRestarting Device..."
         anchors.centerIn: Template.Overlay.overlay
+
+        title: "   Restart Device   "
+        actionText: "Serial number is ready.\nRestarting Device..."
 
         onStartAction: {
             if (system) {

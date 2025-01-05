@@ -2,6 +2,7 @@
 
 #include <ctime>
 #include <fstream>
+#include "Config.h"
 
 #ifdef PROTOBUF_ENABLED
 #include <google/protobuf/util/time_util.h>
@@ -10,7 +11,7 @@
 #include "DeviceInfo.h"
 #include "LogHelper.h"
 
-const QString BINARYFILEPATH         = QString ("/usr/local/bin/output.bin");
+const QString BINARYFILEPATH         = PROTOBUFF_FILE_PATH;
 const int     MEMORYLIMITAIONRECORDS = 3000;
 const double  TEMPERATURETHRESHOLD   = 1 / 1.8;
 

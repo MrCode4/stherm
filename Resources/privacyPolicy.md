@@ -1,4 +1,4 @@
-**Effective Date: Jul 23, 2024**
+**Effective Date: December 28, 2024**
 
 Nuve Controls LLC (“**Nuve**,” “**we**,” “**our**,” or “**us**”), provides this privacy policy to describe how we collect, use, and share the information of individuals who visit our website at <www.nuvehome.com> (the “**Site**”) or interact with us through our NuveMobile App (the “**App**”), Nuve Smart Thermostat (the “**Device**”), or the Contractor Web Portal (“**Portal**”) (collectively, the “**Services**”).
 
@@ -6,7 +6,7 @@ Nuve Controls LLC (“**Nuve**,” “**we**,” “**our**,” or “**us**”)
 
 When using our Services, you may voluntarily provide information about yourself, including your name, contact information, log-in information, and any other information you choose to provide. For example, we collect this information when you join our email list, create an account, leave a review, contact us, or interact with us for any other purpose. We may also collect your mailing and billing information when you place an order with us.
 
-We may also collect information about your home relevant to your use of the App and Device. For example, we may collect your home address, IP address, Zip code, and home details when you register your Device with a Nuve account and log in through the App. With your permission, we may also collect your location when you are using the App. We may collect additional information about your use of the Device, including temperature settings, humidity, and device status.
+We may also collect information about your home relevant to your use of the App and Device. For example, we may collect your home address, IP address, Zip code, and home details when you register your Device with a Nuve account and log in through the App. With your permission, we may also collect your location when you are using the App. We may collect additional information about your use of the Device, including temperature settings, humidity, and device status, as well as about the names and performance of Wi-Fi and other networks connected to the Device.
 
 When interacting with our Portal, we may collect information you choose to provide in your role as a contractor, such as your name, contact information, employer, log-in information, and any other information you choose to provide. If you have a Portal subscription, we may also collect your mailing and billing information as well as your activities inside the Portal.
 
@@ -18,7 +18,7 @@ We may use your information for any lawful purpose, including the following:
 
 - _Information Collected Through the Site, App, or Device_
   - To fulfill your orders;
-  - To remotely cycle or update your Device;
+  - To remotely cycle, maintain, support, test, or update your Device;
   - To suggest energy saving practices to you;
   - To respond to your inquiries, including questions about order status;
   - To operate, personalize, and improve our Site, App, and Devices, including for analytics purposes;
@@ -100,4 +100,4 @@ If you have questions, comments, or concerns about this privacy policy, please c
 
 Nuve Controls LLC
 
-4051 E. La Palma Ave. Suite A, Anaheim, CA 92807.
+4051 E. La Palma Ave. Suite A, Anaheim, CA. 92807

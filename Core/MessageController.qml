@@ -22,7 +22,7 @@ QtObject {
 
     property bool activeAlerts: false
 
-    property bool is_control_alert_feature_enable : deviceController.deviceControllerCPP.system.controlAlertEnabled;
+    property bool is_control_alert_feature_enable : deviceController.system.controlAlertEnabled;
 
     //! alertInterval: Reshow specific alerts every 24 hours (if exist),
     //! but only if they haven't been displayed in the past 24 hours.
@@ -73,7 +73,8 @@ QtObject {
         running: device
         repeat: false
 
-        interval: 1 * 60 * 1000
+        // Do not show alert on device during first 3 hours of lost connection.
+        interval: 3 * 60 * 60 * 1000
 
         onTriggered: {
             if (checkWifiConnection())
@@ -307,16 +308,20 @@ QtObject {
 
     // To add system alerts into messages.
     property Connections sytemConnections: Connections {
-        target: deviceController.deviceControllerCPP.system
+        target: deviceController.system
 
         function onAlert(message: string) {
+            addNewMessageFromData(Message.Type.SystemNotification, message, DateTimeManager.nowUTC());
+        }
+
+        function onLogAlert(message: string) {
             addNewMessageFromData(Message.Type.SystemNotification, message, DateTimeManager.nowUTC());
         }
 
         //! Manage update notifications (a message type)
         function onUpdateAvailableChanged() {
             // hasUpdateNotification is a UiSession property, update when updateAvailableChanged
-            uiSession.hasUpdateNotification = deviceController.deviceControllerCPP.system.updateAvailable;
+            uiSession.hasUpdateNotification = deviceController.system.updateAvailable;
         }
     }
 

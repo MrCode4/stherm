@@ -297,9 +297,11 @@ void Scheme::resetDelays()
 void Scheme::AutoModeLoop()
 {
     auto effectiveTemp = effectiveTemperature();
-    if (mDataProvider.data()->currentTemperature() > effectiveTemp) {
+    auto effectiveCurrentTemp = effectiveCurrentTemperature();
+
+    if (effectiveCurrentTemp > effectiveTemp) {
         CoolingLoop();
-    } else if (mDataProvider.data()->currentTemperature() < effectiveTemp) {
+    } else if (effectiveCurrentTemp < effectiveTemp) {
         HeatingLoop();
     }
 }
@@ -320,11 +322,10 @@ void Scheme::CoolingLoop()
         heatPump = true;
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::CoolingOnly: {
-        auto effectiveTemp = effectiveTemperature();
-        LOG_CHECK_SCHEME(false) << heatPump << mDataProvider.data()->currentTemperature() << effectiveTemp;
+        LOG_CHECK_SCHEME(false) << heatPump << effectiveCurrentTemperature() << effectiveTemperature();
 
         bool hasDelay = false;
-        while (mDataProvider.data()->currentTemperature() - effectiveTemp >= STAGE1_ON_RANGE) {
+        while (!stopWork && effectiveCurrentTemperature() - effectiveTemperature() >= T1) {
 
             //    if (pumpHeat) // how the system type setup get OB Orientatin, kept for later
             // always set but not send relays update if not heat pump internally
@@ -336,6 +337,8 @@ void Scheme::CoolingLoop()
             } else if (mTiming->s1Offtime.isValid() && mTiming->s1Offtime.elapsed() < 2 * 60 * 1000) {
                 if (!hasDelay) {
                     hasDelay = true;
+
+                    // This delay is not a system delay, anyway we send it to UI.
                     emit startSystemDelayCountdown(AppSpecCPP::Cooling, 2 * 60 * 1000 - mTiming->s1Offtime.elapsed());
                 }
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
@@ -344,10 +347,10 @@ void Scheme::CoolingLoop()
                     continue;
             }
 
-            // Stop countdown
+            // Stop countdown, delay is finished.
+            // We should not have any return or break before this unless we handle the stop
             if (hasDelay) {
                 emit stopSystemDelayCountdown();
-                hasDelay = false;
             }
 
             // check again after wait
@@ -399,7 +402,7 @@ AppSpecCPP::SystemType Scheme::activeSystemTypeHeating() {
             }
 
             // in the cold outdoor heatpump can not function good so we use it only above threshold
-        } else if (mDataProvider->outdoorTemperatureF() > mDataProvider->dualFuelThreshodF()) {
+        } else if (mDataProvider->outdoorTemperatureF() > mDataProvider->dualFuelThresholdF()) {
             // Start the heat pump (Y wires)
             activeSysType = AppSpecCPP::SystemType::HeatPump;
         } else {
@@ -473,8 +476,8 @@ void Scheme::HeatingLoop()
     } break;
     case AppSpecCPP::SystemType::Conventional:
     case AppSpecCPP::SystemType::HeatingOnly:
-        SCHEME_LOG << "Conventional" << mDataProvider.data()->currentTemperature() << effectiveTemperature();
-        if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= STAGE1_ON_RANGE) {
+        SCHEME_LOG << "Conventional" << effectiveCurrentTemperature() << effectiveTemperature();
+        if (effectiveTemperature() - effectiveCurrentTemperature() >= T1) {
             emit actualModeStarted(AppSpecCPP::Heating);
             internalHeatingLoopStage1();
         }
@@ -509,8 +512,11 @@ void Scheme::EmergencyLoop()
 
 void Scheme::OffLoop()
 {
-    //TODO
-    // we should check for system setup and if that is in default state, we should set relays off as well
+    // we check for system setup and if that is in default state, we should set relays off as well
+    // so we skip the waitloop to go for relays
+    if (mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::SysTUnknown)
+        return;
+
     waitLoop(-1, AppSpecCPP::ctMode);
 }
 
@@ -540,17 +546,18 @@ void Scheme::internalCoolingLoopStage1()
     mTiming->uptime.restart();
     mTiming->s2hold = false;
     mTiming->alerts = false;
+
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-    while (!stopWork && effectiveTemperature() - mDataProvider.data()->currentTemperature() < STAGE1_OFF_RANGE) {
-        SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
+    while (!stopWork && effectiveTemperature() - effectiveCurrentTemperature() < STAGE1_OFF_RANGE) {
+        SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mRelay->relays().y2
                    << mDataProvider.data()->systemSetup()->coolStage << mTiming->s1uptime.elapsed()
                    << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
 
         // coolStage: In the heat pump or dual fuel heating the cool stage and heat pump stage are the same.
-        if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider.data()->systemSetup()->coolStage == 2) {
-            if (mDataProvider.data()->currentTemperature() - effectiveTemperature() >= T2 ||
+        if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider->systemSetup()->coolStage == 2) {
+            if (effectiveCurrentTemperature() - effectiveTemperature() >= T2 ||
                 (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
                 if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
                     // going to stage 2 and if return false break to go off
@@ -560,7 +567,7 @@ void Scheme::internalCoolingLoopStage1()
                 }
 
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
-                // avoid sending alert
+                // avoid sending alert either it went to stage2 and returned back or off time not yet elapsed
                 continue;
             }
         }
@@ -576,7 +583,7 @@ void Scheme::internalCoolingLoopStage1()
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
     }
 
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished cooling" << stopWork;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << "finished cooling, stop work: " << stopWork;
 
     mTiming->s1Offtime.restart();
 }
@@ -586,7 +593,7 @@ bool Scheme::internalCoolingLoopStage2()
     if (stopWork)
         return false;
 
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold;
 
     // turn on stage 2
     mRelay->coolingStage2();
@@ -596,15 +603,15 @@ bool Scheme::internalCoolingLoopStage2()
     sendRelays();
 
     while (!stopWork) {
-        SCHEME_LOG << mTiming->s2hold << effectiveTemperature() << mDataProvider.data()->currentTemperature();
+        SCHEME_LOG << mTiming->s2hold << effectiveTemperature() << effectiveCurrentTemperature();
         if (mTiming->s2hold) {
-            if (effectiveTemperature() - mDataProvider.data()->currentTemperature() < STAGE1_OFF_RANGE) {
+            if (effectiveTemperature() - effectiveCurrentTemperature() < STAGE1_OFF_RANGE) {
                 sendAlertIfNeeded();
             } else {
                 return false;
             }
         } else {
-            if (mDataProvider.data()->currentTemperature() - effectiveTemperature() > STAGE1_ON_RANGE) {
+            if (effectiveCurrentTemperature() - effectiveTemperature() > T1) {
                 sendAlertIfNeeded();
             } else {
                 break;
@@ -617,7 +624,7 @@ bool Scheme::internalCoolingLoopStage2()
         waitLoop(30000);
     }
 
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished stage 2" << stopWork;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << "finished stage 2" << stopWork;
 
     if (stopWork)
         return false;
@@ -647,7 +654,6 @@ void Scheme::internalHeatingLoopStage1()
     if (stopWork)
         return;
 
-    mRelay->heatingStage1();
     // 5 secs
     emit changeBacklight(heatingColor);
 
@@ -656,23 +662,24 @@ void Scheme::internalHeatingLoopStage1()
     mTiming->s2hold = false;
     mTiming->s3hold = false;
     mTiming->alerts = false;
-    // not sending?
+
+    mRelay->heatingStage1();
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-    while (!stopWork && mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
-        LOG_CHECK_SCHEME(true) << mRelay->relays().w2 << mDataProvider.data()->systemSetup()->heatStage
+    while (!stopWork && effectiveCurrentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
+        LOG_CHECK_SCHEME(true) << mRelay->relays().w2 << mDataProvider->systemSetup()->heatStage
                                << mTiming->s1uptime.isValid() << mTiming->s1uptime.elapsed();
-        SCHEME_LOG << "Current Temperature: " << mDataProvider->currentTemperature() << ", Effective Temperature: " << effectiveTemperature();
+        SCHEME_LOG << "Current Temperature: " << effectiveCurrentTemperature() << ", Effective Temperature: " << effectiveTemperature();
 
-        if (mRelay->relays().w2 != STHERM::RelayMode::NoWire && mDataProvider.data()->systemSetup()->heatStage >= 2) {
-            if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= T2
+        if (mRelay->relays().w2 != STHERM::RelayMode::NoWire && mDataProvider->systemSetup()->heatStage >= 2) {
+            if (effectiveTemperature() - effectiveCurrentTemperature() >= T2
                 || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
                 // enabling stage 2 and if returned false we break to go off
                 if (!internalHeatingLoopStage2())
                     break;
 
-                // avoid sending alert
+                // avoid sending alert either it went to stage2 and returned back
                 continue;
             }
         }
@@ -700,21 +707,22 @@ bool Scheme::internalHeatingLoopStage2()
     if (stopWork)
         return false;
 
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold;
 
-    mRelay->heatingStage2();
     // 5 secs
     emit changeBacklight(heatingColor);
     mTiming->s2uptime.restart();
+
+    mRelay->heatingStage2();
     sendRelays();
     waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
     while (!stopWork) {
-        SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
+        SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold;
 
         if (mTiming->s2hold) {
-            if (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
-                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mDataProvider.data()->systemSetup()->heatStage < 3)
+            if (effectiveCurrentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
+                if ((mRelay->relays().w3 == STHERM::RelayMode::NoWire || mDataProvider->systemSetup()->heatStage < 3)
                     || (mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() < 10 * 60000)) { // this is valid for sure, checking for sanity
                     sendAlertIfNeeded();
                     if (stopWork)
@@ -731,9 +739,9 @@ bool Scheme::internalHeatingLoopStage2()
             }
         } else {
             bool timeCriteria = !mTiming->s2uptime.isValid() || mTiming->s2uptime.elapsed() >= 10 * 60000;
-            if ((effectiveTemperature() - mDataProvider.data()->currentTemperature() < T2 && !timeCriteria) ||
+            if ((effectiveTemperature() - effectiveCurrentTemperature() < T2 && !timeCriteria) ||
                 (mRelay->relays().w3 == STHERM::RelayMode::NoWire || mDataProvider.data()->systemSetup()->heatStage < 3)) {
-                if (effectiveTemperature() - mDataProvider.data()->currentTemperature() < T1) {
+                if (effectiveTemperature() - effectiveCurrentTemperature() < T1) {
                     break;
                 } else {
                     sendAlertIfNeeded();
@@ -742,7 +750,7 @@ bool Scheme::internalHeatingLoopStage2()
                     break;
                 waitLoop(30000);
             } else {
-                if (effectiveTemperature() - mDataProvider.data()->currentTemperature() < T3
+                if (effectiveTemperature() - effectiveCurrentTemperature() < T3
                     && !timeCriteria) {
                     sendAlertIfNeeded();
                     if (stopWork)
@@ -786,7 +794,7 @@ bool Scheme::internalHeatingLoopStage3()
     if (stopWork)
         return false;
 
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s3hold;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s3hold;
 
     mRelay->heatingStage3();
     // 5 secs
@@ -795,15 +803,15 @@ bool Scheme::internalHeatingLoopStage3()
     sendRelays();
 
     while (!stopWork) {
-        SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s3hold;
+        SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s3hold;
         if (mTiming->s3hold) {
-            if (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
+            if (effectiveCurrentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
                 sendAlertIfNeeded();
             } else {
                 return false;
             }
         } else {
-            if (effectiveTemperature() - mDataProvider.data()->currentTemperature() < T3) {
+            if (effectiveTemperature() - effectiveCurrentTemperature() < T3) {
                 break;
             } else {
                 sendAlertIfNeeded();
@@ -814,7 +822,7 @@ bool Scheme::internalHeatingLoopStage3()
 
         waitLoop(30000);
     }
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished stage 3" << stopWork;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << "finished stage 3" << stopWork;
 
     if (stopWork)
         return false;
@@ -884,13 +892,13 @@ void Scheme::internalPumpHeatingLoopStage1()
         sendRelays();
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
-        while (!stopWork && mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
-            SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mRelay->relays().y2
+        while (!stopWork && effectiveCurrentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
+            SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mRelay->relays().y2
                        << mDataProvider->heatPumpStage() << mTiming->s1uptime.elapsed()
                        << mTiming->s2Offtime.isValid() << mTiming->s2Offtime.elapsed();
 
             if (mRelay->relays().y2 != STHERM::RelayMode::NoWire && mDataProvider->heatPumpStage() >= 2) {
-                if (effectiveTemperature() - mDataProvider.data()->currentTemperature() >= T2
+                if (effectiveTemperature() - effectiveCurrentTemperature() >= T2
                     || (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000)) {
                     if (!mTiming->s2Offtime.isValid() || mTiming->s2Offtime.elapsed() >= 2 * 60000) {
                         // go to stage 2 and if return false break to go off
@@ -899,7 +907,8 @@ void Scheme::internalPumpHeatingLoopStage1()
                         }
                     }
 
-                    // avoid sending alert
+                    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
+                    // avoid sending alert either it went to stage2 and returned back or off time not yet elapsed
                     continue;
                 }
             }
@@ -923,10 +932,9 @@ void Scheme::internalPumpHeatingLoopStage1()
     // Stop countdown
     if (hasDelay) {
         emit stopSystemDelayCountdown();
-        hasDelay = false;
     }
 
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished pump heat" << stopWork;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << "finished pump heat" << stopWork;
     mActiveHeatPumpMode = AppSpecCPP:: SMUnknown;
 }
 
@@ -935,7 +943,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
     if (stopWork)
         return false;
 
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold;
     // turn on stage 2
     mRelay->heatingStage2(true);
     // 5 Sec
@@ -943,16 +951,16 @@ bool Scheme::internalPumpHeatingLoopStage2()
     sendRelays();
 
     while (!stopWork) {
-        SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << mTiming->s2hold;
+        SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << mTiming->s2hold;
 
         if (mTiming->s2hold) {
-            if (mDataProvider.data()->currentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
+            if (effectiveCurrentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
                 sendAlertIfNeeded();
             } else {
                 return false;
             }
         } else {
-            if (effectiveTemperature() - mDataProvider.data()->currentTemperature() > STAGE1_ON_RANGE) {
+            if (effectiveTemperature() - effectiveCurrentTemperature() > STAGE1_ON_RANGE) {
                 sendAlertIfNeeded();
             } else {
                 break;
@@ -964,7 +972,7 @@ bool Scheme::internalPumpHeatingLoopStage2()
 
         waitLoop(30000);
     }
-    SCHEME_LOG << mDataProvider.data()->currentTemperature() << effectiveTemperature() << "finished stage 2 pump" << stopWork;
+    SCHEME_LOG << effectiveCurrentTemperature() << effectiveTemperature() << "finished stage 2 pump" << stopWork;
 
     if (stopWork)
         return false;
@@ -1057,6 +1065,7 @@ void Scheme::internalPumpHeatingWithAuxLoopStage1()
                         break;
 
                     } else if (HPStage2 == Continue) {
+                        // no need to wait some moments because it will be done in internalPumpHeatingWithAuxLoopStage2
                         continue;
                     }
 
@@ -1066,10 +1075,12 @@ void Scheme::internalPumpHeatingWithAuxLoopStage1()
                 }
 
             } else {
-                if (auxiliaryHeatingLoopStage1()) {
+                if (effectiveTemperature() - effectiveCurrentTemperature() >= _AUXT1 &&
+                    auxiliaryHeatingLoopStage1(true)) {
                     break;
 
                 } else {
+                    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
                     continue;
                 }
             }
@@ -1115,13 +1126,17 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
             if (effectiveTemperature() - effectiveCurrentTemperature() <= _HPT1) {
                 break;
 
-            } else if ( effectiveTemperature() - effectiveCurrentTemperature() >= _AUXT1 || // _AUXT1 is T3 for sure
+            } else if (effectiveTemperature() - effectiveCurrentTemperature() >= _AUXT1 || // _AUXT1 is T3 for sure
                 mTiming->s2uptime.isValid() && mTiming->s2uptime.elapsed() >= 10 * 60000) {
                 // Go to the AUX
-                if (auxiliaryHeatingLoopStage1())
+                if (auxiliaryHeatingLoopStage1(true)) {
+                    SCHEME_LOG << "End the internalPumpHeatingWithAuxLoopStage2 loop after auxiliaryHeatingLoopStage1";
                     return Break;
-                else
+                } else {
+                    Q_ASSERT_X(true, "auxiliaryHeatingLoopStage1", " continue case is not valid.");
+                    //! //TODO we need to handle all correctly here such as updating relay parameters etc..
                     return Continue;
+                }
 
             } else {
                 waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctMode);
@@ -1129,7 +1144,7 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
             }
 
         } else {
-            mTiming->s1Offtime.restart();
+            SCHEME_LOG << "End the internalPumpHeatingWithAuxLoopStage2 loop";
             return Break;
         }
 
@@ -1159,21 +1174,22 @@ Scheme::ReturnType Scheme::internalPumpHeatingWithAuxLoopStage2()
     return Successful;
 }
 
-bool Scheme::auxiliaryHeatingLoopStage1()
+bool Scheme::auxiliaryHeatingLoopStage1(bool afterHP)
 {
-    SCHEME_LOG << "auxiliaryHeatingLoopStage " << stopWork << mDataProvider->systemSetup()->driveAux1AndETogether;
+    SCHEME_LOG << "Start: auxiliaryHeatingLoopStage1 " << stopWork << mDataProvider->systemSetup()->driveAux1AndETogether << afterHP;
 
     if (stopWork)
         return true;
 
 
     if (mDataProvider->systemSetup()->auxiliaryHeating) {
-        if (effectiveTemperature() - effectiveCurrentTemperature() < _AUXT1) {
+        if (!afterHP && effectiveTemperature() - effectiveCurrentTemperature() < _AUXT1) {
             return true;
         }
 
         // 5 secs
         emit changeBacklight(heatingColor);
+        emit auxiliaryStatusChanged(true);
 
         mTiming->s1uptime.restart();
         mTiming->s2Offtime.invalidate(); // Check: s2 off time should be high value? or invalid?
@@ -1185,9 +1201,9 @@ bool Scheme::auxiliaryHeatingLoopStage1()
         if (!mDataProvider->systemSetup()->useAuxiliaryParallelHeatPump) {
             mRelay->turnOffHeatPump();
         }
+
         mRelay->auxiliaryHeatingStage1(mDataProvider->systemSetup()->driveAux1AndETogether);
         sendRelays();
-        emit auxiliaryStatusChanged(true);
         waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
         while (!stopWork && effectiveCurrentTemperature() - effectiveTemperature() < STAGE1_OFF_RANGE) {
@@ -1196,7 +1212,7 @@ bool Scheme::auxiliaryHeatingLoopStage1()
                  (mTiming->s1uptime.isValid() && mTiming->s1uptime.elapsed() >= 10 * 60000))) {
 
                 if (auxiliaryHeatingLoopStage2())
-                    return true;
+                    break;
 
             } else {
                 sendAlertIfNeeded();
@@ -1210,6 +1226,7 @@ bool Scheme::auxiliaryHeatingLoopStage1()
     }
 
     emit auxiliaryStatusChanged(false);
+    SCHEME_LOG << "End: auxiliaryHeatingLoopStage1: " << stopWork << effectiveTemperature() << effectiveCurrentTemperature() << _AUXT2;
 
     return true;
 }
@@ -1219,26 +1236,27 @@ bool Scheme::auxiliaryHeatingLoopStage2()
     if (stopWork)
         return true;
 
-    SCHEME_LOG << "auxiliaryHeatingLoopStage2" << stopWork;
+    SCHEME_LOG << "Start: auxiliaryHeatingLoopStage2: " << mTiming->s2hold;
 
     // 5 secs
     emit changeBacklight(heatingColor);
+    mRelay->auxiliaryHeatingStage2();
+    sendRelays();
+    waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
 
 
     while (!stopWork) {
-        if (mTiming->s2hold && effectiveCurrentTemperature() - effectiveTemperature() >= STAGE1_OFF_RANGE) {
-            return true;
+        if (mTiming->s2hold) {
+            if (effectiveCurrentTemperature() - effectiveTemperature() >= STAGE1_OFF_RANGE) {
+                SCHEME_LOG << "End: auxiliaryHeatingLoopStage2: " << mTiming->s2hold;
+                return true;
+            }
 
         } else if (effectiveTemperature()- effectiveCurrentTemperature() <= _AUXT1) {
             break;
-
-        } else {
-            sendAlertIfNeeded();
         }
 
-        mRelay->auxiliaryHeatingStage2();
-        sendRelays();
-        waitLoop(RELAYS_WAIT_MS, AppSpecCPP::ctNone);
+        sendAlertIfNeeded();
     }
 
     if (!mRestarting && !stopWork) {
@@ -1252,6 +1270,8 @@ bool Scheme::auxiliaryHeatingLoopStage2()
         mTiming->s2Offtime.restart();
         sendRelays();
     }
+
+    SCHEME_LOG << "End: auxiliaryHeatingLoopStage2" << stopWork;
 
     return false;
 }
@@ -1291,11 +1311,11 @@ void Scheme::emergencyHeatingLoop()
     mActiveHeatPumpMode =  AppSpecCPP::EmergencyHeat;
     mRelay->setAllOff();
 
-
     if (sysSetup->heatStage == 1 || !sysSetup->driveAuxAsEmergency) {
+        // base on the variable it turns on different relays
         mRelay->auxiliaryHeatingStage1(sysSetup->driveAux1AndETogether);
 
-    } else if (sysSetup->heatStage >= 2 &&  sysSetup->driveAuxAsEmergency) {
+    } else { //  for sysSetup->heatStage >= 2 and sysSetup->driveAuxAsEmergency is true
         mRelay->heatingStage3();
     }
 
@@ -1313,17 +1333,23 @@ void Scheme::emergencyHeatingLoop()
 
 
     while (!stopWork && (effectiveTemperature() - effectiveCurrentTemperature() > -1 ||
-                         (sysSetup->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()))) {
+                         (mTEONTimer.isValid() && sysSetup->emergencyMinimumTime * 60 * 1000 > mTEONTimer.elapsed()))) {
+
 
         // Disable UI interactions in system mode page during manual or auto emergency mode until the minimum duration is reached.
-        auto remainigEmergencyMinimumTimeMS = sysSetup->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed();
+        if (mTEONTimer.isValid()) {
+            auto remainigEmergencyMinimumTimeMS = sysSetup->emergencyMinimumTime * 60 * 1000 - mTEONTimer.elapsed();
+            if (remainigEmergencyMinimumTimeMS > 0) {
+                emit manualEmergencyModeUnblockedAfter(remainigEmergencyMinimumTimeMS);
 
-        // -5: To ensure that the signal with a value of zero is transmitted sent.
-        if (remainigEmergencyMinimumTimeMS > -1 * RELAYS_WAIT_MS * 5)
-            emit manualEmergencyModeUnblockedAfter(remainigEmergencyMinimumTimeMS > 0 ? remainigEmergencyMinimumTimeMS : 0) ;
+            } else {
+                emit manualEmergencyModeUnblockedAfter(0);
+                mTEONTimer.invalidate();
+            }
+        }
 
         if (effectiveTemperature() - effectiveCurrentTemperature() > -1) {
-            sendAlertIfNeeded(true);
+            sendAlertIfNeeded(ATEmergency);
         }
 
         // we need break condition here!
@@ -1348,23 +1374,25 @@ void Scheme::emergencyHeatingLoop()
     mActiveHeatPumpMode = AppSpecCPP:: SMUnknown;
 }
 
-void Scheme::sendAlertIfNeeded(bool checkEmergencyAlert)
+void Scheme::sendAlertIfNeeded(AlertType alertType)
 {
-    if (checkEmergencyAlert) {
-        // Generate alert for emergency mode
-        if (!mTiming->alerts && mTEONTimer.isValid() && mTEONTimer.elapsed() >= 30 * 60000) {
-            emit alert();
-            mTiming->alerts = true;
-        }
+    if (mTiming->alerts)
+        return;
 
-    } else {
-        // Generate Alert
-        if (!mTiming->alerts
-            && (mTiming->uptime.isValid() && mTiming->uptime.elapsed() >= 120 * 60000)) {
-            SCHEME_LOG;
-            emit alert();
-            mTiming->alerts = true;
-        }
+    switch (alertType) {
+    case ATEmergency:
+        mTiming->alerts = mTEONTimer.isValid() && mTEONTimer.elapsed() >= 30 * 60000;
+        break;
+    case ATNone:
+        mTiming->alerts = mTiming->uptime.isValid() && mTiming->uptime.elapsed() >= 120 * 60000;
+        break;
+    default:
+        break;
+    }
+
+    if (mTiming->alerts) {
+        SCHEME_LOG << "Alert type: " << alertType;
+        emit alert();
     }
 }
 
@@ -1585,7 +1613,7 @@ AppSpecCPP::FanMode Scheme::fanMode() const {
 
 void Scheme::runSystemDelay(AppSpecCPP::SystemMode mode)
 {
-    auto sysDelay = mDataProvider.data()->systemSetup()->systemRunDelay * 60000;
+    auto sysDelay = mDataProvider->systemSetup()->systemRunDelay * 60000;
 
     emit startSystemDelayCountdown(mode, sysDelay);
     waitLoop(sysDelay, AppSpecCPP::ctMode);
@@ -1710,9 +1738,9 @@ void Scheme::setSystemSetup()
         SCHEME_LOG << "systemRunDelayChanged: " << sys->systemRunDelay << sys->systemType;
     });
 
-    connect(sys, &SystemSetup::dualFuelThreshodChanged, this, [=] {
-        SCHEME_LOG << "dualFuelThreshodChanged" << mActiveSysTypeHeating << sys->systemMode;
-        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning()) << "dualFuelThreshodChanged" << mDataProvider->effectiveSystemMode();
+    connect(sys, &SystemSetup::dualFuelThresholdChanged, this, [=] {
+        SCHEME_LOG << "dualFuelThresholdChanged" << mActiveSysTypeHeating << sys->systemMode;
+        LOG_CHECK_SCHEME(mDataProvider->isPerfTestRunning()) << "dualFuelThresholdChanged" << mDataProvider->effectiveSystemMode();
         // restart scheme if needed
         if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating && sys->isAUXAuto) {
             checkForRestart();

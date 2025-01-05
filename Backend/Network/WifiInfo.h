@@ -47,6 +47,8 @@ public:
     void setBssid(const QString& bssid);
     void setSecurity(const QString& setcurity);
 
+    QString wifiInformation() const;
+
 signals:
     void        connectedChanged();
     void        isSavedChanged();

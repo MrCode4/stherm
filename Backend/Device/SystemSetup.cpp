@@ -1,5 +1,7 @@
 #include "SystemSetup.h"
 
+#include <QTimer>
+
 SystemSetup::SystemSetup(QSObjectCpp *parent)
     : QSObjectCpp{parent}
 {
@@ -20,7 +22,10 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
 
     _mIsSystemShutoff = false;
 
+    // TODO: remove
     dualFuelThreshod = 1.666667; // 35 Fahrenheit
+
+    dualFuelThreshold = 1.666667; // 35 Fahrenheit
     isAUXAuto = true;
     dualFuelManualHeating = AppSpecCPP::DFMOff;
     dualFuelHeatingModeDefault = AppSpecCPP::DFMHeatPump;
@@ -32,4 +37,18 @@ SystemSetup::SystemSetup(QSObjectCpp *parent)
     useAuxiliaryParallelHeatPump = true;
     driveAux1AndETogether = true;
     driveAuxAsEmergency = true;
+    runFanWithAuxiliary = true;
+
+    // TODO: remove
+    // To call after model loaded completely.
+    QTimer::singleShot(50, this, [this](){
+        dualFuelThreshold = dualFuelThreshod;
+        _connectDualFuelThreshodChanged();
+    });
+}
+
+void SystemSetup::_connectDualFuelThreshodChanged() {
+    connect(this, &SystemSetup::dualFuelThresholdChanged, this, [this]() {
+        dualFuelThreshod = dualFuelThreshold;
+    });
 }

@@ -18,35 +18,22 @@ public:
 
     static Relay* instance();
 
-    //! OBSOLETE
-    int getCoolingMaxStage();
-    //! OBSOLETE
-    int getHeatingMaxStage();
-
     /**
      * Start or restart timer for main state and stage
      */
     void startTempTimer(AppSpecCPP::SystemMode current_state);
 
-    //! OBSOLETE
-    void updateStates();
     void setAllOff();
 
     //! All humidity wiring set to off
     void setAllHumidityWiringsOff();
 
-    //! OBSOLETE
-    bool heatingStage0();
     bool heatingStage1(bool heatpump = false);
     bool heatingStage3(bool heatpump = false);
     bool heatingStage2(bool heatpump = false);
 
-    //! OBSOLETE
-    bool coolingStage0();
     bool coolingStage1();
     bool coolingStage2();
-    //! OBSOLETE
-    bool coolingStage3();
 
     bool emergencyHeating1();
     bool emergencyHeating2();

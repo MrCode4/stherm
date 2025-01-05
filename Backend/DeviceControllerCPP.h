@@ -166,6 +166,9 @@ public:
     //! Forget device and system settings
     Q_INVOKABLE void forgetDevice();
 
+    //! Reset Device to Factory setting
+    Q_INVOKABLE void resetToFactorySetting();
+
     //! TODO
     //! Maybe call from server
     Q_INVOKABLE void setSampleRate(const int sampleRate);
@@ -254,7 +257,7 @@ Q_SIGNALS:
     void temperatureSensorStatus(bool status = true);
     void humiditySensorStatus(bool status = true);
 
-    void effectiveTemperatureChanged(double effectiveTemperatureC);
+    void monitoringTemperatureUpdated(double monitoringTempratureC);
 
     //! To block mode change in UI
     void manualEmergencyModeUnblockedAfter(int secs);

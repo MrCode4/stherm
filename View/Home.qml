@@ -321,18 +321,6 @@ Control {
         onOpenSystemModePage: uiSession.openSystemModePage();
     }
 
-    //! Open a page from home
-    Connections {
-        target: uiSession.popUps
-
-        function onOpenPageFromHome(item: string) {
-            if (mainStackView)
-                mainStackView.push(item, {
-                                       "uiSession": Qt.binding(() => uiSession)
-                                   });
-        }
-    }
-
     Connections {
         target: deviceController.deviceControllerCPP
 
@@ -436,6 +424,13 @@ Control {
                                        "openFromNoWiFiInstallation": openFromNoWiFiInstallation
                                    });
             }
+        }
+
+        function onOpenPageFromHome(item: string) {
+            if (mainStackView)
+                mainStackView.push(item, {
+                                       "uiSession": Qt.binding(() => uiSession)
+                                   });
         }
     }
 

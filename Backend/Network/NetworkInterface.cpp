@@ -10,6 +10,16 @@
 #include <QRegularExpression>
 #include <QNetworkReply>
 
+#include <QLoggingCategory>
+#include "LogHelper.h"
+
+Q_LOGGING_CATEGORY(NetworkInterfaceLogCat, "NetworkInterfaceLog")
+#define NI_LOG TRACE_CATEGORY(NetworkInterfaceLogCat)
+
+bool compareWifiStrength(WifiInfo *a, WifiInfo *b) {
+    return a->strength() > b->strength();
+}
+
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
     , mNmcliInterface { new NmcliInterface(this) }
@@ -20,13 +30,15 @@ NetworkInterface::NetworkInterface(QObject *parent)
     , cCheckInternetAccessUrl { QUrl(qEnvironmentVariable("NMCLI_INTERNET_ACCESS_URL",
                                                           "http://google.com")) }
     , mForgettingWifis { false }
+    , mIsWifiDisconnectedManually { false }
+    , mIsBusyAutoConnection { false }
 {
     connect(mNmcliInterface, &NmcliInterface::deviceIsOnChanged, this,
             &NetworkInterface::deviceIsOnChanged);
     connect(mNmcliInterface, &NmcliInterface::errorOccured, this,
             &NetworkInterface::onErrorOccured);
-    connect(mNmcliInterface, &NmcliInterface::busyRefreshingChanged, this,
-            &NetworkInterface::busyRefreshingChanged);
+    connect(mNmcliInterface, &NmcliInterface::busyRefreshingChanged,
+            this, &NetworkInterface::busyRefreshingChanged);
     connect(mNmcliInterface, &NmcliInterface::busyChanged, this,
             &NetworkInterface::busyChanged);
     connect(mNmcliInterface, &NmcliInterface::connectedWifiChanged, this,
@@ -39,6 +51,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     mCheckInternetAccessTmr.setInterval(cCheckInternetAccessInterval);
     connect(&mCheckInternetAccessTmr, &QTimer::timeout, this, &NetworkInterface::checkHasInternet);
     connect(this, &NetworkInterface::connectedWifiChanged, this, [&]() {
+
         mSetNoInternetTimer.stop();
 
         // clear the cache to restore internet access faster
@@ -46,12 +59,17 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
         auto connectedWifiInfo = connectedWifi();
         if (connectedWifiInfo) {
-            if (!mCheckInternetAccessTmr.isActive()) {
-                mCheckInternetAccessTmr.start();
-            }
+            // Set to false to start auto connection if needed.
+            setIsWifiDisconnectedManually(false);
 
+            mCheckInternetAccessTmr.start();
             checkHasInternet();
+
         } else {
+            printWifisInformation("Wi-Fi disconnected.");
+            if (!mIsWifiDisconnectedManually)
+                mAutoConnectToWifiTimer.start();
+
             if (mCheckInternetAccessTmr.isActive()) {
                 mCheckInternetAccessTmr.stop();
             }
@@ -63,7 +81,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     mSetNoInternetTimer.setInterval(cCheckInternetAccessInterval * 2);
     mSetNoInternetTimer.setSingleShot(true);
     connect(&mSetNoInternetTimer, &QTimer::timeout, this, [this](){
-        TRACE << "no internet found during last" << cCheckInternetAccessInterval * 2 / 1000 << "seconds."
+        NI_LOG << "no internet found during last" << cCheckInternetAccessInterval * 2 / 1000 << "seconds."
               << "settings no internet";
         setHasInternet(false);
     });
@@ -76,6 +94,81 @@ NetworkInterface::NetworkInterface(QObject *parent)
         if (mForgettingWifis && !busy())
             processForgettingWiFis();
     });
+
+    connect(mNmcliInterface, &NmcliInterface::autoConnectSavedInRangeWifiFinished, this, [this](WifiInfo *wifi) {
+        NI_LOG << "Auto connection for " << wifi->wifiInformation();
+        tryConnectToSavedInrangeWifi(wifi);
+    });
+
+    mAutoConnectToWifiTimer.setInterval(2 * 60 * 1000);
+    mAutoConnectToWifiTimer.setSingleShot(false);
+    connect(&mAutoConnectToWifiTimer, &QTimer::timeout, this, [this]() {
+        if (connectedWifi()) {
+            mAutoConnectToWifiTimer.stop();
+            return;
+        }
+
+        printWifisInformation("Auto connect starting.");
+
+        if (mIsWifiDisconnectedManually) {
+            mAutoConnectToWifiTimer.stop();
+            return;
+        }
+
+        // Restart the timer if the mNmcliInterface is busy
+        if (mNmcliInterface->busy() || mIsBusyAutoConnection) {
+            mAutoConnectToWifiTimer.start();
+            return;
+        }
+
+        NI_LOG << "Auto connection started.";
+
+        // Update the auto connection wifi list:
+        std::copy_if(mWifiInfos.begin(), mWifiInfos.end(),
+                     std::back_inserter(mAutoConnectSavedInRangeWifis), [&](WifiInfo* obj) {
+                         return obj->ssid().isEmpty() == false && obj->isSaved() && obj->strength() > -1;
+                     });
+
+        if (mAutoConnectSavedInRangeWifis.empty()) {
+            mAutoConnectToWifiTimer.stop();
+
+        } else {
+            std::sort(mAutoConnectSavedInRangeWifis.begin(), mAutoConnectSavedInRangeWifis.end(), compareWifiStrength);
+            tryConnectToSavedInrangeWifi();
+        }
+
+    });
+    mAutoConnectToWifiTimer.start();
+
+    QTimer::singleShot(10 * 60 * 1000, this, [this]() {
+        printWifisInformation("10 minutes passed.");
+    });
+}
+
+
+void NetworkInterface::tryConnectToSavedInrangeWifi(WifiInfo *triedWifi) {
+    if (connectedWifi()) {
+        mAutoConnectToWifiTimer.stop();
+        mIsBusyAutoConnection = false;
+        return;
+    }
+
+    if (triedWifi) {
+        mAutoConnectSavedInRangeWifis.removeOne(triedWifi);
+    }
+
+    if (mAutoConnectSavedInRangeWifis.empty()) {
+        NI_LOG << "No saved inrange wifis for auto connection.";
+        mIsBusyAutoConnection = false;
+
+    } else {
+        mIsBusyAutoConnection = true;
+        auto wifi = mAutoConnectSavedInRangeWifis.front();
+        if (!mNmcliInterface->autoConnectSavedWifiAsync(wifi)) {
+            mAutoConnectSavedInRangeWifis.pop_front();
+            tryConnectToSavedInrangeWifi();
+        }
+    }
 }
 
 NetworkInterface::WifisQmlList NetworkInterface::wifis()
@@ -120,22 +213,28 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
         return;
     }
 
+    // Set to false to start auto connection if needed.
+    setIsWifiDisconnectedManually(false);
+
     mRequestedToConnectedWifi = wifiInfo;
     mNmcliInterface->connectToWifi(wifiInfo, password);
 }
 
 void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 {
+
     if (!wifiInfo || !wifiInfo->connected() || mNmcliInterface->busy()) {
         return;
     }
-    
+
+    setIsWifiDisconnectedManually(true);
     mNmcliInterface->disconnectFromWifi(wifiInfo);
 }
 
 void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
 {
     if (!wifiInfo || !mNmcliInterface->isDeviceOn()) {
+        NI_LOG << "Worst case scenario: Error in forgetWifi" << wifiInfo << mNmcliInterface->isDeviceOn();
         return;
     }
 
@@ -143,6 +242,8 @@ void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
 }
 
 void NetworkInterface::forgetAllWifis() {
+    setIsWifiDisconnectedManually(true);
+
     processForgettingWiFis();
 }
 
@@ -151,9 +252,8 @@ void NetworkInterface::processForgettingWiFis() {
 
     auto connectedWiFi = connectedWifi();
     if (connectedWiFi) {
-        TRACE << "Disconnect from " << connectedWiFi->ssid();
+        NI_LOG << "Disconnect from " << connectedWiFi->ssid();
         disconnectWifi(connectedWiFi);
-
     } else {
         QList <WifiInfo *> forgettingSavedWifis;
         std::copy_if(mWifiInfos.begin(), mWifiInfos.end(),
@@ -165,10 +265,16 @@ void NetworkInterface::processForgettingWiFis() {
 
         if (!forgettingSavedWifis.empty()) {
             auto forgetWF = forgettingSavedWifis.first();
-            TRACE << "Forget Wi-Fi with ssid " << forgetWF->ssid();
+            NI_LOG << "Forget Wi-Fi with ssid " << forgetWF->ssid();
             forgetWifi(forgetWF);
+            if (!busy()) {
+                NI_LOG << "Worst case scenario: isBusy forgetting is false.";
+            }
         }
+    }
 
+    if (mForgettingWifis == false) {
+        emit allWiFiNetworksForgotten();
     }
 }
 
@@ -181,8 +287,35 @@ void NetworkInterface::setForgettingWifis(const bool &forgettingWifis) {
 
 }
 
+void NetworkInterface::setIsWifiDisconnectedManually(const bool &isWifiDisconnectedManually)
+{
+    if (isWifiDisconnectedManually) {
+         mAutoConnectToWifiTimer.stop();
+
+    } else {
+        // Start the auto connection for try to connect when the manual connection failed.
+        mAutoConnectToWifiTimer.start();
+    }
+
+    if (mIsWifiDisconnectedManually == isWifiDisconnectedManually) {
+        return;
+    }
+
+    mIsWifiDisconnectedManually = isWifiDisconnectedManually;
+    emit isWifiDisconnectedManuallyChanged();
+}
+
 bool NetworkInterface::forgettingAllWifis() {
     return mForgettingWifis;
+}
+
+void NetworkInterface::printWifisInformation(const QString &due)
+{
+    NI_LOG << "printWifisInformation started due to: "  << due;
+
+    foreach (auto wifi, mWifiInfos) {
+        NI_LOG << wifi->wifiInformation();
+    }
 }
 
 bool NetworkInterface::isWifiSaved(WifiInfo* wifiInfo)
@@ -263,10 +396,14 @@ bool NetworkInterface::checkWPA3Support()
 void NetworkInterface::checkHasInternet()
 {
     auto connectedWifiInfo = connectedWifi();
+    NI_LOG << "Checking the internet connectivity, " << mNamIsRunning;
+
     if (!connectedWifiInfo) {
         setHasInternet(false);
     }
     else if (!mNamIsRunning) {
+        NI_LOG << "connectedWifiInfo: " << connectedWifiInfo->wifiInformation();
+
         mNamIsRunning = true;
         QNetworkRequest request(cCheckInternetAccessUrl);
         request.setTransferTimeout(8000);
@@ -281,7 +418,7 @@ void NetworkInterface::checkHasInternet()
                 mSetNoInternetTimer.stop();
                 setHasInternet(true);
             } else {
-                TRACE << "check has internet has error" << mHasInternet << mSetNoInternetTimer.isActive() << reply->error();
+                NI_LOG << "check has internet has error" << mHasInternet << mSetNoInternetTimer.isActive() << reply->error();
                 // sending a sooner request when we previously had internet but we get failed
                 if (mHasInternet) {
                     QTimer::singleShot(10000, this, &NetworkInterface::checkHasInternet);
@@ -294,6 +431,8 @@ void NetworkInterface::checkHasInternet()
 
             reply->deleteLater();
         });
+    } else {
+        NI_LOG << "connectedWifiInfo: " << connectedWifiInfo->wifiInformation();
     }
 }
 
@@ -311,7 +450,7 @@ void NetworkInterface::onErrorOccured(int error)
 {
     switch (error) {
     default:
-        qDebug() << Q_FUNC_INFO << __LINE__ << " nmcli Error: " << error;
+        NI_LOG << error;
         break;
     }
 }

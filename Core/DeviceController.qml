@@ -82,10 +82,67 @@ I_DeviceController {
 
     property bool isRunningAuxiliaryHeating: false
 
+    //! Just for initialize, will be brocken
+    //! true: The system can automatically update without requiring user confirmation.
+    property bool canUpdateSystemSetup: system.isForgottenDeviceStarted()
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
         property string syncReturnedZip: ""
+    }
+
+    //! Active the Network Connection Watchdog when device has not internet for 1 hour.
+    property Timer networkWatchdogTimer: Timer {
+        repeat: false
+        running: NetworkInterface.connectedWifi && !NetworkInterface.hasInternet
+        interval: 1 * 60 * 60 * 1000
+
+        onTriggered: {
+            //  Check the isValidNetworkRequestRestart to check in direct calls (triggered).
+            if (system.isValidNetworkRequestRestart()) {
+                // to prevent another restart call after restarting once unless the condition changed again
+                system.saveNetworkRequestRestart();
+                // Restart the app or device
+                uiSession.popUps.showCountDownPopUp(
+                            qsTr("  Restart Device  "),
+                            qsTr("Restarting Device due to network issue."),
+                            true,
+                            function () {
+                                if (system) {
+                                    system.rebootDevice();
+                                }
+                            });
+            }
+        }
+    }
+
+    property Timer networkWatchdogLoggerTimer: Timer {
+        repeat: true
+        running: NetworkInterface.connectedWifi && !NetworkInterface.hasInternet
+        interval: 15 * 60 * 1000
+
+        onTriggered: {
+            // Save the network log
+            system.saveNetworkLogs();
+
+            sendNetworkWatchdogLogTimer.canRetry = true;
+        }
+    }
+
+    property Timer sendNetworkWatchdogLogTimer: Timer {
+        repeat: true
+        running: canRetry && NetworkInterface.hasInternet
+        interval: 20000
+
+        property bool canRetry: true
+
+        onTriggered: {
+            if (!system.sendNetworkLogs()) {
+                canRetry = false;
+            }
+            console.log("sending network logs finished: ", canRetry)
+        }
     }
 
     //! TODO: This will be used to retry the service titan fetch operation in case of errors
@@ -270,6 +327,9 @@ I_DeviceController {
             root.device.contactContractor.iconSource    = iconUrl === "" ? getFromBrandName(brandName) : (iconUrl + "?version=" + version)
             root.device.contactContractor.qrURL         = url
             //            root.device.contactContractor.technicianURL = techUrl
+
+            //! To load the contractor information as soon as the app starts, save it in the model. This avoids waiting for the ContractorInfoUpdated signal.
+            saveSettings();
         }
 
         //! Logics for check SN:
@@ -305,8 +365,8 @@ I_DeviceController {
             dfhSystemType = activeSystemType;
         }
 
-        function onEffectiveTemperatureChanged(effectiveTemperatureC: real) {
-            ProtoDataManager.setSetTemperature(effectiveTemperatureC);
+        function onMonitoringTemperatureUpdated(monitoringTempratureC: real) {
+            ProtoDataManager.setSetTemperature(monitoringTempratureC);
         }
 
         function onFanWorkChanged(fanState: bool) {
@@ -438,6 +498,10 @@ I_DeviceController {
         function onPushSuccess() {
             console.log("DeviceController.qml: onPushSuccess", stageMode, editMode, lockMode)
 
+            // We don't need to check the edit mode, because we push all the settings in the post request.
+            canUpdateSystemSetup = false;
+            system.setIsForgottenDevice(false);
+
             if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
                 stageMode = AppSpec.EMAutoMode;
             } else {
@@ -490,12 +554,6 @@ I_DeviceController {
             if (!checkedSWUpdate) {
                 deviceControllerCPP.system.fetchUpdateInformation(true);
             }
-        }
-
-        function onContractorInfoReady(getDataFromServerSuccessfully : bool) {
-            fetchContractorInfoTimer._retryFetchContractorInfoTimerInterval = getDataFromServerSuccessfully ? fetchContractorInfoTimer._defaultInterval : 30000;
-
-            fetchContractorInfoTimer.restart();
         }
     }
 
@@ -635,6 +693,18 @@ I_DeviceController {
                 console.error('Pushing app lock state failed, retry internal is ', lockStatePusher.interval);
             }
         }
+
+        function onWarrantyReplacementFinished(success: bool, error: string, needToRetry: bool) {
+            if (success) {
+                root.postWarrantyReplacementFinsihed();
+            }
+        }
+
+        function onContractorInfoReady(getDataFromServerSuccessfully : bool) {
+            fetchContractorInfoTimer._retryFetchContractorInfoTimerInterval = getDataFromServerSuccessfully ? fetchContractorInfoTimer._defaultInterval : 30000;
+
+            fetchContractorInfoTimer.restart();
+        }
     }
 
     property Timer initialSetupDataPushTimer: Timer {
@@ -715,6 +785,7 @@ I_DeviceController {
                 console.warn("Something odd hapenned!, restoring the flow.", isPushing)
                 isPushing = false;
             }
+
         }
     }
 
@@ -871,6 +942,12 @@ I_DeviceController {
         //! we set to false elsewhere! i.e., in system
         if (initialSetup)
             deviceControllerCPP.system.setIsInitialSetup(true);
+    }
+
+    function postWarrantyReplacementFinsihed() {
+        console.log("postWarrantyReplacementFinsihed called to get system setup from server.");
+        canUpdateSystemSetup = true;
+        sync.resetFetchTime();
     }
 
     function updateEditMode(mode : int) {
@@ -1254,7 +1331,7 @@ I_DeviceController {
                 "heatPumpOBState": device.systemSetup.heatPumpOBState,
                 "heatPumpEmergency": device.systemSetup.heatPumpEmergency,
                 "systemRunDelay": device.systemSetup.systemRunDelay,
-                "dualFuelThreshold": device.systemSetup.dualFuelThreshod,
+                "dualFuelThreshold": device.systemSetup.dualFuelThreshold,
                 "isAUXAuto": device.systemSetup.isAUXAuto,
                 "dualFuelManualHeating": device.systemSetup.dualFuelManualHeating,
                 "dualFuelHeatingModeDefault": device.systemSetup.dualFuelHeatingModeDefault,
@@ -1263,6 +1340,7 @@ I_DeviceController {
                 "useAuxiliaryParallelHeatPump": device.systemSetup.useAuxiliaryParallelHeatPump,
                 "driveAux1AndETogether": device.systemSetup.driveAux1AndETogether,
                 "driveAuxAsEmergency": device.systemSetup.driveAuxAsEmergency,
+                "runFanWithAuxiliary": device.systemSetup.runFanWithAuxiliary,
                 "systemAccessories": {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
@@ -1274,6 +1352,10 @@ I_DeviceController {
             "firmware": {
                 "firmware-version": Application.version
             }
+        }
+
+        if (root.currentSchedule) {
+            send_data.running_schedule_id = root.currentSchedule.id;
         }
 
         device._sensors.forEach(sensor =>
@@ -1371,7 +1453,8 @@ I_DeviceController {
                                emergencyMinimumTime: int, auxiliaryStages: int,
                                useAuxiliaryParallelHeatPump: bool,
                                driveAux1AndETogether: bool,
-                               driveAuxAsEmergency: bool) {
+                               driveAuxAsEmergency: bool,
+                               runFanWithAuxiliary = true) {
         device.systemSetup.auxiliaryHeating = auxiliaryHeating;
 
         // coolStage controls the Y wires.
@@ -1383,6 +1466,7 @@ I_DeviceController {
         device.systemSetup.useAuxiliaryParallelHeatPump = useAuxiliaryParallelHeatPump;
         device.systemSetup.driveAux1AndETogether = driveAux1AndETogether;
         device.systemSetup.driveAuxAsEmergency = driveAuxAsEmergency;
+        device.systemSetup.runFanWithAuxiliary = runFanWithAuxiliary;
 
         setSystemTypeTo(AppSpecCPP.HeatPump);
     }
@@ -1394,7 +1478,7 @@ I_DeviceController {
     }
 
     function setSystemDualFuelHeating(heatPumpStage: int, stage: int, obState: int,
-                                      dualFuelThreshod: real, isAUXAuto: bool, dualFuelHeatingModeDefault: int) {
+                                      dualFuelThreshold: real, isAUXAuto: bool, dualFuelHeatingModeDefault: int) {
         device.systemSetup.isAUXAuto = isAUXAuto;
         device.systemSetup.dualFuelHeatingModeDefault = dualFuelHeatingModeDefault;
 
@@ -1404,7 +1488,7 @@ I_DeviceController {
 
         device.systemSetup.heatPumpOBState = obState;
 
-        device.systemSetup.dualFuelThreshod = dualFuelThreshod;
+        device.systemSetup.dualFuelThreshold = dualFuelThreshold;
         setSystemTypeTo(AppSpec.DualFuelHeating);
     }
 
@@ -1455,8 +1539,67 @@ I_DeviceController {
 
     }
 
-    function setSystemSetupServer(settings: var) {
 
+    function setSystemSetupServer(settings: var) {
+        if (editModeEnabled(AppSpec.EMSystemSetup)) {
+            console.log("The system setup is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        checkSystemSetupServer(settings);
+    }
+
+    //! Checks system setup properties comes from the server for existing changes compared to a device
+    function checkSystemSetupServer(settings: var) {
+        if (canUpdateSystemSetup) {
+            applySystemSetupServer(settings);
+
+            // The applySystemSetupServer function should disregard settings if the edit mode is EMSystemSetup.
+            // This is because the server settings are exclusively modified when in EMSystemSetup mode,
+            // so system setup update is unnecessary.
+            canUpdateSystemSetup = false;
+
+            system.setIsForgottenDevice(false);
+
+            console.log("System setup applied due to forget device:", system.isForgottenDeviceStarted(), " or warranty replacement flow.")
+
+            return;
+        }
+
+        if (true) {
+            var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
+            // TODO: update the hasChanges after merge.
+            var hasChanges = AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type ||
+                    device.systemSetup.heatPumpEmergency != settings.heatPumpEmergency ||
+                    device.systemSetup.heatStage != settings.heatStage ||
+                    device.systemSetup.coolStage != settings.coolStage ||
+                    device.systemSetup.heatPumpOBState != settings.heatPumpOBState ||
+                    device.systemSetup.systemRunDelay != settings.systemRunDelay ||
+                    device.systemSetup.systemAccessories.accessoriesType != settings.systemAccessories.mode ||
+                    device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType ||
+
+                    device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold ||
+                    device.systemSetup.isAUXAuto != settings.isAUXAuto ||
+                    device.systemSetup.dualFuelHeatingModeDefault != settings.dualFuelHeatingModeDefault ||
+
+                    (settings.hasOwnProperty("emergencyMinimumTime")         && device.systemSetup.emergencyMinimumTime != settings.emergencyMinimumTime) ||
+                    (settings.hasOwnProperty("useAuxiliaryParallelHeatPump") && device.systemSetup.useAuxiliaryParallelHeatPump != settings.useAuxiliaryParallelHeatPump) ||
+                    (settings.hasOwnProperty("driveAux1AndETogether")        && device.systemSetup.driveAux1AndETogether != settings.driveAux1AndETogether) ||
+                    (settings.hasOwnProperty("driveAuxAsEmergency")          && device.systemSetup.driveAuxAsEmergency != settings.driveAuxAsEmergency) ||
+                    (settings.hasOwnProperty("auxiliaryHeating")             && device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating) ||
+                    (settings.hasOwnProperty("runFanWithAuxiliary")          && device.systemSetup.runFanWithAuxiliary != settings.runFanWithAuxiliary);
+
+            if (hasChanges) {
+                uiSession.popUps.showSystemSetupUpdateConfirmation(settings);
+            }
+
+        } else {
+            updateEditMode(AppSpec.EMSystemSetup);
+            saveSettings();
+        }
+    }
+
+    function applySystemSetupServer(settings: var) {
         if (editModeEnabled(AppSpec.EMSystemSetup)) {
             console.log("The system setup is being edited and cannot be updated by the server.")
             return;
@@ -1480,18 +1623,26 @@ I_DeviceController {
                               settings.heatStage,
                               settings.useAuxiliaryParallelHeatPump ?? device.systemSetup.useAuxiliaryParallelHeatPump,
                               settings.driveAux1AndETogether ?? device.systemSetup.driveAux1AndETogether,
-                              settings.driveAuxAsEmergency ?? device.systemSetup.driveAuxAsEmergency)
+                              settings.driveAuxAsEmergency ?? device.systemSetup.driveAuxAsEmergency,
+                              settings.runFanWithAuxiliary ?? device.systemSetup.runFanWithAuxiliary)
 
         } else if(settings.type === "cooling")
             setSystemCoolingOnly(settings.coolStage)
         else if(settings.type === AppSpec.systemTypeString(AppSpec.DualFuelHeating))
             setSystemDualFuelHeating(settings.coolStage, settings.heatStage,
                                      settings.heatPumpOBState,
-                                     settings.dualFuelThreshold ?? device.systemSetup.dualFuelThreshod,
+                                     settings.dualFuelThreshold ?? device.systemSetup.dualFuelThreshold,
                                      settings.isAUXAuto ?? device.systemSetup.isAUXAuto,
                                      settings.dualFuelHeatingModeDefault ?? device.systemSetup.dualFuelHeatingModeDefault);
         else
-            console.warn("System type unknown", settings.type)
+            console.warn("System type unknown", settings.type);
+
+        //! The settings on the server might be different from the settings on the device.
+        //! This could be because the device sent old settings when other changes were happening (e.x. sensor data).
+        //! So we should push the new applyed settings.
+        //! Pushed from SystemSetupPage (onDestruction)
+        // updateEditMode(AppSpec.EMSystemSetup);
+        // saveSettings();
     }
 
     //! If the clamping logic has changed, review the corresponding functionality in the
@@ -1668,6 +1819,12 @@ I_DeviceController {
 
         root.currentSchedule = schedule;
         deviceControllerCPP.setActivatedSchedule(schedule);
+
+        // Update the server when currentSchedule is null or changed to a valid schedule with valid id.
+        if (!root.currentSchedule || root.currentSchedule.id > -1)
+            updateEditMode(AppSpec.EMSchedule);
+        else
+            console.log("current schedule id is invalid.", root.currentSchedule.name);
     }
 
     function getFromBrandName(brandName) {
@@ -1737,12 +1894,27 @@ I_DeviceController {
         }
     }
 
-    function forgetDevice() {
-        // Remove the save files from the directory.
-        console.log("forgetDevice: remove file in ", uiSession.recoveryConfigFilePath, ": ", QSFileIO.removeFile(uiSession.recoveryConfigFilePath));
-        console.log("forgetDevice: remove file in ", uiSession.configFilePath, ": ", QSFileIO.removeFile(uiSession.configFilePath));
+    function removeSaveFiles() {
+        let resultRemoveConfigFile = QSFileIO.removeFile(uiSession.configFilePath)
+        let resultRemoveRecoveryConfigFile = QSFileIO.removeFile(uiSession.recoveryConfigFilePath)
 
+        console.log("removeSaveFiles: remove file in ", uiSession.configFilePath, ": ", resultRemoveConfigFile);
+        console.log("removeSaveFiles: remove file in ", uiSession.recoveryConfigFilePath, ": ", resultRemoveRecoveryConfigFile);
+    }
+
+    function forgetDevice() {
+        removeSaveFiles();
         deviceControllerCPP.forgetDevice();
+    }
+
+    function resetDeviceToFactory() {
+        console.log("resetDeviceToFactory: start reset factory process");
+        removeSaveFiles();
+        deviceControllerCPP.resetToFactorySetting();
+
+        if (system) {
+            system.rebootDevice();
+        }
     }
 
     //! Lock/unlock the application

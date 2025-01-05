@@ -26,6 +26,7 @@ I_PopUp {
     rightPadding: 5
 
     closePolicy: Popup.NoAutoClose
+    keepOpen: true
 
     /* Children
      * ****************************************************************************************/

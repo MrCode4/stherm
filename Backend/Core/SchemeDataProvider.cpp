@@ -79,9 +79,11 @@ AppSpecCPP::SystemMode SchemeDataProvider::effectiveSystemMode() const
 double SchemeDataProvider::effectiveTemperature() const
 {
     double effTemperature = setPointTemperature();
+    double monitoringTemprature = effTemperature;
 
     if (isPerfTestRunning()) {
         effTemperature = perfTestSystemMode() == AppSpecCPP::Heating ? 90 : 40;
+        monitoringTemprature = effTemperature;
 
     } else if (isVacationEffective()) {
         //! Vacation properites (Fahrenheit)
@@ -95,12 +97,15 @@ double SchemeDataProvider::effectiveTemperature() const
             effTemperature = maximumTemperature;
         }
 
+         monitoringTemprature = (minimumTemperature + maximumTemperature) / 2;
+
     } else if (schedule() || effectiveSystemMode() == AppSpecCPP::SystemMode::Auto) {
 
         // The mode can be heating or cooling
         // In off mode schedule() is null
         if (schedule() && effectiveSystemMode() != AppSpecCPP::SystemMode::Auto) {
             effTemperature = UtilityHelper::toFahrenheit(schedule()->effectiveTemperature(effectiveSystemMode()));
+            monitoringTemprature = effTemperature;
 
         } else {
 
@@ -113,6 +118,8 @@ double SchemeDataProvider::effectiveTemperature() const
                 minReqTemp = UtilityHelper::toFahrenheit(schedule()->minimumTemperature);
                 maxReqTemp = UtilityHelper::toFahrenheit(schedule()->maximumTemperature);
             }
+
+            monitoringTemprature = (minReqTemp + maxReqTemp) / 2;
 
             if ((minReqTemp - currentTemperature()) > 0.001) {
                 effTemperature = minReqTemp;
@@ -135,7 +142,7 @@ double SchemeDataProvider::effectiveTemperature() const
         }
     }
 
-    emit effectiveTemperatureChanged(UtilityHelper::toCelsius(effTemperature));
+    emit monitoringTemperatureUpdated(UtilityHelper::toCelsius(monitoringTemprature));
 
     return effTemperature;
 }
@@ -201,9 +208,9 @@ double SchemeDataProvider::outdoorTemperatureF() const
     return UtilityHelper::toFahrenheit(mOutdoorTemperature);
 }
 
-double SchemeDataProvider::dualFuelThreshodF() const
+double SchemeDataProvider::dualFuelThresholdF() const
 {
-    return UtilityHelper::toFahrenheit(mSystemSetup->dualFuelThreshod);
+    return UtilityHelper::toFahrenheit(mSystemSetup->dualFuelThreshold);
 }
 
 int SchemeDataProvider::heatPumpStage() const

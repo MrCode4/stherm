@@ -15,8 +15,6 @@ QtObject {
 
     property I_Device device: deviceController.device
 
-    property ScheduleCPP runningSchedule: null
-
     property var deviceCurrentSchedules: [];
 
     //! Deleting schedules: Use in retry operation
@@ -815,6 +813,12 @@ QtObject {
         function onEnableChanged() {
             deviceController.setActivatedSchedule(null);
             updateCurrentSchedules();
+        }
+
+        function onIdChanged() {
+            // Send the new id of current schedule
+            if (deviceController.currentSchedule.id > -1)
+                deviceController.updateEditMode(AppSpec.EMSchedule);
         }
     }
 

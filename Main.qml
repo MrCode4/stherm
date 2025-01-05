@@ -95,6 +95,13 @@ ApplicationWindow {
             } else {
                 AppCore.defaultRepo.initRootObject("Device");
                 uiSessionId.currentFile = "Device";
+
+                //! The config file exists but the app unable to load config file.
+                if (QSFileIO.exists(uiSessionId.configFilePath) ||
+                        QSFileIO.exists(uiSessionId.currentFile) ||
+                        QSFileIO.exists(uiSessionId.recoveryConfigFilePath)) {
+                    uiSessionId.deviceController.canUpdateSystemSetup = true;
+                }
             }
 
             // Remove the relative file from the directory.
@@ -226,7 +233,6 @@ ApplicationWindow {
     PopUpLayout {
         id: popUpLayoutId
         anchors.fill: parent
-        mandatoryUpdate: uiSessionId.deviceController.mandatoryUpdate
     }
 
     ShortcutManager {

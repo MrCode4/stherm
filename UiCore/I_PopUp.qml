@@ -40,6 +40,9 @@ Popup {
 
     property bool closeButtonEnabled: true
 
+    // Keep open the popup after show home, if set to true the screen saver can not close it.
+    property bool keepOpen: false
+
     /* Object Properties
      * ****************************************************************************************/
     anchors.centerIn: T.Overlay.overlay ?? parent

@@ -5,29 +5,59 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * Reboot popup with count down timer to send reboot request to system
+ * CountDownPopup: popup with count down timer to send emit startAction to parent
  * ***********************************************************************************************/
 I_PopUp {
     id: root
 
     /* Property Declaration
      * ****************************************************************************************/
+    property bool cancelEnable: true
 
-    property System system
+    property int counterInSeconds: 5
+
+    required property string actionText
+
+    signal startAction();
 
     /* Object properties
      * ****************************************************************************************/
+    title: " "
     titleBar: false
 
+    width: AppStyle.size * 0.80
     closePolicy: Popup.NoAutoClose
 
     onVisibleChanged: {
         if (visible) {
-            mainLay.counter = 5;
+            timer.counter = root.counterInSeconds;
+            timer.start()
+        }
+        else {
+            timer.stop()
         }
     }
+
     /* Children
      * ****************************************************************************************/
+
+    Timer {
+        id: timer
+        property int counter: root.counterInSeconds
+
+        repeat: true
+        interval: 1000
+
+        onTriggered: {
+            timer.counter--;
+
+            if (timer.counter <= 0) {
+                startAction();
+                stop();
+            }
+        }
+    }
+
     ColumnLayout {
         id: mainLay
 
@@ -36,13 +66,11 @@ I_PopUp {
         Layout.topMargin: 10
         spacing: 32
 
-        //! Add count down
-        property int counter: 0
-
         Label {
             Layout.fillWidth: true
+            wrapMode: Text.WordWrap
             font.pointSize: Application.font.pointSize * 1.5
-            text: "   Reset Device   "
+            text: root.title
             horizontalAlignment: Text.AlignHCenter
             lineHeight: 1.5
         }
@@ -54,13 +82,13 @@ I_PopUp {
             font.pointSize: Style.fontIconSize.largePt * 1.5
             font.weight: 400
             text: FAIcons.restart
-            visible: mainLay.counter < 1
+            visible: timer.counter < 1
         }
 
         Label {
             Layout.fillWidth: true
-            font.pointSize: Application.font.pointSize * (mainLay.counter > 0 ? 1.5 : 0.9)
-            text: mainLay.counter > 0 ? mainLay.counter : "Stopping Device..."
+            font.pointSize: Application.font.pointSize * (timer.counter > 0 ? 1.5 : 0.9)
+            text: timer.counter > 0 ? timer.counter : root.actionText
             horizontalAlignment: Text.AlignHCenter
         }
 
@@ -73,25 +101,11 @@ I_PopUp {
 
             Layout.alignment: Qt.AlignHCenter
             font.bold: true
-            visible: mainLay.counter > 0
-            text: "Cancel"
+            visible: cancelEnable && timer.counter > 0
+            text: qsTr("Cancel")
 
             onClicked: {
                 close();
-            }
-        }
-
-        Timer {
-            running: root.visible && mainLay.counter > 0
-            repeat: true
-
-            interval: 1000
-            onTriggered: {
-
-                mainLay.counter--;
-                if (system && mainLay.counter <= 0) {
-                    system.stopDevice();
-                }
             }
         }
     }

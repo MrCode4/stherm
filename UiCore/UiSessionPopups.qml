@@ -1,6 +1,7 @@
 import QtQuick
 import QtQuick.Layouts
 import QtQuick.Templates as T
+import QtQuick.Dialogs
 
 import Ronia
 import Stherm
@@ -40,14 +41,11 @@ Item {
     property alias perfTestCheckPopup: popupPerfTest
 
     readonly property bool isAnyPopupOpened : updateNotificationPopup.opened
-                                                || successPopup.opened
+                                              || successPopup.opened
 
 
     /* Signal Handlers
      * ****************************************************************************************/
-
-    //! Open a page from home.
-    signal openPageFromHome(item: string);
 
     /* Children
      * ****************************************************************************************/
@@ -91,6 +89,10 @@ Item {
         }
     }
 
+    SendingLogPopup{
+        id:sendingLogPopup
+    }
+
     DownloadingPopup {
         id: downloadingPopup
 
@@ -115,7 +117,7 @@ Item {
         mandatoryUpdate: deviceController.mandatoryUpdate
 
         onOpenUpdatePage: {
-            root.openPageFromHome("qrc:/Stherm/View/SystemUpdatePage.qml");
+            uiSession.openPageFromHome("qrc:/Stherm/View/SystemUpdatePage.qml");
         }
     }
 
@@ -126,6 +128,41 @@ Item {
 
     SuccessPopup {
         id: successPopup
+    }
+
+    property ConfirmPopup _systemSetupConfirmationPopup: null
+
+    Component {
+        id: _systemSetupConfirmationComponent
+
+        ConfirmPopup {
+            property var systemSetup
+            property bool applyChanges: false
+
+            title: "Update system setup"
+            message: ""
+            detailMessage: "The server and device system setups are out of sync. Do you want to update the device to match the server?<br>Please review the changes if applied."
+            buttons: MessageDialog.Cancel | MessageDialog.Apply
+            keepOpen: true
+
+            onButtonClicked: button => {
+                                 if (button === MessageDialog.Apply) {
+                                     applyChanges = true;
+                                     deviceController.applySystemSetupServer(systemSetup);
+                                     Qt.callLater(uiSession.openPageFromHome, "qrc:/Stherm/View/SystemSetupPage.qml");
+                                 }
+                             }
+
+            onClosed: {
+                if (!applyChanges) {
+                    //! To ensure device and server are sync.
+                    Qt.callLater(deviceController.updateEditMode, AppSpec.EMSystemSetup);
+                }
+
+                _systemSetupConfirmationPopup.destroy();
+                _systemSetupConfirmationPopup = null;
+            }
+        }
     }
 
     Popup {
@@ -226,6 +263,26 @@ Item {
         }
     }
 
+    Component {
+        id: countDownPopUp
+
+        CountDownPopup {
+            property var callback
+
+            anchors.centerIn: T.Overlay.overlay
+
+            onStartAction: {
+                if (callback instanceof Function) {
+                    callback()
+                }
+            }
+
+            onClosed: {
+                destroy(this);
+            }
+        }
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -270,7 +327,16 @@ Item {
                 uiSession.popupLayout.displayPopUp(updateNotificationPopup);
             }
         }
-}
+
+        function onLogSentSuccessfully() {
+            showSendingLogProgress();
+        }
+
+        function onLogAlert(message: string) {
+            sendingLogPopup.close();
+        }
+    }
+
     Connections {
         target: deviceController.sync
 
@@ -329,6 +395,16 @@ Item {
             }
         }
     }
+    function showCountDownPopUp(title: string, actionText: string, hasCancel: bool, callback: Function) {
+        var popup = countDownPopUp.createObject(root, {
+                                                    "title": title,
+                                                    "actionText": actionText,
+                                                    "cancelEnable": hasCancel,
+                                                    "callback": callback
+                                                })
+       uiSession.popupLayout.displayPopUp(popup);
+        return popup
+    }
 
     function warrantyReplacementFinished() {
         deviceController.firstRunFlowEnded();
@@ -353,5 +429,29 @@ Item {
         if (_limitedInitialSetupPopup) {
             uiSession.popupLayout.displayPopUp(_limitedInitialSetupPopup);
         }
+    }
+
+    function initSendingLogProgress() {
+        sendingLogPopup.init();
+        showSendingLogProgress();
+    }
+
+    function showSendingLogProgress() {
+        if (!sendingLogPopup.visible)
+            uiSession.popupLayout.displayPopUp(sendingLogPopup);
+    }
+
+    function showSystemSetupUpdateConfirmation(settings: var) {
+        if (!_systemSetupConfirmationPopup) {
+            _systemSetupConfirmationPopup = _systemSetupConfirmationComponent.createObject(root);
+        }
+
+        if (!_systemSetupConfirmationPopup) {
+            console.log("_systemSetupConfirmationPopup is undefined!")
+        }
+
+        _systemSetupConfirmationPopup.systemSetup = settings;
+
+        uiSession.popupLayout.displayPopUp(_systemSetupConfirmationPopup);
     }
 }
