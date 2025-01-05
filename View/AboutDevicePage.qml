@@ -160,6 +160,7 @@ BasePageView {
                     {
                         text: qsTr("Test Mode"), visible: root.showTestMode, action: () => {
                             if (root.StackView.view) {
+                                deviceController.postWarrantyReplacementFinsihed();
                                 uiSession.uiTestMode = true;
                                 root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {"uiSession": uiSession});
                             }

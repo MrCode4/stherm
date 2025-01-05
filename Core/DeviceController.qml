@@ -695,7 +695,7 @@ I_DeviceController {
 
         function onWarrantyReplacementFinished(success: bool, error: string, needToRetry: bool) {
             if (success) {
-                canUpdateSystemSetup = true;
+                warrantyReplacementFinsihed();
             }
         }
 
@@ -941,6 +941,12 @@ I_DeviceController {
         //! we set to false elsewhere! i.e., in system
         if (initialSetup)
             deviceControllerCPP.system.setIsInitialSetup(true);
+    }
+
+    function postWarrantyReplacementFinsihed() {
+        console.log("postWarrantyReplacementFinsihed called to get system setup from server.");
+        canUpdateSystemSetup = true;
+        sync.resetFetchTime();
     }
 
     function updateEditMode(mode : int) {
