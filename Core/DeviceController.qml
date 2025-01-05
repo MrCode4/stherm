@@ -498,6 +498,9 @@ I_DeviceController {
         function onPushSuccess() {
             console.log("DeviceController.qml: onPushSuccess", stageMode, editMode, lockMode)
 
+            // We don't need to check the system startup settings because we push all the settings in the post request.
+            canUpdateSystemSetup = false;
+
             if ((root.stageMode & AppSpec.EMAutoMode) === AppSpec.EMAutoMode) {
                 stageMode = AppSpec.EMAutoMode;
             } else {
@@ -781,6 +784,7 @@ I_DeviceController {
                 console.warn("Something odd hapenned!, restoring the flow.", isPushing)
                 isPushing = false;
             }
+
         }
     }
 
