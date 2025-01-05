@@ -97,6 +97,7 @@ I_DeviceController {
         onTriggered: {
             //  Check the isValidNetworkRequestRestart to check in direct calls (triggered).
             if (system.isValidNetworkRequestRestart()) {
+                // to prevent another restart call after restarting once unless the condition changed again
                 system.saveNetworkRequestRestart();
                 // Restart the app or device
                 uiSession.popUps.showCountDownPopUp(

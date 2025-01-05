@@ -88,7 +88,7 @@ public:
 
     bool forgettingAllWifis();
 
-    void printWifisInformation();
+    void printWifisInformation(const QString &due);
 
     /* Private methods and slots
      * ****************************************************************************************/

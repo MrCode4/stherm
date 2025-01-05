@@ -63,7 +63,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
             mCheckInternetAccessTmr.start();
 
         } else {
-            printWifisInformation();
+            printWifisInformation("Wi-Fi disconnected.");
             if (!mIsWifiDisconnectedManually)
                 mAutoConnectToWifiTimer.start();
 
@@ -100,7 +100,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     mAutoConnectToWifiTimer.setInterval(2 * 60 * 1000);
     mAutoConnectToWifiTimer.setSingleShot(false);
     connect(&mAutoConnectToWifiTimer, &QTimer::timeout, this, [this]() {
-        printWifisInformation();
+        printWifisInformation("Auto connect starting.");
 
         if (mIsWifiDisconnectedManually) {
             mAutoConnectToWifiTimer.stop();
@@ -133,7 +133,7 @@ NetworkInterface::NetworkInterface(QObject *parent)
     mAutoConnectToWifiTimer.start();
 
     QTimer::singleShot(10 * 60 * 1000, this, [this]() {
-        printWifisInformation();
+        printWifisInformation("10 minutes passed.");
     });
 }
 
@@ -301,8 +301,10 @@ bool NetworkInterface::forgettingAllWifis() {
     return mForgettingWifis;
 }
 
-void NetworkInterface::printWifisInformation()
+void NetworkInterface::printWifisInformation(const QString &due)
 {
+    NI_LOG << "printWifisInformation started due to: "  << due;
+
     foreach (auto wifi, mWifiInfos) {
         NI_LOG << wifi->wifiInformation();
     }
@@ -386,7 +388,7 @@ bool NetworkInterface::checkWPA3Support()
 void NetworkInterface::checkHasInternet()
 {
     auto connectedWifiInfo = connectedWifi();
-    NI_LOG << "Checking the internet connectivity, " << connectedWifiInfo->wifiInformation() << mNamIsRunning;
+    NI_LOG << "Checking the internet connectivity, " << mNamIsRunning;
 
     if (!connectedWifiInfo) {
         setHasInternet(false);
@@ -421,6 +423,8 @@ void NetworkInterface::checkHasInternet()
 
             reply->deleteLater();
         });
+    } else {
+        NI_LOG << "connectedWifiInfo: " << connectedWifiInfo->wifiInformation();
     }
 }
 
