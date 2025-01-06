@@ -34,8 +34,11 @@ class NetworkInterface : public QObject
 
     using WifisQmlList = QQmlListProperty<WifiInfo>;
 
-public:
+private:
     explicit NetworkInterface(QObject *parent = nullptr);
+
+public:
+    static NetworkInterface* me();
 
     /* Public methods
      * ****************************************************************************************/
@@ -92,6 +95,8 @@ public:
 
     /* Private methods and slots
      * ****************************************************************************************/
+    NmcliInterface *nmcliInterface() const;
+
 private:
     static WifiInfo*    networkAt(WifisQmlList* list, qsizetype index);
     static qsizetype    networkCount(WifisQmlList* list);
