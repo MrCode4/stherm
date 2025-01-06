@@ -557,7 +557,7 @@ void NmcliInterface::parseBssidToCorrectSsidMap(QProcess* process)
     //! Clear the map first
     mBssToCorrectSsidMap.clear();
 
-    QString iwOutStr = process->readAllStandardOutput();
+    mIwOut = process->readAllStandardOutput();
 
     // Regular expression to match and extract Wi-Fi details:
     // 1. BSS MAC address in the format xx:xx:xx:xx:xx:xx
@@ -566,7 +566,7 @@ void NmcliInterface::parseBssidToCorrectSsidMap(QProcess* process)
     static const QRegularExpression wifiDetailsRegex(
         R"(BSS\s([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})|SSID:\s([^\n\r]+)|Authentication suites:\s(.+))");
 
-    QRegularExpressionMatchIterator wifiMatchIterator = wifiDetailsRegex.globalMatch(iwOutStr);
+    QRegularExpressionMatchIterator wifiMatchIterator = wifiDetailsRegex.globalMatch(mIwOut);
 
     QString bssid, ssid, auth;
 
@@ -688,6 +688,11 @@ void NmcliInterface::updateConProfilesList(QProcess* process)
         NC_WARN << process->readAll();
         mBusyUpdatingConProfiles = false;
     }
+}
+
+QString NmcliInterface::iwOut() const
+{
+    return mIwOut;
 }
 
 QStringList NmcliInterface::getDeviceSupportedCiphersList() const
