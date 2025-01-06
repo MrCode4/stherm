@@ -56,7 +56,7 @@ BasePageView {
         var minTemp;
 
         if (isCooling) {
-            minTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.minimumCoolingTemperatiureF) : AppSpec.minimumCoolingTemperatiureF;
+            minTemp = isCelcius ? AppSpec.minimumCoolingTemperatiureC : AppSpec.minimumCoolingTemperatiureF;
 
         } else if (isHeating) {
             minTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.minimumHeatingTemperatiureF) : AppSpec.minimumHeatingTemperatiureF;
@@ -73,7 +73,7 @@ BasePageView {
         var maxTemp;
 
         if (isCooling) {
-            maxTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.maximumCoolingTemperatiureF) : AppSpec.maximumCoolingTemperatiureF;
+            maxTemp = isCelcius ? AppSpec.maximumCoolingTemperatiureC : AppSpec.maximumCoolingTemperatiureF;
 
         } else if (isHeating) {
             maxTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.maximumHeatingTemperatiureF) : AppSpec.maximumHeatingTemperatiureF;
@@ -277,6 +277,9 @@ BasePageView {
                 // Update maximum temperature as cooling temperature
                 maxTemperature = singleTemperatureSlider.control.value;
             }
+
+            console.log("maxTemperature", maxTemperature)
+            console.log("minTemperature",minTemperature)
 
             // Save temperatures as celcius.
             schedule.minimumTemperature = isCelcius ? minTemperature : Utils.fahrenheitToCelsius(minTemperature);
