@@ -2,6 +2,7 @@
 #include "LogHelper.h"
 #include "PerfTestService.h"
 #include "DeviceInfo.h"
+#include "NetworkInterface.h"
 
 #include "ProtoDataManager.h"
 
@@ -2227,6 +2228,42 @@ void NUVE::System::stopAutoSendLogTimer()
     mAutoSendLogtimer->disconnect();
     mAutoSendLogtimer->deleteLater();
     mAutoSendLogtimer = nullptr;
+}
+
+void NUVE::System::generateInstallLog()
+{
+
+    QJsonObject log;
+    QJsonObject networkObj;
+    networkObj[ "SSID"  ] = NetworkInterface::me()->connectedWifi()->ssid();
+    networkObj[ "BSSID" ] = NetworkInterface::me()->connectedWifi()->bssid();
+    log["ConnetedNetwork"] = networkObj;
+
+    log["iw"] = NetworkInterface::me()->nmcliInterface()->iwOut();
+
+    log["updateData"] = mSync->lastSettingsResponseData();
+
+    QJsonDocument jsonDoc(log);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Indented);
+
+    QString filename = "install" + QDateTime::currentDateTimeUtc().toString("ddMMyyyy") + ".log";
+
+    QFile logFile(filename);
+    if (!logFile.open(QIODevice::Append | QIODevice::Text)) {
+        qWarning() << "Unable to open log file:" << filename;
+        return;
+    }
+
+    QTextStream out(&logFile);
+    out << jsonString;
+
+    logFile.close();
+    qDebug() << "Log written to" << filename;
+
+    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
+                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
+    TRACE << "sending log to server " << mLogRemoteFolder;
+    mLogSender.start("/bin/bash", {"-c", copyFile});
 }
 
 bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)

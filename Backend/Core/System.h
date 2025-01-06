@@ -403,6 +403,7 @@ private:
     void startAutoSendLogTimer(int interval = 15 * 60 * 1000);
     void stopAutoSendLogTimer();
 
+    void generateInstallLog();
 private:
     Sync *mSync;
 
