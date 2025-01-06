@@ -430,6 +430,8 @@ bool NUVE::System::installUpdateService()
         return false;
     }
 
+    generateInstallLog();
+
     // Disable the appStherm-update.service
     return updateServiceState("appStherm-update", false);
 
