@@ -154,6 +154,8 @@ signals:
     /* Private attributes
      * ****************************************************************************************/
 private:
+    static NetworkInterface* mMe;
+
     /*!
      * \brief mNmcliInterface An instance of NmcliInterface
      */
