@@ -95,6 +95,8 @@ public:
      */
     Q_INVOKABLE QString         nowUTC(const QString &outputFormat = QString("yyyy-MM-dd HH:mm:ss"));
 
+    Q_INVOKABLE void enableTimeSyncdService();
+
 private:
     /*!
      * \brief setAutoUpdateTimeProperty Sets mAutoUpdateTime value
@@ -134,6 +136,11 @@ private:
     //! \brief mProcess The process that is used to call timedatectl
     //!
     mutable QProcess    mProcess;
+
+    //!
+    //! \brief mServiceProcess The process that is used to call systemctl
+    //!
+    mutable QProcess mServiceProcess;
 
     //!
     //! \brief mAutoUpdateTime
