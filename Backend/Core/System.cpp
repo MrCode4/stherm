@@ -674,6 +674,7 @@ bool NUVE::System::findBackdoorVersion(const QString fileName)
 void NUVE::System::systemCtlRestartApp()
 {
     #ifdef __unix__
+    setRestartFlag();
     installSystemCtlRestartService();
 
     QTimer::singleShot(200, this, [=]() {
@@ -961,6 +962,24 @@ bool NUVE::System::isForgottenDeviceStarted()
     SYS_LOG << "Device starts after forgotten: " << isDeviceForgotten;
 
     return isDeviceForgotten;
+}
+
+bool NUVE::System::getRestartFlag()
+{
+    QSettings settings;
+    return settings.value("RestartFlag", false).toBool();
+}
+
+void NUVE::System::setRestartFlag()
+{
+    QSettings settings;
+    settings.setValue("RestartFlag", true);
+}
+
+void NUVE::System::removeRestartFlag()
+{
+    QSettings settings;
+    settings.remove("RestartFlag");
 }
 
 void NUVE::System::setIsForgottenDevice(const bool &isDeviceForgotten)
@@ -1759,6 +1778,7 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
 void NUVE::System::rebootDevice()
 {
 #ifdef __unix__
+    setRestartFlag();
     QProcess process;
     QString command = "reboot";
 
