@@ -40,6 +40,17 @@ Control {
     implicitHeight: AppStyle.size
     padding: 0
 
+    Component.onCompleted: {
+        if (DateTimeManager.autoUpdateTime === false) {
+            if (deviceController.deviceControllerCPP.system.getRestartFlag() === false) {
+                uiSession.popUps.showManualDateTimeWarningPopup()
+            }
+            else {
+                deviceController.deviceControllerCPP.system.removeRestartFlag()
+            }
+        }
+    }
+
     /* Children
      * ****************************************************************************************/
     //! Desired temprature slider and value
@@ -92,7 +103,7 @@ Control {
             z: 1
 
             onClicked: {
-                 uiSession.openWifiPage(true, deviceController.initialSetupNoWIFI);
+                uiSession.openWifiPage(true, deviceController.initialSetupNoWIFI);
             }
         }
 

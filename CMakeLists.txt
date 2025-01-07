@@ -350,6 +350,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/PerfTestPopup.qml
         UiCore/PopUps/ScheduleSystemModeErrorPopup.qml
         UiCore/PopUps/ResetFactoryPopUp.qml
+        UiCore/PopUps/ManualDateTimeWarningPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
