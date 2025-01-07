@@ -100,7 +100,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+            color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
         }
 
         Rectangle {
@@ -109,7 +109,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+            color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
         }
 
         Shape {
@@ -128,12 +128,12 @@ Control {
                     centerY: _control.background.shapeHeight
 
                     GradientStop {
-                        position: 0
+                        position: 0.55
                         color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
                     }
 
                     GradientStop {
-                        position: 0.55
+                        position: 0
                         color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
                     }
                 }
