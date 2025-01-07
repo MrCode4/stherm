@@ -122,6 +122,7 @@ signals:
 
     void installedSuccess();
     void installFailed(QString err, bool needToRetry);
+    void installedFinished();
 
     void autoModePush(bool isSuccess);
 

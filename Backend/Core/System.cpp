@@ -203,6 +203,8 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         emit autoModePush(isSuccess);
     });
 
+    connect(mSync, &NUVE::Sync::installedFinished, this , NUVE::System::generateInstallLog);
+
     // Update the device with the version received from the server.
     connect(mSync, &NUVE::Sync::updateFirmwareFromServer, this, [this](QString version) {
         // Downloader is busy ...
@@ -429,8 +431,6 @@ bool NUVE::System::installUpdateService()
 
         return false;
     }
-
-    generateInstallLog();
 
     // Disable the appStherm-update.service
     return updateServiceState("appStherm-update", false);
@@ -2236,10 +2236,8 @@ void NUVE::System::generateInstallLog()
 {
 
     QJsonObject log;
-    QJsonObject networkObj;
-    networkObj[ "SSID"  ] = NetworkInterface::me()->connectedWifi()->ssid();
-    networkObj[ "BSSID" ] = NetworkInterface::me()->connectedWifi()->bssid();
-    log["ConnetedNetwork"] = networkObj;
+
+    log["ConnetedNetwork"] = NetworkInterface::me()->connectedWifi()->wifiInformation();
 
     log["iw"] = NetworkInterface::me()->nmcliInterface()->iwOut();
 
@@ -2248,7 +2246,7 @@ void NUVE::System::generateInstallLog()
     QJsonDocument jsonDoc(log);
     QString jsonString = jsonDoc.toJson(QJsonDocument::Indented);
 
-    QString filename = "install" + QDateTime::currentDateTimeUtc().toString("ddMMyyyy") + ".log";
+    QString filename = "/mnt/log/log/install" +  QDateTime::currentDateTimeUtc().toString("ddMMyyyy") + ".log";
 
     QFile logFile(filename);
     if (!logFile.open(QIODevice::Append | QIODevice::Text)) {
@@ -2260,12 +2258,10 @@ void NUVE::System::generateInstallLog()
     out << jsonString;
 
     logFile.close();
-    qDebug() << "Log written to" << filename;
 
-    QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
-                       arg(m_logPassword, filename, m_logUsername, m_logServerAddress, mLogRemoteFolder);
-    TRACE << "sending log to server " << mLogRemoteFolder;
-    mLogSender.start("/bin/bash", {"-c", copyFile});
+    SYS_LOG << "Log written to " << filename;
+
+    sendLogToServer({filename}, false);
 }
 
 bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)

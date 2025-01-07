@@ -655,6 +655,7 @@ void Sync::installDevice(const QVariantMap &data)
             emit installFailed(err, isNeedRetry);
             TRACE << rawData << data << err;
         }
+        emit installedFinished();
     };
 
     TRACE << QJsonDocument(reqData).toJson();
