@@ -25,8 +25,14 @@ DateTimeManager::DateTimeManager(QObject *parent)
 
     mProcess.setReadChannel(QProcess::StandardOutput);
 
-    //! Check auto-update time
-    checkAutoUpdateTime();
+    QSettings settings;
+    if (settings.value("ntpSetAsDefaultAtFirstRun", false).toBool()) {
+        setAutoUpdateTime(true);
+        settings.setValue("ntpSetAsDefaultAtFirstRun", true);
+    } else {
+        //! Check auto-update time
+        checkAutoUpdateTime();
+    }
 
     //! Set up current date time timer
     mNowTimer.setInterval(100);
