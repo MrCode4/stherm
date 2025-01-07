@@ -203,7 +203,15 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         emit autoModePush(isSuccess);
     });
 
-    connect(mSync, &NUVE::Sync::installedFinished, this , NUVE::System::generateInstallLog);
+    connect(this, &NUVE::System::installLogResponse, this , [this](bool isSuccess){
+        if(isSuccess)
+            SYS_LOG << "Install log sent successfully.";
+        else {
+            SYS_LOG << "Failed to send install log.";
+            generateInstallLog();
+        }
+
+    });
 
     // Update the device with the version received from the server.
     connect(mSync, &NUVE::Sync::updateFirmwareFromServer, this, [this](QString version) {
@@ -2235,9 +2243,25 @@ void NUVE::System::stopAutoSendLogTimer()
 void NUVE::System::generateInstallLog()
 {
 
-    QJsonObject log;
+    if (mLogSender.busy()){
+        QString error("Previous session is in progress.");
+        SYS_LOG << error << "State is :" << mLogSender.state() << mLogSender.keys();
 
-    log["ConnetedNetwork"] = NetworkInterface::me()->connectedWifi()->wifiInformation();
+        emit installLogResponse(false);
+        return;
+    }
+
+    if (!checkSendLog(false)) {
+        emit installLogResponse(false);
+        return;
+    }
+
+    QJsonObject log;
+    QString networkLog = "No Wifi Connection";
+    if(NetworkInterface::me()->connectedWifi() != nullptr)
+        networkLog = NetworkInterface::me()->connectedWifi()->wifiInformation();
+
+    log["ConnetedNetwork"] = networkLog;
 
     log["iw"] = NetworkInterface::me()->nmcliInterface()->iwOut();
 
@@ -2251,6 +2275,7 @@ void NUVE::System::generateInstallLog()
     QFile logFile(filename);
     if (!logFile.open(QIODevice::Append | QIODevice::Text)) {
         qWarning() << "Unable to open log file:" << filename;
+        emit installLogResponse(false);
         return;
     }
 
@@ -2450,7 +2475,7 @@ bool NUVE::System::sendNetworkLogs() {
     return true;
 }
 
-bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog) {
+bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog , bool isInstallLog) {
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
         TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
@@ -2466,6 +2491,7 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             }
 
             if (showAlert) emit logSentSuccessfully();
+            if (isInstallLog) emit installLogResponse(true);
 
             // Delete logs that have been sent to the server.
             foreach (auto file, filenames) {
@@ -2484,6 +2510,8 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             error = "error while sending log directory on remote: " + error;
             qWarning() << error;
             if (showAlert) emit logAlert(error);
+            if (isInstallLog) emit installLogResponse(false);
+
         }
 
         startAutoSendLogTimer(1 * 60 * 1000);
@@ -2526,4 +2554,9 @@ void NUVE::System::saveNetworkRequestRestart()
     int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt() + 1;
 
     settings.setValue(m_NetworkRequestRestartSetting, networkRequestRestartTimes);
+}
+
+bool NUVE::System::isNeedSendInstallLog() const
+{
+    return mIsNeedSendInstallLog;
 }

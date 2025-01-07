@@ -537,6 +537,10 @@ I_DeviceController {
             }
 
             settingsPush.isPushing = false;
+            if(system.isNeedSendInstallLog){
+                system.generateInstallLog()
+                system.isNeedSendInstallLog = false
+            }
 
             console.log("DeviceController.qml: Push onPushSuccess", stageMode)
 
@@ -690,8 +694,12 @@ I_DeviceController {
 
             // Push all settings to the server after the No Wi-Fi installation flow completed.
             // In a normal initial setup, the system setup will be sent from the system setup page.
-            if (initialSetupNoWIFI)
+            if (initialSetupNoWIFI) {
                 updateEditMode(AppSpec.EMAll);
+                system.isNeedSendInstallLog = true
+            } else {
+                system.generateInstallLog()
+            }
 
             isSendingInitialSetupData = false;
             setInitialSetupNoWIFI(false);
