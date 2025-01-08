@@ -2283,7 +2283,32 @@ void NUVE::System::generateInstallLog()
 
     SYS_LOG << "Log written to " << filename;
 
-    sendLogToServer({filename}, false, false, true);
+    auto initialized = mLogSender.property("initialized");
+    if (initialized.isValid() && initialized.toBool()) {
+        sendLogToServer({filename}, false, false, true);
+
+    } else {
+        auto dirCreatorCallback = [=](QString error) {
+            auto role = mLogSender.property("role").toString();
+            TRACE_CHECK(role != "dirLog") << "role seems invalid" << role;
+
+            if (!error.isEmpty()) {
+                error = "error while creating log directory on remote: " + error;
+                qWarning() << error;
+                emit installLogSent(false);
+                return;
+            }
+
+            SYS_LOG << "Folder created in server successfully";
+            mLogSender.setProperty("initialized", true);
+
+            sendLogToServer({filename}, false, false, true);
+        };
+
+        mLogSender.setRole("dirLog", dirCreatorCallback);
+
+        prepareLogDirectory(dirCreatorCallback);
+    }
 }
 
 bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)
