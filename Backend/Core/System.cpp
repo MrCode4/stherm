@@ -2124,11 +2124,11 @@ bool NUVE::System::sendLogFile(bool showAlert)
             mLastReceivedCommands.remove(Cmd_PushLogs);
         }
 
-        emit logPrepared(false);
+        if (showAlert) emit logPrepared(false);
         return false;
     }
 
-    emit logPrepared(true);
+    if (showAlert) emit logPrepared(true);
 
     return sendLogToServer(QStringList(filename), showAlert, true);
 }

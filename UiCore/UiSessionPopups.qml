@@ -89,8 +89,10 @@ Item {
         }
     }
 
-    SendingLogPopup{
+    SendingLogPopup {
         id:sendingLogPopup
+
+        deviceController: root.deviceController
     }
 
     DownloadingPopup {
