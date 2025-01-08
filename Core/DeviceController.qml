@@ -1428,10 +1428,25 @@ I_DeviceController {
 
         var temperatureValue = Utils.clampValue(temperature, _minimumTemperatureC, _maximumTemperatureC);
 
-        // Conver to UI value
-        temperatureValue = Utils.convertedTemperature(temperatureValue, root.temperatureUnit);
+        var tempServerValue = Utils.convertedTemperature(temperatureValue, root.temperatureUnit);
+        var tempRequestedTemp = Utils.convertedTemperature(device.requestedTemp, root.temperatureUnit);
 
-        setDesiredTemperature(temperatureValue);
+        // Round the server value
+        // We ignore some other cases.
+        if (Math.abs(tempRequestedTemp - tempServerValue) < 0.1)
+            tempServerValue = tempServerValue.toFixed(0);
+
+        let truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+
+        deviceControllerCPP.setRequestedTemperature(truncatedValue);
+
+        if (device.requestedTemp !== truncatedValue) {
+            device.requestedTemp = truncatedValue;
+            root.saveSettings();
+        }
     }
 
     //! Set temperature to device (system) and update model.
@@ -1741,10 +1756,44 @@ I_DeviceController {
                                               AppSpec.autoMaximumTemperatureC);
         }
 
-        auto_temp_low = Utils.convertedTemperature(auto_temp_low, root.temperatureUnit);
-        setAutoMinReqTemp(auto_temp_low);
+        var tempServerValue = Utils.convertedTemperature(auto_temp_low, root.temperatureUnit);
+        var tempRequestedTemp = Utils.convertedTemperature(device.autoMinReqTemp, root.temperatureUnit);
 
-        auto_temp_high = Utils.convertedTemperature(auto_temp_high, root.temperatureUnit);        setAutoMaxReqTemp(auto_temp_high);
+        // Round the server value
+        // We ignore some other cases.
+        if (Math.abs(tempRequestedTemp - tempServerValue) < 0.1)
+            tempServerValue = tempServerValue.toFixed(0);
+
+        let truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+
+        deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
+
+        if (device.autoMinReqTemp !== truncatedValue) {
+            device.autoMinReqTemp = truncatedValue;
+        }
+
+
+        tempServerValue = Utils.convertedTemperature(auto_temp_high, root.temperatureUnit);
+        tempRequestedTemp = Utils.convertedTemperature(device.autoMaxReqTemp, root.temperatureUnit);
+
+        // Round the server value
+        // We ignore some other cases.
+        if (Math.abs(tempRequestedTemp - tempServerValue) < 0.1)
+            tempServerValue = tempServerValue.toFixed(0);
+
+        truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+
+        deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
+
+        if (device.autoMaxReqTemp !== truncatedValue) {
+            device.autoMaxReqTemp = truncatedValue;
+        }
     }
 
     //!? minTemperature is UI value.
@@ -1776,7 +1825,7 @@ I_DeviceController {
         var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
                 ? Utils.fahrenheitToCelsius(maxTemperature)
                 : maxTemperature);
-        if (device.autoMinReqTemp !== value) {
+        if (device.autoMaxReqTemp !== value) {
             device.autoMaxReqTemp = value;
             root.updateEditMode(AppSpec.EMAutoMode);
             root.saveSettings();
