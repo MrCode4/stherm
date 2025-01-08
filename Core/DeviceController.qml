@@ -555,7 +555,7 @@ I_DeviceController {
             settingsPush.isPushing = false;
 
             //! Send install log when updte response data is ready.
-            if(root.isNeedSendInstallLog) {
+            if(!sendInstallLogTimer.running && root.isNeedSendInstallLog) {
                 sendInstallLogTimer.start();
             }
 
@@ -607,7 +607,7 @@ I_DeviceController {
 
         function onInstallLogSent(isSuccess: bool) {
             console.log("Install log sent successfully: ", isSuccess)
-            root.isNeedSendInstallLog = isSuccess;
+            root.isNeedSendInstallLog = !isSuccess;
 
             if(root.isNeedSendInstallLog) {
                 sendInstallLogTimer.start();
