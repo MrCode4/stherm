@@ -717,20 +717,32 @@ void Sync::pushAlertToServer(const QString alertUid, const QVariantMap &alerts)
     auto callback = [this, alertUid](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         bool success = reply->error() == QNetworkReply::NoError;
 
+        // To handle the network errors.
+        TRACE_CHECK(!success) << "Push alert error: " << reply->errorString();
+
+
+        // To handle the server errors.
         if (success) {
             success = data.value("errors").isUndefined() || data.value("errors").toArray().empty();
+            TRACE_CHECK(!success) << "push alert: " << data.value("errors") << data.value("message");
         }
 
-        if (!success) {
-            TRACE << "push alert: " << data.value("errors") << data.value("message") << reply->errorString();
+        // Validate received server data.
+        QJsonObject dataFirstObj;
+        if (success) {
+            auto dataArray = data.value("data").toArray(QJsonArray());
+            success = !dataArray.isEmpty() && dataArray.first().isObject();
+
+            if (success) {
+                dataFirstObj = dataArray.first().toObject();
+            }
         }
 
-        auto dataArray = data.value("data").toArray();
-        success &= !dataArray.isEmpty();
+        TRACE_CHECK(!success) << "The push alert response is not valid: " << dataFirstObj;
 
         //! success is a combination of different parameters such as return type and response data
         //! ultimate purpose is to being able to get the alert id from response
-        emit alertPushed(alertUid, success, success ? dataArray.first().toObject().toVariantMap() : QVariantMap());
+        emit alertPushed(alertUid, success, dataFirstObj.toVariantMap());
     };
 
     callPostApi(baseUrl() + "api/sync/alerts", QJsonDocument(requestDataObj).toJson(), callback);
