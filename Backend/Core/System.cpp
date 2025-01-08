@@ -203,16 +203,6 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         emit autoModePush(isSuccess);
     });
 
-    connect(this, &NUVE::System::installLogResponse, this , [this](bool isSuccess){
-        if(isSuccess)
-            SYS_LOG << "Install log sent successfully.";
-        else {
-            SYS_LOG << "Failed to send install log.";
-            generateInstallLog();
-        }
-
-    });
-
     // Update the device with the version received from the server.
     connect(mSync, &NUVE::Sync::updateFirmwareFromServer, this, [this](QString version) {
         // Downloader is busy ...
@@ -2247,25 +2237,32 @@ void NUVE::System::generateInstallLog()
         QString error("Previous session is in progress.");
         SYS_LOG << error << "State is :" << mLogSender.state() << mLogSender.keys();
 
-        emit installLogResponse(false);
+        emit installLogSent(false);
         return;
     }
 
     if (!checkSendLog(false)) {
-        emit installLogResponse(false);
+        emit installLogSent(false);
         return;
     }
 
     QJsonObject log;
     QString networkLog = "No Wifi Connection";
-    if(NetworkInterface::me()->connectedWifi() != nullptr)
-        networkLog = NetworkInterface::me()->connectedWifi()->wifiInformation();
+    auto wifiConnection = NetworkInterface::me()->connectedWifi();
+    if(wifiConnection != nullptr)
+        networkLog = wifiConnection->wifiInformation();
 
     log["ConnetedNetwork"] = networkLog;
 
     log["iw"] = NetworkInterface::me()->nmcliInterface()->iwOut();
 
-    log["updateData"] = mSync->lastSettingsResponseData();
+    auto lastSettingsResponseData =  mSync->lastSettingsResponseData();
+    if (lastSettingsResponseData.empty()) {
+        emit installLogSent(false);
+        return;
+    }
+
+    log["updateData"] = lastSettingsResponseData;
 
     QJsonDocument jsonDoc(log);
     QString jsonString = jsonDoc.toJson(QJsonDocument::Indented);
@@ -2275,7 +2272,7 @@ void NUVE::System::generateInstallLog()
     QFile logFile(filename);
     if (!logFile.open(QIODevice::Append | QIODevice::Text)) {
         qWarning() << "Unable to open log file:" << filename;
-        emit installLogResponse(false);
+        emit installLogSent(false);
         return;
     }
 
@@ -2286,7 +2283,7 @@ void NUVE::System::generateInstallLog()
 
     SYS_LOG << "Log written to " << filename;
 
-    sendLogToServer({filename}, false);
+    sendLogToServer({filename}, false, false, true);
 }
 
 bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)
@@ -2480,7 +2477,8 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
         auto role = mLogSender.property("role").toString();
         TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
 
-        if (error.isEmpty()) {
+        bool isSuccess = error.isEmpty();
+        if (isSuccess) {
             if (isRegularLog && mLastReceivedCommands.contains(Cmd_PushLogs)) {
                 SYS_LOG << "Reporting" << Cmd_PushLogs;
                 auto callback = [this] (bool success, const QJsonObject& data) {
@@ -2491,7 +2489,6 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             }
 
             if (showAlert) emit logSentSuccessfully();
-            if (isInstallLog) emit installLogResponse(true);
 
             // Delete logs that have been sent to the server.
             foreach (auto file, filenames) {
@@ -2510,9 +2507,9 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             error = "error while sending log directory on remote: " + error;
             qWarning() << error;
             if (showAlert) emit logAlert(error);
-            if (isInstallLog) emit installLogResponse(false);
-
         }
+
+        if (isInstallLog) emit installLogSent(isSuccess);
 
         startAutoSendLogTimer(1 * 60 * 1000);
     };
@@ -2554,9 +2551,4 @@ void NUVE::System::saveNetworkRequestRestart()
     int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt() + 1;
 
     settings.setValue(m_NetworkRequestRestartSetting, networkRequestRestartTimes);
-}
-
-bool NUVE::System::isNeedSendInstallLog() const
-{
-    return mIsNeedSendInstallLog;
 }

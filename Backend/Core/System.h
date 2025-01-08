@@ -67,8 +67,7 @@ class System : public RestApiExecutor
     //! Maybe used in future...
     Q_PROPERTY(bool hasForceUpdate    READ hasForceUpdate   NOTIFY forceUpdateChanged FINAL)
     Q_PROPERTY(int partialUpdateProgress      READ partialUpdateProgress    NOTIFY partialUpdateProgressChanged FINAL)
-    //! Enable/Disable install log status
-    Q_PROPERTY(bool isNeedSendInstallLog    READ isNeedSendInstallLog   NOTIFY isNeedSendInstallLogChanged FINAL)
+
 public:
     /* Public Constructors & Destructor
      * ****************************************************************************************/
@@ -273,9 +272,6 @@ public:
 
     Q_INVOKABLE void generateInstallLog();
 
-
-    Q_INVOKABLE bool isNeedSendInstallLog() const;
-
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);
@@ -351,9 +347,7 @@ signals:
     void logSentSuccessfully();
     void sendLogProgressChanged(quint8 percent);
 
-    void installLogResponse(bool isSuccess);
-
-    void isNeedSendInstallLogChanged();
+    void installLogSent(bool isSuccess);
 
 private:
     //! verify dounloaded files and prepare to set up.
@@ -496,8 +490,6 @@ private:
 
     QTimer *mAutoSendLogtimer{nullptr};
     bool    mFirstLogSent;
-
-    bool mIsNeedSendInstallLog;
 };
 
 } // namespace NUVE
