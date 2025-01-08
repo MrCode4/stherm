@@ -41,13 +41,14 @@ Control {
     padding: 0
 
     Component.onCompleted: {
-        if (DateTimeManager.autoUpdateTime === false) {
-            if (deviceController.deviceControllerCPP.system.getRestartFlag() === false) {
-                uiSession.popUps.showManualDateTimeWarningPopup()
-            }
-            else {
-                deviceController.deviceControllerCPP.system.removeRestartFlag()
-            }
+        let rebootFlag = deviceController.deviceControllerCPP.system.getRestartFlag()
+
+        if (DateTimeManager.autoUpdateTime === false && rebootFlag === false) {
+            uiSession.popUps.showManualDateTimeWarningPopup()
+        }
+
+        if (rebootFlag) {
+            deviceController.deviceControllerCPP.system.removeRestartFlag()
         }
     }
 
