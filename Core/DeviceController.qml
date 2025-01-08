@@ -95,14 +95,23 @@ I_DeviceController {
     //! Active the Network Connection Watchdog when device has not internet for 1 hour.
     property Timer networkWatchdogTimer: Timer {
         repeat: false
-        running: NetworkInterface.connectedWifi && !NetworkInterface.hasInternet
+        running: (!NetworkInterface.connectedWifi && !NetworkInterface.isWifiDisconnectedManually) ||
+                 (NetworkInterface.connectedWifi && !NetworkInterface.hasInternet)
         interval: 1 * 60 * 60 * 1000
+
+        onRunningChanged: {
+            console.log("Network Watchdog Timer running changed: ", running, NetworkInterface.connectedWifi,
+                        NetworkInterface.isWifiDisconnectedManually, NetworkInterface.hasInternet)
+            // Send network log when hasInternet is true
+            if (!running) {
+                console.log("Save the network log due to Network Watchdog Timer running changed to false.");
+                networkWatchdogLoggerTimer.triggered();
+            }
+        }
 
         onTriggered: {
             //  Check the isValidNetworkRequestRestart to check in direct calls (triggered).
             if (system.isValidNetworkRequestRestart()) {
-                // to prevent another restart call after restarting once unless the condition changed again
-                system.saveNetworkRequestRestart();
                 // Restart the app or device
                 uiSession.popUps.showCountDownPopUp(
                             qsTr("  Restart Device  "),
@@ -110,6 +119,12 @@ I_DeviceController {
                             true,
                             function () {
                                 if (system) {
+                                    // Save the network log before restarting
+                                    system.saveNetworkLogs();
+
+                                    // to prevent another restart call after restarting once unless the condition changed again
+                                    system.saveNetworkRequestRestart();
+
                                     system.rebootDevice();
                                 }
                             });
@@ -406,6 +421,12 @@ I_DeviceController {
                 }
 
             } else {
+                // Save network log when hasInternet is false
+                if (!NetworkInterface.isWifiDisconnectedManually && !NetworkInterface.connectedWifi) {
+                    console.log("Save the network log due to false hasInternet. The auto connection timer started from NetworkInterfase.")
+                    networkWatchdogLoggerTimer.triggered();
+                }
+
                 fetchContractorInfoTimer.stop();
             }
         }

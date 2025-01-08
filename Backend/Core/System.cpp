@@ -2339,6 +2339,10 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
 }
 
 void NUVE::System::saveNetworkLogs() {
+    static int networkLogCounter = 0;
+    networkLogCounter += 1;
+    SYS_LOG << "Save network log called for " << networkLogCounter;
+
     auto generatedFilename = generateLog();
     if (generatedFilename.isEmpty())
         return;
