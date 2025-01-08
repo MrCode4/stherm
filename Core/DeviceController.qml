@@ -556,7 +556,7 @@ I_DeviceController {
 
             //! Send install log when updte response data is ready.
             if(!sendInstallLogTimer.running && root.isNeedSendInstallLog) {
-                sendInstallLogTimer.start();
+                sendInstallLogTimer.triggered();
             }
 
             console.log("DeviceController.qml: Push onPushSuccess", stageMode)
