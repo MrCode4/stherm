@@ -987,10 +987,10 @@ I_DeviceController {
             root.lockMode &= ~mode; // remove flag
     }
 
-    function editModeEnabled(mode : int) {
-        return (root.editMode & mode) === mode ||
-                (root.lockMode & mode) === mode ||
-                (root.stageMode & mode) === mode;
+    function editModeEnabled(mode : int) : bool {
+        return ((root.editMode & mode) === mode) ||
+                ((root.lockMode & mode) === mode) ||
+                ((root.stageMode & mode) === mode);
     }
 
     function updateDeviceBacklight(isOn, color) : bool
@@ -1592,7 +1592,7 @@ I_DeviceController {
             return;
         }
 
-        if (true) {
+        if (false) {
             var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
             // TODO: update the hasChanges after merge.
             var hasChanges = AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type ||
