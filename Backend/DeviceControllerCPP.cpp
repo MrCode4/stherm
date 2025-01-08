@@ -62,6 +62,10 @@ static const QByteArray m_default_backdoor_relays = R"({
 }
 )";
 
+static const QByteArray m_default_Emulate_Warranty_flow = R"({
+    "emulateWarranty": // 0
+}
+)";
 
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
@@ -892,6 +896,8 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
         processBrightnessSettings(path);
     } else if (path.endsWith("relays.json")) {
         processRelaySettings(path);
+    } else if (path.endsWith("emulateWarrantyFlow.json")) {
+        processEmulateWarrantyFlow(path);
     } else {
         qWarning() << "Incompatible backdoor file, processed nothing";
     }
@@ -1508,6 +1514,16 @@ void DeviceControllerCPP::processRelaySettings(const QString &path)
     }
 }
 
+
+void DeviceControllerCPP::processEmulateWarrantyFlow(const QString &path)
+{
+    QJsonObject json = processJsonFile(path, {"emulateWarranty"});
+
+    if (!json.isEmpty() && json.value("emulateWarranty").toInt() == 1) {
+        emit emulateWarrantyFlow();
+    }
+}
+
 QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 {
     if (path.endsWith("backlight.json")) {
@@ -1521,6 +1537,9 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 
     } else if (path.endsWith("relays.json")) {
         return m_default_backdoor_relays;
+
+    } else if (path.endsWith("emulateWarrantyFlow.json")) {
+        return m_default_Emulate_Warranty_flow;
 
     } else {
         qWarning() << "Incompatible backdoor file, returning empty values";

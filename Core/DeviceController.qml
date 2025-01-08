@@ -406,6 +406,11 @@ I_DeviceController {
         function onAuxiliaryStatusChanged(isRunning: bool) {
             isRunningAuxiliaryHeating = isRunning;
         }
+
+        function onEmulateWarrantyFlow() {
+            console.log("Emulate warranty flow with backdoor");
+            root.postWarrantyReplacementFinsihed();
+        }
     }
 
 
