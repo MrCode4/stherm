@@ -225,7 +225,7 @@ BasePageView {
             leftSideColor:  "#ea0600"
             rightSideColor: "#0097cd"
             labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
-            from: minTemperature;
+            from: AppUtilities.getTruncatedvalue(minTemperature);
             to: maxTemperature;
         }
 
@@ -250,8 +250,10 @@ BasePageView {
                                                                                       minTemperature, maxTemperature);
 
         } else if (isCooling) {
-            singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
+            var value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
                                                                                       minTemperature, maxTemperature);
+
+            singleTemperatureSlider.control.value = AppUtilities.getTruncatedvalue(value);
 
         } else {
             //! Create schedule in auto and off mode.
@@ -278,8 +280,8 @@ BasePageView {
                 maxTemperature = singleTemperatureSlider.control.value;
             }
 
-            console.log("maxTemperature", maxTemperature)
-            console.log("minTemperature",minTemperature)
+            console.log("MAK In schedule maxTemperature", maxTemperature)
+            console.log("MAK In schedule minTemperature", minTemperature)
 
             // Save temperatures as celcius.
             schedule.minimumTemperature = isCelcius ? minTemperature : Utils.fahrenheitToCelsius(minTemperature);

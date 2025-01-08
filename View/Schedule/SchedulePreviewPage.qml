@@ -243,9 +243,9 @@ BasePageView {
 
                             } else if (scheduleToDisplay.systemMode === AppSpec.Cooling) {
                                 // Show the maximum temperature
-                                return Number(Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0,
-                                                                         appModel?.setting?.tempratureUnit)
-                                              ).toLocaleString(locale, "f", 0)
+                                var value = Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0, appModel?.setting?.tempratureUnit);
+                                value = AppUtilities.getTruncatedvalue(value);
+                                return Number(value).toLocaleString(locale, "f", 0)
                                         + ` \u00b0${unit}`;
 
                             } else {
