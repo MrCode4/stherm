@@ -24,6 +24,12 @@ BasePageView {
     //!
     readonly property ScheduleCPP   scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
 
+    //! Minimum temprature
+    property real               minTemprature: deviceController?._minimumTemperatureUI ?? 40
+
+    //! Maximum temprature
+    property real               maxTemprature: deviceController?._maximumTemperatureUI ?? 90
+
     /* Signals
      * ****************************************************************************************/
     signal done();
@@ -237,26 +243,29 @@ BasePageView {
                         text: {
                             if (scheduleToDisplay.systemMode === AppSpec.Heating || scheduleToDisplay.systemMode === AppSpec.EmergencyHeat) {
                                 // Show the minimum temperature
-                                return Number(Utils.convertedTemperature(scheduleToDisplay?.minimumTemperature ?? 10,
-                                                                         appModel?.setting?.tempratureUnit)
-                                              ).toLocaleString(locale, "f", 0) + ` \u00b0${unit}`;
+                                var value =  Utils.convertedTemperatureClamped(scheduleToDisplay?.minimumTemperature ?? 10, appModel?.setting?.tempratureUnit, minTemprature, maxTemprature);
+                                value = AppUtilities.getTruncatedvalue(value);
+
+                                return Number(value).toLocaleString(locale, "f", 0) + ` \u00b0${unit}`;
 
                             } else if (scheduleToDisplay.systemMode === AppSpec.Cooling) {
                                 // Show the maximum temperature
-                                var value = Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0, appModel?.setting?.tempratureUnit);
+                                var value = Utils.convertedTemperatureClamped(scheduleToDisplay?.maximumTemperature ?? 0, appModel?.setting?.tempratureUnit, minTemprature, maxTemprature);
                                 value = AppUtilities.getTruncatedvalue(value);
                                 return Number(value).toLocaleString(locale, "f", 0)
                                         + ` \u00b0${unit}`;
 
                             } else {
 
+                                var minValue = Utils.convertedTemperatureClamped(scheduleToDisplay?.minimumTemperature ?? 10, appModel?.setting?.tempratureUnit, minTemprature, maxTemprature);
+                                minValue = AppUtilities.getTruncatedvalue(minValue);
+
+                                var maxValue = Utils.convertedTemperatureClamped(scheduleToDisplay?.maximumTemperature ?? 0, appModel?.setting?.tempratureUnit, minTemprature, maxTemprature);
+                                maxValue = AppUtilities.getTruncatedvalue(maxValue);
+
                                 // Show the maximum and minimum temperature values.
-                                return Number(Utils.convertedTemperature(scheduleToDisplay?.minimumTemperature ?? 10,
-                                                                         appModel?.setting?.tempratureUnit)
-                                              ).toLocaleString(locale, "f", 0) + " - " +
-                                        Number(Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0,
-                                                                          appModel?.setting?.tempratureUnit)
-                                               ).toLocaleString(locale, "f", 0)
+                                return Number(minValue).toLocaleString(locale, "f", 0) + " - " +
+                                        Number(maxValue).toLocaleString(locale, "f", 0)
                                         + ` \u00b0${unit}`
                             }
                         }

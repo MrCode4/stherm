@@ -689,10 +689,10 @@ Control {
     function updateAutoModeTemperatureValueFromSchedule() {
         if (currentSchedule) {
             // TODO: Check for clamping data
-            var tempValue = Utils.convertedTemperature(currentSchedule.minimumTemperature, temperatureUnit);
+            var tempValue = Utils.convertedTemperatureClamped(currentSchedule.minimumTemperature, temperatureUnit, minTemprature, maxTemprature);
             tempSliderDoubleHandle.first.value = tempValue;
 
-            tempValue = Utils.convertedTemperature(currentSchedule.maximumTemperature, temperatureUnit);
+            tempValue = Utils.convertedTemperatureClamped(currentSchedule.maximumTemperature, temperatureUnit, minTemprature, maxTemprature);
             tempSliderDoubleHandle.second.value =  tempValue;
         }
     }

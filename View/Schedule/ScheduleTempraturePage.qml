@@ -246,8 +246,10 @@ BasePageView {
 
     function updateSliderValues() {
         if (isHeating) {
-            singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
-                                                                                      minTemperature, maxTemperature);
+            var value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
+                                                          minTemperature, maxTemperature);
+
+            singleTemperatureSlider.control.value =  AppUtilities.getTruncatedvalue(value);
 
         } else if (isCooling) {
             var value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
@@ -256,12 +258,19 @@ BasePageView {
             singleTemperatureSlider.control.value = AppUtilities.getTruncatedvalue(value);
 
         } else {
-            //! Create schedule in auto and off mode.
-            _tempSlider.first.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? _tempSlider.from, temperatureUnit,
-                                                                        minTemperature, maxTemperature - _tempSlider.difference);
+            var minValue = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? _tempSlider.from, temperatureUnit,
+                                                             minTemperature, maxTemperature - _tempSlider.difference);
+            minValue = AppUtilities.getTruncatedvalue(minValue);
 
-            _tempSlider.second.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? _tempSlider.to, temperatureUnit,
-                                                                         _tempSlider.first.value + _tempSlider.difference, maxTemperature);
+            var maxValue = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? _tempSlider.to, temperatureUnit,
+                                                             _tempSlider.first.value + _tempSlider.difference, maxTemperature);
+            maxValue = AppUtilities.getTruncatedvalue(maxValue);
+
+
+            //! Create schedule in auto and off mode.
+            _tempSlider.first.value = minValue;
+
+            _tempSlider.second.value = maxValue;
         }
     }
 
