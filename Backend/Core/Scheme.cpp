@@ -1257,6 +1257,7 @@ bool Scheme::auxiliaryHeatingLoopStage2()
         }
 
         sendAlertIfNeeded();
+        waitLoop(30000);
     }
 
     if (!mRestarting && !stopWork) {
