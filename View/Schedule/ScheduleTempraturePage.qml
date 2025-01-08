@@ -289,8 +289,8 @@ BasePageView {
                 maxTemperature = singleTemperatureSlider.control.value;
             }
 
-            console.log("MAK In schedule maxTemperature", maxTemperature)
-            console.log("MAK In schedule minTemperature", minTemperature)
+            minTemperature = AppUtilities.getTruncatedvalue(minTemperature);
+            maxTemperature = AppUtilities.getTruncatedvalue(maxTemperature);
 
             // Save temperatures as celcius.
             schedule.minimumTemperature = isCelcius ? minTemperature : Utils.fahrenheitToCelsius(minTemperature);
