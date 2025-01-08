@@ -39,6 +39,7 @@ private:
 
 public:
     static NetworkInterface* me();
+    static NetworkInterface* create(QQmlEngine*, QJSEngine*) {return me();}
 
     /* Public methods
      * ****************************************************************************************/
