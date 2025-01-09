@@ -138,6 +138,21 @@ bool Relay::auxiliaryHeatingStage1(bool driveAux1AndETogether) {
     return true;
 }
 
+bool Relay::EmergencyAuxiliaryHeating(bool useStage1, bool driveAux1AndETogether) {
+
+    if (useStage1) {
+        mRelay.w3 = STHERM::RelayMode::ON;
+
+        if (driveAux1AndETogether)
+            mRelay.w1 = STHERM::RelayMode::ON;
+
+    } else {
+        heatingStage3();
+    }
+
+    return true;
+}
+
 bool Relay::turnOffHeatPump() {
     mRelay.y1 = STHERM::RelayMode::OFF;
     mRelay.y2 = STHERM::RelayMode::OFF;
