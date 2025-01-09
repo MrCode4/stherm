@@ -2254,7 +2254,7 @@ void NUVE::System::generateInstallLog()
 
     log["ConnetedNetwork"] = networkLog;
 
-    log["iw"] = NetworkInterface::me()->nmcliInterface()->iwOut();
+    log["iw"] = NetworkInterface::me()->refreshWiFiResult();
 
     auto lastSettingsResponseData =  mSync->lastSettingsResponseData();
     if (lastSettingsResponseData.empty()) {

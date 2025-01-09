@@ -186,9 +186,8 @@ void NetworkInterface::tryConnectToSavedInrangeWifi(WifiInfo *triedWifi) {
     }
 }
 
-NmcliInterface *NetworkInterface::nmcliInterface() const
-{
-    return mNmcliInterface;
+QString NetworkInterface::refreshWiFiResult() const {
+    return mNmcliInterface->iwOut();
 }
 
 NetworkInterface::WifisQmlList NetworkInterface::wifis()

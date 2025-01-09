@@ -94,10 +94,11 @@ public:
 
     void printWifisInformation(const QString &due);
 
+    //! WiFi Refresh Results (IW output)
+    QString refreshWiFiResult() const;
+
     /* Private methods and slots
      * ****************************************************************************************/
-    NmcliInterface *nmcliInterface() const;
-
 private:
     static WifiInfo*    networkAt(WifisQmlList* list, qsizetype index);
     static qsizetype    networkCount(WifisQmlList* list);

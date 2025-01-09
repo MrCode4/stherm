@@ -172,7 +172,7 @@ I_DeviceController {
 
         onTriggered: {
             if (root.isNeedSendInstallLog) {
-                console.log("sending intsall logs")
+                console.log("sending install logs")
                 system.generateInstallLog();
             }
         }
