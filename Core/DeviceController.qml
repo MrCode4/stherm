@@ -1879,8 +1879,8 @@ I_DeviceController {
         // Fahrenheit is more sensitive than Celsius,
         // so for every one degree change,
         // it needs to be sent to the server.
-        var isVisualTempChangedF = Math.abs(Math.round(root.effectiveTemperature * 1.8 ) - Math.round((result?.effectiveTemperature ?? root.effectiveTemperature) * 1.8)) > 0
-        var isVisualTempChangedC = Math.abs(Math.round(root.effectiveTemperature * 1.0 ) - Math.round((result?.effectiveTemperature ?? root.effectiveTemperature) * 1.0)) > 0
+        var isVisualTempChangedF = Math.abs(Math.round(root.displayCurrentTemp * 1.8 ) - Math.round((result?.processedTemperature ?? root.displayCurrentTemp) * 1.8)) > 0
+        var isVisualTempChangedC = Math.abs(Math.round(root.displayCurrentTemp * 1.0 ) - Math.round((result?.processedTemperature ?? root.displayCurrentTemp) * 1.0)) > 0
         var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
         var isCo2IdChanged = device._co2_id !== co2Id;
         var isNeedToPushToServer = isVisualHumChanged ||
@@ -1889,7 +1889,7 @@ I_DeviceController {
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
-        root.displayCurrentTemp = result?.effectiveTemperature ?? 0
+        root.displayCurrentTemp = result?.processedTemperature ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = co2 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brightness ?? 0

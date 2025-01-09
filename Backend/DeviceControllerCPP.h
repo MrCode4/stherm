@@ -314,7 +314,7 @@ private:
     //! Start/Stop the timer for get the outdoor temperature
     void checkForOutdoorTemperature();
 
-    double calculateEffectiveTemperature(const double &currentTemperatureC) const;
+    double calculateProcessedTemperature(const double &temperatureC) const;
 
 private:
     /* Attributes

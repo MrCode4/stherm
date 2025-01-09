@@ -1484,7 +1484,7 @@ void Scheme::sendRelays(bool forceSend)
                                   mRelay->currentHeatingStage(),
                                   mRelay->currentCoolingStage());
 
-    // Used to find the
+    // Used to find the calculate the processedTemperature
     mDataProvider->setActiveSystemMode(mRelay->currentState());
 
     LOG_CHECK_SCHEME(false) << "finished";
