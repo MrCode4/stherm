@@ -88,7 +88,7 @@ I_PopUp {
 
             leftPadding: 8
             rightPadding: 8
-            text: "Conatact\nContractor"
+            text: "Contact\nContractor"
             font.pointSize: Qt.application.font.pointSize * 0.8
 
             visible: message.type === Message.Type.SystemAlert

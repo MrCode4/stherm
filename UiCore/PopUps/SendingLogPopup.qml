@@ -11,6 +11,11 @@ import Stherm
 I_PopUp {
     id: root
 
+
+    /* Property declaration
+     * ****************************************************************************************/
+    property DeviceController deviceController
+
     /* Object properties
      * ****************************************************************************************/
     title: ""

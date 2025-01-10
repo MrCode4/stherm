@@ -265,6 +265,8 @@ Q_SIGNALS:
     void isNeedOutdoorTemperatureChanged();
     void isEligibleOutdoorTemperatureChanged();
 
+    void emulateWarrantyFlow();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData, bool addToData = false);
@@ -305,7 +307,9 @@ private:
     void processFanSettings(const QString &path);
     void processBrightnessSettings(const QString &path);
     void processRelaySettings(const QString &path);
+    void processEmulateWarrantyFlow(const QString &path);
     QByteArray defaultSettings(const QString &path);
+    bool writeDefaultSettings(const QString &path);
 
     //! Start/Stop the timer for get the outdoor temperature
     void checkForOutdoorTemperature();
@@ -343,7 +347,7 @@ private:
     NUVE::System *m_system;
 
     QString m_backdoorPath = "/usr/local/bin/backdoor/";
-    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" , "relays.json" };
+    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" , "relays.json", "emulateWarrantyFlow.json" };
     QFileSystemWatcher m_fileSystemWatcher;
 
     QTimer mBacklightTimer;

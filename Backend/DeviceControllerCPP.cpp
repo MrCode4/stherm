@@ -62,6 +62,10 @@ static const QByteArray m_default_backdoor_relays = R"({
 }
 )";
 
+static const QByteArray m_default_Emulate_Warranty_flow = R"({
+    "emulateWarranty": // 0
+}
+)";
 
 //! Set CPU governer in the zeus base system
 //! It is strongly dependent on the kernel.
@@ -132,15 +136,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     for (const QString& fileName : m_watchFiles)
     {
         QString path = m_backdoorPath + fileName;
-        QFile file(path);
-        if (file.open(QIODevice::WriteOnly))
-        {
-            file.write(defaultSettings(path));
-            file.close();
-            qInfo() << "Backdoor setting file" << path << "reset to default! finalize it to apply.";
-        } else {
-            qCritical() << "Backdoor setting file" << path << "can not be opened to be reset";
-        }
+        writeDefaultSettings(path);
 
         m_fileSystemWatcher.addPath(path);
     }
@@ -892,6 +888,8 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
         processBrightnessSettings(path);
     } else if (path.endsWith("relays.json")) {
         processRelaySettings(path);
+    } else if (path.endsWith("emulateWarrantyFlow.json")) {
+        processEmulateWarrantyFlow(path);
     } else {
         qWarning() << "Incompatible backdoor file, processed nothing";
     }
@@ -1508,6 +1506,24 @@ void DeviceControllerCPP::processRelaySettings(const QString &path)
     }
 }
 
+
+void DeviceControllerCPP::processEmulateWarrantyFlow(const QString &path)
+{
+    QJsonObject json = processJsonFile(path, {"emulateWarranty"});
+
+    if (!json.isEmpty() && json.value("emulateWarranty").toInt() == 1) {
+        emit emulateWarrantyFlow();
+
+        // reset path to default for next time editing as this is a one time command backdoor
+        m_fileSystemWatcher.removePath(path);
+        QString path = m_backdoorPath + "emulateWarrantyFlow.json";
+        writeDefaultSettings(path);
+        m_fileSystemWatcher.addPath(path);
+    } else {
+        qWarning() << "emulateWarranty backdoor file is corrupted.";
+    }
+}
+
 QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 {
     if (path.endsWith("backlight.json")) {
@@ -1522,11 +1538,29 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
     } else if (path.endsWith("relays.json")) {
         return m_default_backdoor_relays;
 
+    } else if (path.endsWith("emulateWarrantyFlow.json")) {
+        return m_default_Emulate_Warranty_flow;
+
     } else {
         qWarning() << "Incompatible backdoor file, returning empty values";
     }
 
     return "";
+}
+
+bool DeviceControllerCPP::writeDefaultSettings(const QString &path)
+{
+    QFile file(path);
+    if (file.open(QIODevice::WriteOnly))
+    {
+        file.write(defaultSettings(path));
+        file.close();
+        qInfo() << "Backdoor setting file" << path << "reset to default! finalize it to apply.";
+        return true;
+    }
+
+    qWarning() << "Backdoor setting file" << path << "can not be opened to be reset";
+    return false;
 }
 
 void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {

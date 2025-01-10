@@ -1257,6 +1257,7 @@ bool Scheme::auxiliaryHeatingLoopStage2()
         }
 
         sendAlertIfNeeded();
+        waitLoop(30000);
     }
 
     if (!mRestarting && !stopWork) {
@@ -1310,14 +1311,8 @@ void Scheme::emergencyHeatingLoop()
 
     mActiveHeatPumpMode =  AppSpecCPP::EmergencyHeat;
     mRelay->setAllOff();
-
-    if (sysSetup->heatStage == 1 || !sysSetup->driveAuxAsEmergency) {
-        // base on the variable it turns on different relays
-        mRelay->auxiliaryHeatingStage1(sysSetup->driveAux1AndETogether);
-
-    } else { //  for sysSetup->heatStage >= 2 and sysSetup->driveAuxAsEmergency is true
-        mRelay->heatingStage3();
-    }
+    mRelay->emergencyAuxiliaryHeating(sysSetup->heatStage == 1 || !sysSetup->driveAuxAsEmergency,
+                                      sysSetup->driveAux1AndETogether);
 
     mTEONTimer.restart();
 

@@ -2124,11 +2124,11 @@ bool NUVE::System::sendLogFile(bool showAlert)
             mLastReceivedCommands.remove(Cmd_PushLogs);
         }
 
-        emit logPrepared(false);
+        if (showAlert) emit logPrepared(false);
         return false;
     }
 
-    emit logPrepared(true);
+    if (showAlert) emit logPrepared(true);
 
     return sendLogToServer(QStringList(filename), showAlert, true);
 }
@@ -2339,6 +2339,10 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
 }
 
 void NUVE::System::saveNetworkLogs() {
+    static int networkLogCounter = 0;
+    networkLogCounter += 1;
+    SYS_LOG << "Save network log called for " << networkLogCounter;
+
     auto generatedFilename = generateLog();
     if (generatedFilename.isEmpty())
         return;

@@ -95,14 +95,23 @@ I_DeviceController {
     //! Active the Network Connection Watchdog when device has not internet for 1 hour.
     property Timer networkWatchdogTimer: Timer {
         repeat: false
-        running: NetworkInterface.connectedWifi && !NetworkInterface.hasInternet
+        running: (!NetworkInterface.connectedWifi && !NetworkInterface.isWifiDisconnectedManually) ||
+                 (NetworkInterface.connectedWifi && !NetworkInterface.hasInternet)
         interval: 1 * 60 * 60 * 1000
+
+        onRunningChanged: {
+            console.log("Network Watchdog Timer running changed: ", running, NetworkInterface.connectedWifi,
+                        NetworkInterface.isWifiDisconnectedManually, NetworkInterface.hasInternet)
+            // Send network log when hasInternet is true
+            if (!running) {
+                console.log("Save the network log due to Network Watchdog Timer running changed to false.");
+                networkWatchdogLoggerTimer.triggered();
+            }
+        }
 
         onTriggered: {
             //  Check the isValidNetworkRequestRestart to check in direct calls (triggered).
             if (system.isValidNetworkRequestRestart()) {
-                // to prevent another restart call after restarting once unless the condition changed again
-                system.saveNetworkRequestRestart();
                 // Restart the app or device
                 uiSession.popUps.showCountDownPopUp(
                             qsTr("  Restart Device  "),
@@ -110,6 +119,12 @@ I_DeviceController {
                             true,
                             function () {
                                 if (system) {
+                                    // Save the network log before restarting
+                                    system.saveNetworkLogs();
+
+                                    // to prevent another restart call after restarting once unless the condition changed again
+                                    system.saveNetworkRequestRestart();
+
                                     system.rebootDevice();
                                 }
                             });
@@ -391,6 +406,11 @@ I_DeviceController {
         function onAuxiliaryStatusChanged(isRunning: bool) {
             isRunningAuxiliaryHeating = isRunning;
         }
+
+        function onEmulateWarrantyFlow() {
+            console.log("Emulate warranty flow with backdoor");
+            root.postWarrantyReplacementFinsihed();
+        }
     }
 
 
@@ -406,6 +426,12 @@ I_DeviceController {
                 }
 
             } else {
+                // Save network log when hasInternet is false
+                if (!NetworkInterface.isWifiDisconnectedManually && !NetworkInterface.connectedWifi) {
+                    console.log("Save the network log due to false hasInternet. The auto connection timer started from NetworkInterfase.")
+                    networkWatchdogLoggerTimer.triggered();
+                }
+
                 fetchContractorInfoTimer.stop();
             }
         }
@@ -961,10 +987,10 @@ I_DeviceController {
             root.lockMode &= ~mode; // remove flag
     }
 
-    function editModeEnabled(mode : int) {
-        return (root.editMode & mode) === mode ||
-                (root.lockMode & mode) === mode ||
-                (root.stageMode & mode) === mode;
+    function editModeEnabled(mode : int) : bool {
+        return ((root.editMode & mode) === mode) ||
+                ((root.lockMode & mode) === mode) ||
+                ((root.stageMode & mode) === mode);
     }
 
     function updateDeviceBacklight(isOn, color) : bool
@@ -1566,36 +1592,60 @@ I_DeviceController {
             return;
         }
 
-        if (true) {
-            var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
-            // TODO: update the hasChanges after merge.
-            var hasChanges = AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type ||
-                    device.systemSetup.heatPumpEmergency != settings.heatPumpEmergency ||
-                    device.systemSetup.heatStage != settings.heatStage ||
-                    device.systemSetup.coolStage != settings.coolStage ||
-                    device.systemSetup.heatPumpOBState != settings.heatPumpOBState ||
-                    device.systemSetup.systemRunDelay != settings.systemRunDelay ||
-                    device.systemSetup.systemAccessories.accessoriesType != settings.systemAccessories.mode ||
-                    device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType ||
+        var hasChangeParams = [];
 
-                    device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold ||
-                    device.systemSetup.isAUXAuto != settings.isAUXAuto ||
-                    device.systemSetup.dualFuelHeatingModeDefault != settings.dualFuelHeatingModeDefault ||
+        if (AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type)
+            hasChangeParams.push("systemType");
+        if (device.systemSetup.heatPumpEmergency != settings.heatPumpEmergency)
+            hasChangeParams.push("heatPumpEmergency");
+        if (device.systemSetup.heatStage != settings.heatStage)
+            hasChangeParams.push("heatStage");
+        if (device.systemSetup.coolStage != settings.coolStage)
+            hasChangeParams.push("coolStage");
+        if (device.systemSetup.heatPumpOBState != settings.heatPumpOBState)
+            hasChangeParams.push("heatPumpOBState");
+        if (device.systemSetup.systemRunDelay != settings.systemRunDelay)
+            hasChangeParams.push("systemRunDelay");
+        if (device.systemSetup.systemAccessories.accessoriesType != settings.systemAccessories.mode)
+            hasChangeParams.push("accessoriesType");
+        var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
+        if (device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType)
+            hasChangeParams.push("accessoriesWireType");
+        if (device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold)
+            hasChangeParams.push("dualFuelThreshold");
+        if (device.systemSetup.isAUXAuto != settings.isAUXAuto)
+            hasChangeParams.push("isAUXAuto");
+        if (device.systemSetup.dualFuelHeatingModeDefault != settings.dualFuelHeatingModeDefault)
+            hasChangeParams.push("dualFuelHeatingModeDefault");
+        if (settings.hasOwnProperty("emergencyMinimumTime") &&
+                device.systemSetup.emergencyMinimumTime != settings.emergencyMinimumTime)
+            hasChangeParams.push("emergencyMinimumTime");
+        if (settings.hasOwnProperty("useAuxiliaryParallelHeatPump") &&
+                device.systemSetup.useAuxiliaryParallelHeatPump != settings.useAuxiliaryParallelHeatPump)
+            hasChangeParams.push("useAuxiliaryParallelHeatPump");
+        if (settings.hasOwnProperty("driveAux1AndETogether") &&
+                device.systemSetup.driveAux1AndETogether != settings.driveAux1AndETogether)
+            hasChangeParams.push("driveAux1AndETogether");
+        if (settings.hasOwnProperty("driveAuxAsEmergency") &&
+                device.systemSetup.driveAuxAsEmergency != settings.driveAuxAsEmergency)
+            hasChangeParams.push("driveAuxAsEmergency");
+        if (settings.hasOwnProperty("auxiliaryHeating") &&
+                device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating)
+            hasChangeParams.push("auxiliaryHeating");
+        if (settings.hasOwnProperty("runFanWithAuxiliary") &&
+                device.systemSetup.runFanWithAuxiliary != settings.runFanWithAuxiliary)
+            hasChangeParams.push("runFanWithAuxiliary");
 
-                    (settings.hasOwnProperty("emergencyMinimumTime")         && device.systemSetup.emergencyMinimumTime != settings.emergencyMinimumTime) ||
-                    (settings.hasOwnProperty("useAuxiliaryParallelHeatPump") && device.systemSetup.useAuxiliaryParallelHeatPump != settings.useAuxiliaryParallelHeatPump) ||
-                    (settings.hasOwnProperty("driveAux1AndETogether")        && device.systemSetup.driveAux1AndETogether != settings.driveAux1AndETogether) ||
-                    (settings.hasOwnProperty("driveAuxAsEmergency")          && device.systemSetup.driveAuxAsEmergency != settings.driveAuxAsEmergency) ||
-                    (settings.hasOwnProperty("auxiliaryHeating")             && device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating) ||
-                    (settings.hasOwnProperty("runFanWithAuxiliary")          && device.systemSetup.runFanWithAuxiliary != settings.runFanWithAuxiliary);
+        if (hasChangeParams.length > 0) {
+            console.log("Changed paramters are :", hasChangeParams, JSON.stringify(settings))
 
-            if (hasChanges) {
+            var allowUser2Choose = false;
+            if (allowUser2Choose) {
                 uiSession.popUps.showSystemSetupUpdateConfirmation(settings);
+            } else {
+                updateEditMode(AppSpec.EMSystemSetup);
+                saveSettings();
             }
-
-        } else {
-            updateEditMode(AppSpec.EMSystemSetup);
-            saveSettings();
         }
     }
 
