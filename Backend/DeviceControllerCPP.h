@@ -309,6 +309,7 @@ private:
     void processRelaySettings(const QString &path);
     void processEmulateWarrantyFlow(const QString &path);
     QByteArray defaultSettings(const QString &path);
+    bool writeDefaultSettings(const QString &path);
 
     //! Start/Stop the timer for get the outdoor temperature
     void checkForOutdoorTemperature();

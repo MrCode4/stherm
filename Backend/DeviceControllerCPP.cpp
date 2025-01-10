@@ -136,15 +136,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     for (const QString& fileName : m_watchFiles)
     {
         QString path = m_backdoorPath + fileName;
-        QFile file(path);
-        if (file.open(QIODevice::WriteOnly))
-        {
-            file.write(defaultSettings(path));
-            file.close();
-            qInfo() << "Backdoor setting file" << path << "reset to default! finalize it to apply.";
-        } else {
-            qCritical() << "Backdoor setting file" << path << "can not be opened to be reset";
-        }
+        writeDefaultSettings(path);
 
         m_fileSystemWatcher.addPath(path);
     }
@@ -1521,6 +1513,14 @@ void DeviceControllerCPP::processEmulateWarrantyFlow(const QString &path)
 
     if (!json.isEmpty() && json.value("emulateWarranty").toInt() == 1) {
         emit emulateWarrantyFlow();
+
+        // reset path to default for next time editing as this is a one time command backdoor
+        m_fileSystemWatcher.removePath(path);
+        QString path = m_backdoorPath + "emulateWarrantyFlow.json";
+        writeDefaultSettings(path);
+        m_fileSystemWatcher.addPath(path);
+    } else {
+        qWarning() << "emulateWarranty backdoor file is corrupted.";
     }
 }
 
@@ -1546,6 +1546,21 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
     }
 
     return "";
+}
+
+bool DeviceControllerCPP::writeDefaultSettings(const QString &path)
+{
+    QFile file(path);
+    if (file.open(QIODevice::WriteOnly))
+    {
+        file.write(defaultSettings(path));
+        file.close();
+        qInfo() << "Backdoor setting file" << path << "reset to default! finalize it to apply.";
+        return true;
+    }
+
+    qWarning() << "Backdoor setting file" << path << "can not be opened to be reset";
+    return false;
 }
 
 void DeviceControllerCPP::writeSensorData(const QVariantMap& data) {
