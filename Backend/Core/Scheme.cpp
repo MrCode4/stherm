@@ -1311,7 +1311,7 @@ void Scheme::emergencyHeatingLoop()
 
     mActiveHeatPumpMode =  AppSpecCPP::EmergencyHeat;
     mRelay->setAllOff();
-    mRelay->EmergencyAuxiliaryHeating(sysSetup->heatStage == 1 || !sysSetup->driveAuxAsEmergency,
+    mRelay->emergencyAuxiliaryHeating(sysSetup->heatStage == 1 || !sysSetup->driveAuxAsEmergency,
                                       sysSetup->driveAux1AndETogether);
 
     mTEONTimer.restart();

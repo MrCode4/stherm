@@ -135,10 +135,13 @@ bool Relay::auxiliaryHeatingStage1(bool driveAux1AndETogether) {
     if (driveAux1AndETogether)
         mRelay.w3 = STHERM::RelayMode::ON;
 
+    startTempTimer(AppSpecCPP::SystemMode::Heating);
+    current_state = AppSpecCPP::SystemMode::Heating;
+
     return true;
 }
 
-bool Relay::EmergencyAuxiliaryHeating(bool useStage1, bool driveAux1AndETogether) {
+bool Relay::emergencyAuxiliaryHeating(bool useStage1, bool driveAux1AndETogether) {
 
     if (useStage1) {
         mRelay.w3 = STHERM::RelayMode::ON;
@@ -149,6 +152,9 @@ bool Relay::EmergencyAuxiliaryHeating(bool useStage1, bool driveAux1AndETogether
     } else {
         heatingStage3();
     }
+
+    startTempTimer(AppSpecCPP::SystemMode::EmergencyHeat);
+    current_state = AppSpecCPP::SystemMode::EmergencyHeat;
 
     return true;
 }
@@ -163,6 +169,9 @@ bool Relay::turnOffHeatPump() {
 bool Relay::auxiliaryHeatingStage2(bool turnOn) {
     mRelay.w1 = turnOn ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
     mRelay.w2 = turnOn ? STHERM::RelayMode::ON : STHERM::RelayMode::OFF;
+
+    startTempTimer(AppSpecCPP::SystemMode::Heating);
+    current_state = AppSpecCPP::SystemMode::Heating;
 
     return true;
 }

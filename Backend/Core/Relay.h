@@ -78,7 +78,7 @@ public:
     //! Turn off the heat pump, Y wires.
     bool turnOffHeatPump();
 
-    bool EmergencyAuxiliaryHeating(bool useStage3, bool driveAux1AndETogether);
+    bool emergencyAuxiliaryHeating(bool useStage3, bool driveAux1AndETogether);
 
 private:
     explicit Relay();
