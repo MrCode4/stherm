@@ -677,6 +677,8 @@ Control {
                                                       minTemprature,
                                                       maxTemprature);
         _tempSlider.value = (value);
+        // to check the model again and update scheme if needed
+        updateTemperatureModel();
     }
 
     //! Update model based on _tempSlider value in heating/cooling mode.

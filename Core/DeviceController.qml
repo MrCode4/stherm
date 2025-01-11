@@ -1429,14 +1429,12 @@ I_DeviceController {
 
         var temperatureValue = Utils.clampValue(temperature, _minimumTemperatureC, _maximumTemperatureC);
 
+        // server truncations may lead to truncation error and loss of precission as we truncate again
+        if (Math.abs(temperatureValue - device.requestedTemp) < 0.1)
+            return;
+
+        // move to ui unit truncate for scheme and move back
         var tempServerValue = Utils.convertedTemperature(temperatureValue, root.temperatureUnit);
-        var tempRequestedTemp = Utils.convertedTemperature(device.requestedTemp, root.temperatureUnit);
-
-        // Round the server value
-        // We ignore some other cases.
-        if (Math.abs(tempRequestedTemp - tempServerValue) < 0.1)
-            tempServerValue = tempServerValue.toFixed(0);
-
         let truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
         truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
                           ? Utils.fahrenheitToCelsius(truncatedValue)
@@ -1444,8 +1442,8 @@ I_DeviceController {
 
         deviceControllerCPP.setRequestedTemperature(truncatedValue);
 
-        if (device.requestedTemp !== truncatedValue) {
-            device.requestedTemp = truncatedValue;
+        if (device.requestedTemp !== temperatureValue) { // not needed as already checked
+            device.requestedTemp = temperatureValue;
             root.saveSettings();
         }
     }
