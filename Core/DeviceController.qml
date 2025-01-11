@@ -1755,43 +1755,28 @@ I_DeviceController {
                                               AppSpec.autoMaximumTemperatureC);
         }
 
-        var tempServerValue = Utils.convertedTemperature(auto_temp_low, root.temperatureUnit);
-        var tempRequestedTemp = Utils.convertedTemperature(device.autoMinReqTemp, root.temperatureUnit);
+        if (Math.abs(auto_temp_low - device.autoMinReqTemp) > 0.1) {
+            var tempServerValue = Utils.convertedTemperature(auto_temp_low, root.temperatureUnit);
+            let truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
+            truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                              ? Utils.fahrenheitToCelsius(truncatedValue)
+                              : truncatedValue);
 
-        // Round the server value
-        // We ignore some other cases.
-        if (Math.abs(tempRequestedTemp - tempServerValue) < 0.1)
-            tempServerValue = tempServerValue.toFixed(0);
+            deviceControllerCPP.setAutoMinReqTemp(truncatedValue);
 
-        let truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
-        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
-                          ? Utils.fahrenheitToCelsius(truncatedValue)
-                          : truncatedValue);
-
-        deviceControllerCPP.setAutoMinReqTemp(truncatedValue);
-
-        if (device.autoMinReqTemp !== truncatedValue) {
-            device.autoMinReqTemp = truncatedValue;
+            device.autoMinReqTemp = auto_temp_low;
         }
 
+        if (Math.abs(auto_temp_high - device.autoMaxReqTemp) > 0.1) {
+            tempServerValue = Utils.convertedTemperature(auto_temp_high, root.temperatureUnit);
+            truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
+            truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                              ? Utils.fahrenheitToCelsius(truncatedValue)
+                              : truncatedValue);
 
-        tempServerValue = Utils.convertedTemperature(auto_temp_high, root.temperatureUnit);
-        tempRequestedTemp = Utils.convertedTemperature(device.autoMaxReqTemp, root.temperatureUnit);
+            deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
 
-        // Round the server value
-        // We ignore some other cases.
-        if (Math.abs(tempRequestedTemp - tempServerValue) < 0.1)
-            tempServerValue = tempServerValue.toFixed(0);
-
-        truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
-        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
-                          ? Utils.fahrenheitToCelsius(truncatedValue)
-                          : truncatedValue);
-
-        deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
-
-        if (device.autoMaxReqTemp !== truncatedValue) {
-            device.autoMaxReqTemp = truncatedValue;
+            device.autoMaxReqTemp = auto_temp_high;
         }
     }
 
