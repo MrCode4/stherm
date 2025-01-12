@@ -128,12 +128,12 @@ Control {
 
                 function onAutoMinReqTempChanged()
                 {
-                    tempSliderDoubleHandle.updateFirstValue();
+                    updateFirstSecondValuesTmr.restart();
                 }
 
                 function onAutoMaxReqTempChanged()
                 {
-                    tempSliderDoubleHandle.updateSecondValue();
+                    updateFirstSecondValuesTmr.restart();
                 }
             }
 
@@ -181,29 +181,6 @@ Control {
                     let value = second.value;
                     deviceController.setAutoMaxReqTemp(value);
                 }
-            }
-
-            function updateFirstValue()
-            {
-                if (!device || currentSchedule) return;
-
-                let value = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
-                                                              temperatureUnit,
-                                                              minTemprature,
-                                                              maxTemprature);
-
-                first.value = value;
-            }
-
-            function updateSecondValue()
-            {
-                if (!device || currentSchedule) return;
-
-                let value = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
-                                                              temperatureUnit,
-                                                              minTemprature,
-                                                              maxTemprature);
-                second.value = value;
             }
 
             //! Update the first and second slider values.

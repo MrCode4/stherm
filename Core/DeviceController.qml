@@ -1427,23 +1427,10 @@ I_DeviceController {
             return;
         }
 
-        var temperatureValue = Utils.clampValue(temperature, _minimumTemperatureC, _maximumTemperatureC);
-
-        // server truncations may lead to truncation error and loss of precission as we truncate again
-        if (Math.abs(temperatureValue - device.requestedTemp) < 0.1)
-            return;
-
-        // move to ui unit truncate for scheme and move back
-        var tempServerValue = Utils.convertedTemperature(temperatureValue, root.temperatureUnit);
-        let truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
-        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
-                          ? Utils.fahrenheitToCelsius(truncatedValue)
-                          : truncatedValue);
-
-        deviceControllerCPP.setRequestedTemperature(truncatedValue);
-
-        if (device.requestedTemp !== temperatureValue) { // not needed as already checked
-            device.requestedTemp = temperatureValue;
+         // the data will be clamped on ui and if changed it will call setDesiredTemperature for updating truncated version
+         // as well as updating clamped version! it will push again if clamped version differs
+        if (device.requestedTemp !== temperature) { // compare fuzzy
+            device.requestedTemp = temperature;
             root.saveSettings();
         }
     }
@@ -1730,7 +1717,6 @@ I_DeviceController {
     //! If the clamping logic has changed, review the corresponding functionality in the
     //! DesiredTemperatureItem class (specifically the updateFirstSecondValues function).
     function setAutoTemperatureFromServer (settings) {
-
         if (!device)
             return;
 
@@ -1745,37 +1731,17 @@ I_DeviceController {
         // If both auto_temp_low and auto_temp_high are zero, use default values.
         // If auto_temp_low or auto_temp_high is undefined, keep default values.
         if (settings?.auto_temp_low !== 0 || settings?.auto_temp_high !== 0) {
-            auto_temp_low = Utils.clampValue(settings?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp,
-                                             AppSpec.autoMinimumTemperatureC,
-                                             AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
-
-            const minimumSecondarySlider = Math.max(AppSpec.minAutoMaxTemp, auto_temp_low + AppSpec.autoModeDiffrenceC);
-            auto_temp_high = Utils.clampValue(settings?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp,
-                                              minimumSecondarySlider,
-                                              AppSpec.autoMaximumTemperatureC);
+            auto_temp_low = settings?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp;
+            auto_temp_high = settings?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp;
         }
 
+         // the data will be clamped on ui and if changed it will call setAutoMinReqTemp and setAutoMaxReqTemp for updating truncated version
+         // as well as updating clamped version! it will push again if clamped version differs
         if (Math.abs(auto_temp_low - device.autoMinReqTemp) > 0.1) {
-            var tempServerValue = Utils.convertedTemperature(auto_temp_low, root.temperatureUnit);
-            let truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
-            truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
-                              ? Utils.fahrenheitToCelsius(truncatedValue)
-                              : truncatedValue);
-
-            deviceControllerCPP.setAutoMinReqTemp(truncatedValue);
-
             device.autoMinReqTemp = auto_temp_low;
         }
 
         if (Math.abs(auto_temp_high - device.autoMaxReqTemp) > 0.1) {
-            tempServerValue = Utils.convertedTemperature(auto_temp_high, root.temperatureUnit);
-            truncatedValue = AppUtilities.getTruncatedvalue(tempServerValue);
-            truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
-                              ? Utils.fahrenheitToCelsius(truncatedValue)
-                              : truncatedValue);
-
-            deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
-
             device.autoMaxReqTemp = auto_temp_high;
         }
     }
