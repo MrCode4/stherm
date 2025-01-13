@@ -1757,7 +1757,7 @@ I_DeviceController {
         var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
                 ? Utils.fahrenheitToCelsius(minTemperature)
                 : minTemperature);
-        if (device.autoMinReqTemp !== value) {
+        if (Math.abs(device.autoMinReqTemp - value) > 0.05 ) {
             device.autoMinReqTemp = value;
             root.updateEditMode(AppSpec.EMAutoMode);
             root.saveSettings();
@@ -1775,7 +1775,7 @@ I_DeviceController {
         var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
                 ? Utils.fahrenheitToCelsius(maxTemperature)
                 : maxTemperature);
-        if (device.autoMaxReqTemp !== value) {
+        if (Math.abs(device.autoMaxReqTemp - value) > 0.05 ) {
             device.autoMaxReqTemp = value;
             root.updateEditMode(AppSpec.EMAutoMode);
             root.saveSettings();
