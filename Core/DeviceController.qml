@@ -1448,7 +1448,7 @@ I_DeviceController {
         var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
                      ? Utils.fahrenheitToCelsius(temperature)
                      : temperature);
-        if (device.requestedTemp !== value) {
+        if (Math.abs(device.requestedTemp - value) > 0.05) { // compare fuzzy
             // Update device temperature when setTemperature is successful.
             device.requestedTemp = value;
             root.updateEditMode(AppSpec.EMDesiredTemperature);

@@ -36,6 +36,9 @@ BasePageView {
             temperatureValue = singleTemperatureSlider.control.value;
         }
 
+        // as UI shows rounded! should be in sync
+        temperatureValue = temperatureValue.toFixed(0);
+
         return (isCelcius ? temperatureValue : Utils.fahrenheitToCelsius(temperatureValue));
     }
 
@@ -45,6 +48,9 @@ BasePageView {
         if (isCooling) {
             temperatureValue = singleTemperatureSlider.control.value;
         }
+
+        // as UI shows rounded! should be in sync
+        temperatureValue = temperatureValue.toFixed(0);
 
         return (isCelcius ? temperatureValue : Utils.fahrenheitToCelsius(temperatureValue))
     }
