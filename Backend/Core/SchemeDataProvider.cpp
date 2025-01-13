@@ -3,10 +3,8 @@
 #include "LogHelper.h"
 #include "UtilityHelper.h"
 #include "Relay.h"
-#include "AppUtilities.h"
 
 SchemeDataProvider::SchemeDataProvider(QObject *parent) :
-    mActiveSystemMode(AppSpecCPP::Off),
     mOutdoorTemperature(25.0),
     mIsRelaysInitialized(false),
     QObject{parent}
@@ -21,7 +19,7 @@ void SchemeDataProvider::setMainData(QVariantMap mainData)
     _mainData = mainData;
 
     bool isOk;
-    double tc = mainData.value(processedTemperatureKey).toDouble(&isOk);
+    double tc = mainData.value(roundTemperatureKey).toDouble(&isOk);
 
     if (isOk) {
         double currentTemp = UtilityHelper::toFahrenheit(tc);
@@ -234,16 +232,6 @@ bool SchemeDataProvider::isRelaysInitialized() {
 
 void SchemeDataProvider::setIsRelaysInitialized(const bool &isRelaysInitialized) {
     mIsRelaysInitialized = isRelaysInitialized;
-}
-
-AppSpecCPP::SystemMode SchemeDataProvider::activeSystemMode() const
-{
-    return mActiveSystemMode;
-}
-
-void SchemeDataProvider::setActiveSystemMode(const AppSpecCPP::SystemMode &newActiveSystemMode)
-{
-    mActiveSystemMode = newActiveSystemMode;
 }
 
 double SchemeDataProvider::autoMaxReqTempF() const

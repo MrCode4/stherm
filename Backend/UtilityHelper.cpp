@@ -43,7 +43,8 @@ double UtilityHelper::roundNumber(const RoundType &roundType, const double &valu
     case Round:
         roundedValue = qRound(value);
         break;
-    default:
+
+    default:
         break;
     }
 

@@ -225,7 +225,6 @@ Control {
                                                                    minTemprature,
                                                                    maxTemprature - tempSliderDoubleHandle.difference);
 
-
                     // The minimum value for the second slider should be the greater of
                     // AppSpec.minAutoMaxTemp and the sum of the first slider value and the difference value.
                     // So we need recalculate it when first slider changed.
@@ -282,7 +281,7 @@ Control {
                 temp = AppUtilities.getTruncatedvalue(temp);
 
                 // The slider value is currently converted to the selected unit.
-                // However, we need to convert it to Celsius.
+                // However, TemperatureLabel needs Celsius and will convert to selected unit itself.
                 temp = temperatureUnit === AppSpec.TempratureUnit.Cel ? temp : Utils.fahrenheitToCelsius(temp);
 
                 return temp;

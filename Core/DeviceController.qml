@@ -1237,6 +1237,7 @@ I_DeviceController {
 
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
+            deviceControllerCPP.setCelsius(temperatureUnit === AppSpec.TempratureUnit.Cel)
         }
 
         return true;
@@ -1769,7 +1770,7 @@ I_DeviceController {
                           ? Utils.fahrenheitToCelsius(truncatedValue)
                           : truncatedValue);
 
-        deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
+        deviceControllerCPP.setAutoMinReqTemp(truncatedValue);
 
         if (device.autoMinReqTemp !== truncatedValue) {
             device.autoMinReqTemp = truncatedValue;
@@ -1870,7 +1871,8 @@ I_DeviceController {
     {
         //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
-        if (!result.temperature)
+        // if temperature exists roundTemperature will exist for sure
+        if (!result.temperature) // see AppSpecCPP.h for temperatureKey & roundTemperatureKey definition
             return;
 
         var co2 = result?.iaq ?? 0;
@@ -1879,8 +1881,8 @@ I_DeviceController {
         // Fahrenheit is more sensitive than Celsius,
         // so for every one degree change,
         // it needs to be sent to the server.
-        var isVisualTempChangedF = Math.abs(Math.round(root.displayCurrentTemp * 1.8 ) - Math.round((result?.processedTemperature ?? root.displayCurrentTemp) * 1.8)) > 0
-        var isVisualTempChangedC = Math.abs(Math.round(root.displayCurrentTemp * 1.0 ) - Math.round((result?.processedTemperature ?? root.displayCurrentTemp) * 1.0)) > 0
+        var isVisualTempChangedF = Math.abs(Math.round(root.displayCurrentTemp * 1.8 ) - Math.round((result?.roundTemperature ?? root.displayCurrentTemp) * 1.8)) > 0
+        var isVisualTempChangedC = Math.abs(Math.round(root.displayCurrentTemp * 1.0 ) - Math.round((result?.roundTemperature ?? root.displayCurrentTemp) * 1.0)) > 0
         var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
         var isCo2IdChanged = device._co2_id !== co2Id;
         var isNeedToPushToServer = isVisualHumChanged ||
@@ -1889,7 +1891,7 @@ I_DeviceController {
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
-        root.displayCurrentTemp = result?.processedTemperature ?? 0
+        root.displayCurrentTemp = result?.roundTemperature ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = co2 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brightness ?? 0
@@ -1945,7 +1947,7 @@ I_DeviceController {
 
     function setTestData(temperature, on) {
         var send_data = {
-            "temperature": temperature, // see AppSpecCPP.h for key definition temperatureKey
+            "processedTemperature": temperature, // see AppSpecCPP.h for key definition processedTemperatureKey
         }
         deviceControllerCPP.setOverrideMainData(on ? send_data : {})
     }

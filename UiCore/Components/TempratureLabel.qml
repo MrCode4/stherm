@@ -16,7 +16,7 @@ Control {
     //! Holds current unit of temprature (Fahrenheit or Celsius)
     property string     unit: AppSpec.temperatureUnitString(device?.setting?.tempratureUnit)
 
-    property real temperature: device.currentTemp
+    property real temperature: device?.currentTemp ?? 0
 
     property bool showCurrentTemperature: true
 
