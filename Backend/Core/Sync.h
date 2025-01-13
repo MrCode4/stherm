@@ -83,6 +83,8 @@ public:
     Q_INVOKABLE void resetFactory();
 
 
+    QJsonObject lastSettingsResponseData() const;
+
 public slots:
     void reportCommandResponse(ReportCommandCallback callback, const QString& command, const QString& data, int retryCount = 2);
 
@@ -165,6 +167,8 @@ private:
     QDateTime mAutoModeLastPushTime;
     QVariantMap mContractorInfo;
     cpuid_t mSystemUuid;
+    QJsonObject mLastSettingsResponseData;
+
 
 #ifdef SERIAL_TEST_MODE_ON
     int mSerialTestDelayCounter{SERIAL_TEST_DELAY_COUNTER};

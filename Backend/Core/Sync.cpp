@@ -477,6 +477,11 @@ QByteArray Sync::preparePacket(QString className, QString method, QJsonArray par
     return jsonDocument.toJson();
 }
 
+QJsonObject Sync::lastSettingsResponseData() const
+{
+    return mLastSettingsResponseData;
+}
+
 void Sync::requestJob(QString type)
 {
     QJsonArray paramsArray;
@@ -492,6 +497,8 @@ void Sync::pushSettingsToServer(const QVariantMap &settings)
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() == QNetworkReply::NoError) {
+            mLastSettingsResponseData = data;
+
             // get the last update
             auto dateString = data.value("setting").toObject().value("last_update");
             TRACE << "cpp set last_update:" << dateString;

@@ -270,6 +270,8 @@ public:
     Q_INVOKABLE bool isValidNetworkRequestRestart();
     Q_INVOKABLE void saveNetworkRequestRestart();
 
+    Q_INVOKABLE void generateInstallLog();
+
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);
@@ -345,6 +347,8 @@ signals:
     void logSentSuccessfully();
     void sendLogProgressChanged(quint8 percent);
 
+    void installLogSent(bool isSuccess);
+
 private:
     //! verify dounloaded files and prepare to set up.
     bool verifyDownloadedFiles(QByteArray downloadedData, bool withWrite = true,
@@ -397,7 +401,7 @@ private:
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
     bool removeDirectory(const QString &path);
 
-    bool sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog = false);
+    bool sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog = false, bool isInstallLog = false);
     bool checkSendLog(bool showAlert);
 
     void startAutoSendLogTimer(int interval = 15 * 60 * 1000);
@@ -459,7 +463,6 @@ private:
 
     QTimer mUpdateTimer;
     QTimer mRetryUpdateTimer;
-
     NUVE::cpuid_t mUID;
 
     //! QElapsedTimer to measure download rate.
@@ -487,7 +490,6 @@ private:
 
     QTimer *mAutoSendLogtimer{nullptr};
     bool    mFirstLogSent;
-
 };
 
 } // namespace NUVE

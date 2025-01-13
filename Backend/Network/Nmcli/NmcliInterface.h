@@ -173,6 +173,8 @@ public:
 
     bool autoConnectSavedWifiAsync(WifiInfo *wifi);
 
+    QString iwOut() const;
+
 private:
     /*!
      * \brief connectToWifi This is an overloaded method and connects to the given wifi without any
@@ -338,6 +340,11 @@ private:
      * \brief mCliCipers is used to execute the `iw list` command asynchronously.
      */
     NmCli *mCliCipers;
+
+    /*!
+     * \brief mIwOut is used to store response of the `iw` command.
+     */
+    QString mIwOut;
 
     /*!
      * \brief mWifis Stores all the retrieved wifis

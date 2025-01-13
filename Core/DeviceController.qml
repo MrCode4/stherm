@@ -88,6 +88,8 @@ I_DeviceController {
     //! true: The system can automatically update without requiring user confirmation.
     property bool canUpdateSystemSetup: system.isForgottenDeviceStarted()
 
+    property bool isNeedSendInstallLog: false
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -159,6 +161,20 @@ I_DeviceController {
                 canRetry = false;
             }
             console.log("sending network logs finished: ", canRetry)
+        }
+    }
+
+    //! Try to send install log if needed.
+    property Timer sendInstallLogTimer: Timer {
+        repeat: false
+        running: false
+        interval: 20000
+
+        onTriggered: {
+            if (root.isNeedSendInstallLog) {
+                console.log("sending install logs")
+                system.generateInstallLog();
+            }
         }
     }
 
@@ -538,6 +554,11 @@ I_DeviceController {
 
             settingsPush.isPushing = false;
 
+            //! Send install log when updte response data is ready.
+            if(!sendInstallLogTimer.running && root.isNeedSendInstallLog) {
+                sendInstallLogTimer.triggered();
+            }
+
             console.log("DeviceController.qml: Push onPushSuccess", stageMode)
 
         }
@@ -581,6 +602,15 @@ I_DeviceController {
             // proceed with the normal update process using a system timer.
             if (!checkedSWUpdate) {
                 deviceControllerCPP.system.fetchUpdateInformation(true);
+            }
+        }
+
+        function onInstallLogSent(isSuccess: bool) {
+            console.log("Install log sent successfully: ", isSuccess)
+            root.isNeedSendInstallLog = !isSuccess;
+
+            if(root.isNeedSendInstallLog) {
+                sendInstallLogTimer.start();
             }
         }
     }
@@ -688,10 +718,17 @@ I_DeviceController {
 
         function onInstalledSuccess() {
 
+
             // Push all settings to the server after the No Wi-Fi installation flow completed.
             // In a normal initial setup, the system setup will be sent from the system setup page.
-            if (initialSetupNoWIFI)
+            if (initialSetupNoWIFI) {
                 updateEditMode(AppSpec.EMAll);
+
+            }
+
+            // Send install log
+            root.isNeedSendInstallLog = true
+            sendInstallLogTimer.start();
 
             isSendingInitialSetupData = false;
             setInitialSetupNoWIFI(false);

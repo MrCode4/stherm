@@ -9,6 +9,7 @@
 #include <QProcess>
 #include <QRegularExpression>
 #include <QNetworkReply>
+#include <QCoreApplication>
 
 #include <QLoggingCategory>
 #include "LogHelper.h"
@@ -19,6 +20,17 @@ Q_LOGGING_CATEGORY(NetworkInterfaceLogCat, "NetworkInterfaceLog")
 bool compareWifiStrength(WifiInfo *a, WifiInfo *b) {
     return a->strength() > b->strength();
 }
+
+
+NetworkInterface* NetworkInterface::mMe = nullptr;
+
+NetworkInterface *NetworkInterface::me()
+{
+    if (!mMe) mMe = new NetworkInterface(qApp);
+
+    return mMe;
+}
+
 
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
@@ -172,6 +184,10 @@ void NetworkInterface::tryConnectToSavedInrangeWifi(WifiInfo *triedWifi) {
             tryConnectToSavedInrangeWifi();
         }
     }
+}
+
+QString NetworkInterface::refreshWiFiResult() const {
+    return mNmcliInterface->iwOut();
 }
 
 NetworkInterface::WifisQmlList NetworkInterface::wifis()
