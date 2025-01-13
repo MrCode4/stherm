@@ -128,12 +128,12 @@ Control {
 
                 function onAutoMinReqTempChanged()
                 {
-                    tempSliderDoubleHandle.updateFirstValue();
+                    updateFirstSecondValuesTmr.restart();
                 }
 
                 function onAutoMaxReqTempChanged()
                 {
-                    tempSliderDoubleHandle.updateSecondValue();
+                    updateFirstSecondValuesTmr.restart();
                 }
             }
 
@@ -171,42 +171,16 @@ Control {
 
             function updateAutoMinReqTempModel() {
                 if (deviceController && !first.pressed) {
-                    deviceController.setAutoMinReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(first.value)
-                                                       : first.value);
-                    deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.saveSettings();
+                    let value = first.value;
+                    deviceController.setAutoMinReqTemp(value);
                 }
             }
 
             function updateAutoMaxReqTempModel() {
                 if (deviceController && !second.pressed) {
-                    deviceController.setAutoMaxReqTemp(temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(second.value)
-                                                       : second.value);
-                    deviceController.updateEditMode(AppSpec.EMAutoMode);
-                    deviceController.saveSettings();
+                    let value = second.value;
+                    deviceController.setAutoMaxReqTemp(value);
                 }
-            }
-
-            function updateFirstValue()
-            {
-                if (!device || currentSchedule) return;
-
-                first.value = Utils.convertedTemperatureClamped(device.autoMinReqTemp,
-                                                                temperatureUnit,
-                                                                minTemprature,
-                                                                maxTemprature);
-            }
-
-            function updateSecondValue()
-            {
-                if (!device || currentSchedule) return;
-
-                second.value = Utils.convertedTemperatureClamped(device.autoMaxReqTemp,
-                                                                 temperatureUnit,
-                                                                 minTemprature,
-                                                                 maxTemprature)
             }
 
             //! Update the first and second slider values.
@@ -239,7 +213,7 @@ Control {
                 }
 
                 //! Now first set first.maxValue and second.minValue then update their actual values
-                first.setMaxValue(Math.min(firstValueCeil, secondValue - tempSliderDoubleHandle.difference));
+                first.setMaxValue(Math.min(firstValueCeil.toFixed(0), secondValue - tempSliderDoubleHandle.difference));
                 second.setMinValue(minimumSecondarySlider);
 
                 if (first.value !== firstValue) {
@@ -272,17 +246,19 @@ Control {
                 var temp = 0.0;
 
                 if (_tempSlider.pressed) {
-                    temp = _tempSlider.value.toFixed(0);
+                    temp = _tempSlider.value;
 
                 } else if (tempSliderDoubleHandle.first.pressed) {
-                    temp = tempSliderDoubleHandle.first.value.toFixed(0);
+                    temp = tempSliderDoubleHandle.first.value;
 
                 } else if (tempSliderDoubleHandle.second.pressed) {
-                    temp = tempSliderDoubleHandle.second.value.toFixed(0);
+                    temp = tempSliderDoubleHandle.second.value;
                 }
 
+                temp = AppUtilities.getTruncatedvalue(temp);
+
                 // The slider value is currently converted to the selected unit.
-                // However, we need to convert it to Celsius.
+                // However, TemperatureLabel needs Celsius and will convert to selected unit itself.
                 temp = temperatureUnit === AppSpec.TempratureUnit.Cel ? temp : Utils.fahrenheitToCelsius(temp);
 
                 return temp;
@@ -381,7 +357,7 @@ Control {
                 font {
                     pointSize: _root.font.pointSize * 0.65
                 }
-                text: tempSliderDoubleHandle.first.value.toFixed(0)
+                text: AppUtilities.getTruncatedvalue(tempSliderDoubleHandle.first.value)
 
                 //! Unit
                 Row {
@@ -434,6 +410,7 @@ Control {
 
         Connections {
             target: _root
+            enabled: !tempSliderDoubleHandle.visible
 
             //! Update slider value (UI) with changed TempratureUnit
             function onTemperatureUnitChanged() {
@@ -509,7 +486,7 @@ Control {
                 x: (rightTempLabel.parent.width - rightTempLabel.width - rightUnitLbl.width) / 2
                 visible: labelVisible
                 opacity: 1
-                text: Number(_tempSlider.value).toFixed(0)
+                text: AppUtilities.getTruncatedvalue(_tempSlider.value)
             }
 
             PropertyChanges {
@@ -555,7 +532,7 @@ Control {
                 x: 5 * rightTempLabel.parent.width / 8 - rightUnitLbl.width / 2 - 4
                 visible: labelVisible
                 opacity: 1
-                text: tempSliderDoubleHandle.second.value.toFixed(0)
+                text: AppUtilities.getTruncatedvalue(tempSliderDoubleHandle.second.value)
             }
 
             PropertyChanges {
@@ -621,7 +598,7 @@ Control {
                 target: rightTempLabel
                 x: (rightTempLabel.parent.width - rightTempLabel.width - rightUnitLbl.width) / 2
                 visible: true
-                text: tempSliderDoubleHandle.second.value.toFixed(0)
+                text: AppUtilities.getTruncatedvalue(tempSliderDoubleHandle.second.value)
             }
 
             PropertyChanges {
@@ -672,30 +649,34 @@ Control {
     /* Functions
      * ****************************************************************************************/
     //! Update _tempSlider.value
-    function updateTemperatureValue(temperature: real) {
-        _tempSlider.value = Utils.convertedTemperatureClamped(temperature,
-                                                              temperatureUnit,
-                                                              minTemprature,
-                                                              maxTemprature);
+    function updateTemperatureValue(temperature: real, isSchedule: bool) {
+        var value = Utils.convertedTemperatureClamped(temperature,
+                                                      temperatureUnit,
+                                                      minTemprature,
+                                                      maxTemprature);
+        _tempSlider.value = (value);
+        if (!isSchedule) {
+            // to check the model again and update scheme if needed
+            updateTemperatureModel();
+        }
     }
 
     //! Update model based on _tempSlider value in heating/cooling mode.
     function updateTemperatureModel() {
-        var celValue = (temperatureUnit === AppSpec.TempratureUnit.Cel)
-                ? _tempSlider.value : Utils.fahrenheitToCelsius(_tempSlider.value);
-        if (device && device.requestedTemp !== celValue) {
-            deviceController.setDesiredTemperature(celValue);
-            deviceController.updateEditMode(AppSpec.EMDesiredTemperature);
-            deviceController.saveSettings();
-        }
+        deviceController.setDesiredTemperature(_tempSlider.value);
     }
 
     //! Update tempSliderDoubleHandle values
     function updateAutoModeTemperatureValueFromSchedule() {
         if (currentSchedule) {
             // TODO: Check for clamping data
-            tempSliderDoubleHandle.first.value = Utils.convertedTemperature(currentSchedule.minimumTemperature, temperatureUnit);
-            tempSliderDoubleHandle.second.value = Utils.convertedTemperature(currentSchedule.maximumTemperature, temperatureUnit);
+            let tempValue = Utils.convertedTemperatureClamped(currentSchedule.minimumTemperature, temperatureUnit, minTemprature, maxTemprature);
+            let tempValueSecond = Utils.convertedTemperatureClamped(currentSchedule.maximumTemperature, temperatureUnit, minTemprature, maxTemprature);
+            tempSliderDoubleHandle.first.setMaxValue(Math.min(tempSliderDoubleHandle.firstValueCeil.toFixed(0), tempValueSecond - tempSliderDoubleHandle.difference));
+
+            tempSliderDoubleHandle.first.value = tempValue;
+
+            tempSliderDoubleHandle.second.value =  tempValueSecond;
         }
     }
 
@@ -710,7 +691,7 @@ Control {
                 updateAutoModeTemperatureValueFromSchedule();
 
             } else {
-                updateTemperatureValue(currentSchedule.effectiveTemperature(device?.systemSetup?.systemMode ?? AppSpec.Off));
+                updateTemperatureValue(currentSchedule.effectiveTemperature(device?.systemSetup?.systemMode ?? AppSpec.Off), true);
             }
 
         } else {
@@ -718,7 +699,7 @@ Control {
                 tempSliderDoubleHandle.updateFirstSecondValues();
 
             else
-                updateTemperatureValue(device?.requestedTemp ?? AppSpec.defaultRequestedTemperature);
+                updateTemperatureValue(device?.requestedTemp ?? AppSpec.defaultRequestedTemperature, false);
 
         }
     }

@@ -70,6 +70,7 @@ Control {
             z: 1
             device: _root.uiSession.appModel
             visible: deviceController.temperatureSensorHealth
+            temperature: deviceController.displayCurrentTemp
 
             TapHandler {
                 onTapped: {

@@ -477,6 +477,11 @@ QByteArray Sync::preparePacket(QString className, QString method, QJsonArray par
     return jsonDocument.toJson();
 }
 
+QJsonObject Sync::lastSettingsResponseData() const
+{
+    return mLastSettingsResponseData;
+}
+
 void Sync::requestJob(QString type)
 {
     QJsonArray paramsArray;
@@ -492,6 +497,8 @@ void Sync::pushSettingsToServer(const QVariantMap &settings)
 
     auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         if (reply->error() == QNetworkReply::NoError) {
+            mLastSettingsResponseData = data;
+
             // get the last update
             auto dateString = data.value("setting").toObject().value("last_update");
             TRACE << "cpp set last_update:" << dateString;
@@ -697,16 +704,48 @@ void Sync::warrantyReplacement(const QString &oldSN, const QString &newSN)
     }
 }
 
-void Sync::pushAlertToServer(const QVariantMap &settings)
+void Sync::pushAlertToServer(const QString alertUid, const QVariantMap &alerts)
 {
-    QJsonObject requestDataObj;
+    if (mSerialNumber.isEmpty()) {
+        SYNC_LOG <<"Sn is not ready!";
+        return;
+    }
+
+    QJsonObject requestDataObj = QJsonObject::fromVariantMap(alerts);
     requestDataObj["sn"] = mSerialNumber;
-    QJsonObject requestDataObjAlert;
-    requestDataObjAlert["alert_id"] = 1;
-    QJsonArray requestDataObjAlertArr;
-    requestDataObjAlertArr.append(requestDataObjAlert);
-    requestDataObj["alerts"] = requestDataObjAlertArr;
-    callPostApi(baseUrl() + "api/sync/alerts", QJsonDocument(requestDataObj).toJson());
+
+    auto callback = [this, alertUid](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        bool success = reply->error() == QNetworkReply::NoError;
+
+        // To handle the network errors.
+        TRACE_CHECK(!success) << "Push alert error: " << reply->errorString();
+
+
+        // To handle the server errors.
+        if (success) {
+            success = data.value("errors").isUndefined() || data.value("errors").toArray().empty();
+            TRACE_CHECK(!success) << "push alert: " << data.value("errors") << data.value("message");
+        }
+
+        // Validate received server data.
+        QJsonObject dataFirstObj;
+        if (success) {
+            auto dataArray = data.value("data").toArray(QJsonArray());
+            success = !dataArray.isEmpty() && dataArray.first().isObject();
+
+            if (success) {
+                dataFirstObj = dataArray.first().toObject();
+            }
+        }
+
+        TRACE_CHECK(!success) << "The push alert response is not valid: " << dataFirstObj;
+
+        //! success is a combination of different parameters such as return type and response data
+        //! ultimate purpose is to being able to get the alert id from response
+        emit alertPushed(alertUid, success, dataFirstObj.toVariantMap());
+    };
+
+    callPostApi(baseUrl() + "api/sync/alerts", QJsonDocument(requestDataObj).toJson(), callback);
 }
 
 void Sync::forgetDevice()

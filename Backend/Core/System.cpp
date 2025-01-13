@@ -2,6 +2,7 @@
 #include "LogHelper.h"
 #include "PerfTestService.h"
 #include "DeviceInfo.h"
+#include "NetworkInterface.h"
 
 #include "ProtoDataManager.h"
 
@@ -2124,11 +2125,11 @@ bool NUVE::System::sendLogFile(bool showAlert)
             mLastReceivedCommands.remove(Cmd_PushLogs);
         }
 
-        emit logPrepared(false);
+        if (showAlert) emit logPrepared(false);
         return false;
     }
 
-    emit logPrepared(true);
+    if (showAlert) emit logPrepared(true);
 
     return sendLogToServer(QStringList(filename), showAlert, true);
 }
@@ -2227,6 +2228,87 @@ void NUVE::System::stopAutoSendLogTimer()
     mAutoSendLogtimer->disconnect();
     mAutoSendLogtimer->deleteLater();
     mAutoSendLogtimer = nullptr;
+}
+
+void NUVE::System::generateInstallLog()
+{
+
+    if (mLogSender.busy()){
+        QString error("Previous session is in progress.");
+        SYS_LOG << error << "State is :" << mLogSender.state() << mLogSender.keys();
+
+        emit installLogSent(false);
+        return;
+    }
+
+    if (!checkSendLog(false)) {
+        emit installLogSent(false);
+        return;
+    }
+
+    QJsonObject log;
+    QString networkLog = "No Wifi Connection";
+    auto wifiConnection = NetworkInterface::me()->connectedWifi();
+    if(wifiConnection != nullptr)
+        networkLog = wifiConnection->wifiInformation();
+
+    log["ConnetedNetwork"] = networkLog;
+
+    log["iw"] = NetworkInterface::me()->refreshWiFiResult();
+
+    auto lastSettingsResponseData =  mSync->lastSettingsResponseData();
+    if (lastSettingsResponseData.empty()) {
+        emit installLogSent(false);
+        return;
+    }
+
+    log["updateData"] = lastSettingsResponseData;
+
+    QJsonDocument jsonDoc(log);
+    QString jsonString = jsonDoc.toJson(QJsonDocument::Indented);
+
+    QString filename = "/mnt/log/log/install" +  QDateTime::currentDateTimeUtc().toString("ddMMyyyy") + ".log";
+
+    QFile logFile(filename);
+    if (!logFile.open(QIODevice::Append | QIODevice::Text)) {
+        qWarning() << "Unable to open log file:" << filename;
+        emit installLogSent(false);
+        return;
+    }
+
+    QTextStream out(&logFile);
+    out << jsonString;
+
+    logFile.close();
+
+    SYS_LOG << "Log written to " << filename;
+
+    auto initialized = mLogSender.property("initialized");
+    if (initialized.isValid() && initialized.toBool()) {
+        sendLogToServer({filename}, false, false, true);
+
+    } else {
+        auto dirCreatorCallback = [=](QString error) {
+            auto role = mLogSender.property("role").toString();
+            TRACE_CHECK(role != "dirLog") << "role seems invalid" << role;
+
+            if (!error.isEmpty()) {
+                error = "error while creating log directory on remote: " + error;
+                qWarning() << error;
+                emit installLogSent(false);
+                return;
+            }
+
+            SYS_LOG << "Folder created in server successfully";
+            mLogSender.setProperty("initialized", true);
+
+            sendLogToServer({filename}, false, false, true);
+        };
+
+        mLogSender.setRole("dirLog", dirCreatorCallback);
+
+        prepareLogDirectory(dirCreatorCallback);
+    }
 }
 
 bool NUVE::System::attemptToRunCommand(const QString& command, const QString& tag)
@@ -2339,6 +2421,10 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
 }
 
 void NUVE::System::saveNetworkLogs() {
+    static int networkLogCounter = 0;
+    networkLogCounter += 1;
+    SYS_LOG << "Save network log called for " << networkLogCounter;
+
     auto generatedFilename = generateLog();
     if (generatedFilename.isEmpty())
         return;
@@ -2411,12 +2497,13 @@ bool NUVE::System::sendNetworkLogs() {
     return true;
 }
 
-bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog) {
+bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog , bool isInstallLog) {
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
         TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
 
-        if (error.isEmpty()) {
+        bool isSuccess = error.isEmpty();
+        if (isSuccess) {
             if (isRegularLog && mLastReceivedCommands.contains(Cmd_PushLogs)) {
                 SYS_LOG << "Reporting" << Cmd_PushLogs;
                 auto callback = [this] (bool success, const QJsonObject& data) {
@@ -2446,6 +2533,8 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             qWarning() << error;
             if (showAlert) emit logAlert(error);
         }
+
+        if (isInstallLog) emit installLogSent(isSuccess);
 
         startAutoSendLogTimer(1 * 60 * 1000);
     };

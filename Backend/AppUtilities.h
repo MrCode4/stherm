@@ -14,4 +14,7 @@ public:
     //! Generating a Random Four-Digit Number
     Q_INVOKABLE QString generateRandomPassword();
     Q_INVOKABLE QString decodeLockPassword(QString pass);
+
+    //! Truncate value to a specified number of decimal places
+    Q_INVOKABLE static double  getTruncatedvalue(double value, int decimalCount = 0);
 };

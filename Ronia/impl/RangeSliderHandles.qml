@@ -30,6 +30,8 @@ Item {
     //! Another limitation for to
     property real toValueFloor: from
 
+    property bool isInteger: false
+
     //! First handle data
     property RangeSliderHandleData first: RangeSliderHandleData {
         handle: firstHandle
@@ -112,6 +114,11 @@ Item {
 
                     var newValue = Math.min(fromValueCeil,
                                             newPos * (to - from) + from); //! Assuming that to is bigger than from
+
+                    if (isInteger) {
+                        newValue = Math.floor(newValue);
+                    }
+
                     if (sliderHandles.first.value !== newValue) {
                         sliderHandles.first.setValue(newValue); //! Use setter to avoid breaking bindings
                     }
@@ -165,6 +172,11 @@ Item {
 
                     var newValue = Math.max(toValueFloor,
                                             newPos * (to - from) + from); //! Assuming that to is bigger than from
+
+                    if (isInteger) {
+                        newValue = Math.floor(newValue);
+                    }
+
                     if (sliderHandles.second.value !== newValue) {
                         sliderHandles.second.setValue(newValue); //! Use setter to avoid breaking bindings
                     }

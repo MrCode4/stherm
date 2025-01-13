@@ -781,6 +781,25 @@ QtObject {
         schedule.systemMode = sysMode;
     }
 
+    function clampRange(min, max, minDiff) {
+        min = Utils.clampValue(min, deviceController._minimumTemperatureUI, deviceController._maximumTemperatureUI)
+        max = Utils.clampValue(max, deviceController._minimumTemperatureUI, deviceController._maximumTemperatureUI)
+        // Ensure max is greater than min by at least minDiff
+        if (max <= min + minDiff) {
+            max = min + minDiff; // Adjust max
+        }
+
+        // Re-clamp max to the range
+        max = Math.min(deviceController._maximumTemperatureUI, max);
+
+        // Adjust min if needed to ensure max > min + minDiff
+        if (max <= min + minDiff) {
+            min = max - minDiff;
+        }
+
+        return {"min": min, "max": max};
+    }
+
     property Timer _checkRunningTimer: Timer {
 
         running: runningScheduleEnabled
@@ -808,6 +827,44 @@ QtObject {
     }
 
     property Connections deviceControllerConnections: Connections {
+        target: deviceController
+        function onTemperatureUnitChanged() {
+            unitChangeTimer.restart();
+        }
+    }
+
+    //! to have the range updated
+    property Timer unitChangeTimer: Timer {
+        repeat: false
+        running: false
+        interval: 100
+        onTriggered: {
+
+           device.schedules.forEach(function(schElement, index) {
+
+                if (deviceController.temperatureUnit === AppSpec.TempratureUnit.Cel){
+                    let minC = schElement.minimumTemperature.toFixed(0);
+                    let maxC = schElement.maximumTemperature.toFixed(0);
+                    let minDiffC = schElement.systemMode === AppSpec.Auto ? AppSpec.autoModeDiffrenceC : 0;
+                    let clampedC = clampRange(minC, maxC, minDiffC);
+
+                    schElement.minimumTemperature = clampedC.min;
+                    schElement.maximumTemperature = clampedC.max;
+
+                } else {
+                    let minF = Utils.convertedTemperature(schElement.minimumTemperature, AppSpec.TempratureUnit.Fah).toFixed(0)
+                    let maxF = Utils.convertedTemperature(schElement.maximumTemperature, AppSpec.TempratureUnit.Fah).toFixed(0)
+                    let minDiffF = schElement.systemMode === AppSpec.Auto ? AppSpec.autoModeDiffrenceF : 0;
+                    let clampedF = clampRange(minF, maxF, minDiffF)
+
+                    schElement.minimumTemperature =  Utils.fahrenheitToCelsius(clampedF.min);
+                    schElement.maximumTemperature =  Utils.fahrenheitToCelsius(clampedF.max);
+                }
+            })
+        }
+    }
+
+    property Connections deviceControllerCurrentConnections: Connections {
         target: deviceController.currentSchedule
 
         function onEnableChanged() {

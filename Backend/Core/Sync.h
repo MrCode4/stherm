@@ -49,7 +49,7 @@ public:
     Q_INVOKABLE void pushLockState(const QString& pin, bool lock);
 
     void pushSettingsToServer(const QVariantMap &settings);
-    void pushAlertToServer(const QVariantMap &settings);
+    Q_INVOKABLE void pushAlertToServer(const QString alertUid, const QVariantMap &alerts);
 
     void forgetDevice();
 
@@ -82,6 +82,8 @@ public:
 
     Q_INVOKABLE void resetFactory();
 
+
+    QJsonObject lastSettingsResponseData() const;
 
 public slots:
     void reportCommandResponse(ReportCommandCallback callback, const QString& command, const QString& data, int retryCount = 2);
@@ -149,6 +151,7 @@ signals:
     void scheduleEdited(int id, bool success);
     void scheduleAdded(QString scheduleUid, bool success, QVariantMap schedule = QVariantMap());
 
+    void alertPushed(QString alertUid, bool success, QVariantMap alert = QVariantMap());
     void resetFactoryFinished(bool ok, const QString &message = "");
 
 private slots:
@@ -165,6 +168,8 @@ private:
     QDateTime mAutoModeLastPushTime;
     QVariantMap mContractorInfo;
     cpuid_t mSystemUuid;
+    QJsonObject mLastSettingsResponseData;
+
 
 #ifdef SERIAL_TEST_MODE_ON
     int mSerialTestDelayCounter{SERIAL_TEST_DELAY_COUNTER};

@@ -9,6 +9,7 @@
 #include <QProcess>
 #include <QRegularExpression>
 #include <QNetworkReply>
+#include <QCoreApplication>
 
 #include <QLoggingCategory>
 #include "LogHelper.h"
@@ -19,6 +20,17 @@ Q_LOGGING_CATEGORY(NetworkInterfaceLogCat, "NetworkInterfaceLog")
 bool compareWifiStrength(WifiInfo *a, WifiInfo *b) {
     return a->strength() > b->strength();
 }
+
+
+NetworkInterface* NetworkInterface::mMe = nullptr;
+
+NetworkInterface *NetworkInterface::me()
+{
+    if (!mMe) mMe = new NetworkInterface(qApp);
+
+    return mMe;
+}
+
 
 NetworkInterface::NetworkInterface(QObject *parent)
     : QObject{parent}
@@ -112,16 +124,17 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
         if (mIsWifiDisconnectedManually) {
             mAutoConnectToWifiTimer.stop();
+            NI_LOG << "Auto connection Stopped due to manually disconnected from wifi.";
             return;
         }
 
         // Restart the timer if the mNmcliInterface is busy
         if (mNmcliInterface->busy() || mIsBusyAutoConnection) {
             mAutoConnectToWifiTimer.start();
+            NI_LOG << "Auto connection restarted.";
             return;
         }
 
-        NI_LOG << "Auto connection started.";
 
         // Update the auto connection wifi list:
         std::copy_if(mWifiInfos.begin(), mWifiInfos.end(),
@@ -131,8 +144,10 @@ NetworkInterface::NetworkInterface(QObject *parent)
 
         if (mAutoConnectSavedInRangeWifis.empty()) {
             mAutoConnectToWifiTimer.stop();
+            NI_LOG << "Auto connection Stopped.";
 
         } else {
+            NI_LOG << "Auto connection started.";
             std::sort(mAutoConnectSavedInRangeWifis.begin(), mAutoConnectSavedInRangeWifis.end(), compareWifiStrength);
             tryConnectToSavedInrangeWifi();
         }
@@ -169,6 +184,10 @@ void NetworkInterface::tryConnectToSavedInrangeWifi(WifiInfo *triedWifi) {
             tryConnectToSavedInrangeWifi();
         }
     }
+}
+
+QString NetworkInterface::refreshWiFiResult() const {
+    return mNmcliInterface->iwOut();
 }
 
 NetworkInterface::WifisQmlList NetworkInterface::wifis()
@@ -222,7 +241,6 @@ void NetworkInterface::connectWifi(WifiInfo* wifiInfo, const QString& password)
 
 void NetworkInterface::disconnectWifi(WifiInfo* wifiInfo)
 {
-
     if (!wifiInfo || !wifiInfo->connected() || mNmcliInterface->busy()) {
         return;
     }
@@ -242,6 +260,7 @@ void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
 }
 
 void NetworkInterface::forgetAllWifis() {
+    NI_LOG << "Forget all Wi-Fis started.";
     setIsWifiDisconnectedManually(true);
 
     processForgettingWiFis();
@@ -289,6 +308,7 @@ void NetworkInterface::setForgettingWifis(const bool &forgettingWifis) {
 
 void NetworkInterface::setIsWifiDisconnectedManually(const bool &isWifiDisconnectedManually)
 {
+    NI_LOG << "WiFi disconnected manually: " << isWifiDisconnectedManually;
     if (isWifiDisconnectedManually) {
          mAutoConnectToWifiTimer.stop();
 
@@ -314,7 +334,8 @@ void NetworkInterface::printWifisInformation(const QString &due)
     NI_LOG << "printWifisInformation started due to: "  << due;
 
     foreach (auto wifi, mWifiInfos) {
-        NI_LOG << wifi->wifiInformation();
+        if (wifi)
+            NI_LOG << wifi->wifiInformation();
     }
 }
 

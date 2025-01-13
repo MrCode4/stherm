@@ -19,89 +19,9 @@ QtObject {
 
     readonly property int        temperatureUnit: device.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
 
-    //! Minimum value for temperature model (Fah)
-    property real               _minimumTemperatureF: 40
-
-    //! Maximum value for temperature model (Fah)
-    property real               _maximumTemperatureF: 90
-
-    //! Minimum value for temperature slider (Fah)
-    //! - Has schedule effect
-    property real               _minimumTemperatureUIF: {
-        return _minimumTemperatureF;
-    }
-
-    //! Maximum value for temperature slider
-    //! - Has schedule effect
-    property real               _maximumTemperatureUIF: {
-
-        return _maximumTemperatureF;
-    }
-
-    //! Connection
-    property Connections systemSetupConnection: Connections {
-        target: device.systemSetup
-
-        function onSystemModeChanged() {
-            var minimumTemperature = _minimumTemperatureF;
-            var maximumTemperature = _maximumTemperatureF;
-
-            switch(device.systemSetup.systemMode) {
-            case AppSpec.EmergencyHeat:
-            case AppSpec.Heating: {
-                minimumTemperature = AppSpec.minimumHeatingTemperatiureF;
-                maximumTemperature = AppSpec.maximumHeatingTemperatiureF;
-            } break;
-
-            case AppSpec.Cooling: {
-                minimumTemperature = AppSpec.minimumCoolingTemperatiureF;
-                maximumTemperature = AppSpec.maximumCoolingTemperatiureF;
-            } break;
-
-            case AppSpec.Auto: {
-                minimumTemperature = AppSpec.autoMinimumTemperatureF;
-                maximumTemperature = AppSpec.autoMaximumTemperatureF;
-            } break;
-
-            default:
-                break;
-            }
-
-            _minimumTemperatureF = minimumTemperature;
-            _maximumTemperatureF = maximumTemperature;
-
-            // mode can change minimum and maximum range of desired temperature so need to clamp desired temperature with mode changes.
-            var clampTemperature = Utils.clampValue(device.requestedTemp, _minimumTemperatureC, _maximumTemperatureC);
-
-            if (clampTemperature !== device.requestedTemp) {
-                setDesiredTemperature(clampTemperature);
-            }
-        }
-    }
-
-
-    //! Maximum and Minimum slider temperature in Celsius
-    property real               _minimumTemperatureC: Math.floor(Utils.fahrenheitToCelsius(_minimumTemperatureF))
-    property real               _maximumTemperatureC: Math.floor(Utils.fahrenheitToCelsius(_maximumTemperatureF))
-
-
-    //! Actual values of minimum and maximum temperatures based on temperature unit
-    property real               _minimumTemperature:  temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                      ? _minimumTemperatureF : _minimumTemperatureC
-
-    property real               _maximumTemperature:  temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                      ? _maximumTemperatureF : _maximumTemperatureC
-
-    //! Maximum and Minimum model temperature in Celsius to use in UI
-    property real               _minimumTemperatureUIC: Math.floor(Utils.fahrenheitToCelsius(_minimumTemperatureUIF))
-    property real               _maximumTemperatureUIC: Math.floor(Utils.fahrenheitToCelsius(_maximumTemperatureUIF))
-
     //! Actual values of minimum and maximum temperatures based on temperature unit to use in UI
-    property real               _minimumTemperatureUI:  temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                        ? _minimumTemperatureUIF : _minimumTemperatureUIC
-
-    property real               _maximumTemperatureUI:  temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                        ? _maximumTemperatureUIF : _maximumTemperatureUIC
+    property real               _minimumTemperatureUI: getMinValue(device.systemSetup.systemMode, temperatureUnit)
+    property real               _maximumTemperatureUI: getMaxValue(device.systemSetup.systemMode, temperatureUnit)
 
     /* Object Properties
      * ****************************************************************************************/
@@ -164,4 +84,60 @@ QtObject {
 
     //! Lock/unlock the application
     function updateAppLockState(isLock : bool, pin: string) : bool {return false;}
+
+    function getMinValue(systemMode, temperatureUnit) {
+
+        var minimumTemperature = AppSpec.autoMinimumTemperatureF;
+
+        switch(systemMode) {
+        case AppSpec.EmergencyHeat:
+        case AppSpec.Heating: {
+            minimumTemperature = AppSpec.minimumHeatingTemperatiureF;
+        } break;
+
+        case AppSpec.Cooling: {
+            minimumTemperature = AppSpec.minimumCoolingTemperatiureF;
+        } break;
+
+        case AppSpec.Auto: {
+            minimumTemperature = AppSpec.autoMinimumTemperatureF;
+        } break;
+
+        default:
+            break;
+        }
+
+        var min = (temperatureUnit === AppSpec.TempratureUnit.Fah) ?
+                    minimumTemperature : Math.floor(Utils.fahrenheitToCelsius(minimumTemperature))
+
+        return min;
+    }
+
+
+    function getMaxValue(systemMode, temperatureUnit) {
+        var maximumTemperature = AppSpec.autoMaximumTemperatureF;
+
+        switch(systemMode) {
+        case AppSpec.EmergencyHeat:
+        case AppSpec.Heating: {
+            maximumTemperature = AppSpec.maximumHeatingTemperatiureF;
+        } break;
+
+        case AppSpec.Cooling: {
+            maximumTemperature = AppSpec.maximumCoolingTemperatiureF;
+        } break;
+
+        case AppSpec.Auto: {
+            maximumTemperature = AppSpec.autoMaximumTemperatureF;
+        } break;
+
+        default:
+            break;
+        }
+
+        var max = (temperatureUnit === AppSpec.TempratureUnit.Fah) ?
+                    maximumTemperature : Math.floor(Utils.fahrenheitToCelsius(maximumTemperature))
+
+        return max;
+    }
 }

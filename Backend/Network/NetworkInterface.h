@@ -34,8 +34,12 @@ class NetworkInterface : public QObject
 
     using WifisQmlList = QQmlListProperty<WifiInfo>;
 
-public:
+private:
     explicit NetworkInterface(QObject *parent = nullptr);
+
+public:
+    static NetworkInterface* me();
+    static NetworkInterface* create(QQmlEngine*, QJSEngine*) {return me();}
 
     /* Public methods
      * ****************************************************************************************/
@@ -89,6 +93,9 @@ public:
     bool forgettingAllWifis();
 
     void printWifisInformation(const QString &due);
+
+    //! WiFi Refresh Results (IW output)
+    QString refreshWiFiResult() const;
 
     /* Private methods and slots
      * ****************************************************************************************/
@@ -149,6 +156,8 @@ signals:
     /* Private attributes
      * ****************************************************************************************/
 private:
+    static NetworkInterface* mMe;
+
     /*!
      * \brief mNmcliInterface An instance of NmcliInterface
      */

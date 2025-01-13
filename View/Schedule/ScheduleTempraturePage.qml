@@ -26,66 +26,40 @@ BasePageView {
     //! Is Celsius selected as the unit?
     readonly property bool           isCelcius:  temperatureUnit === AppSpec.TempratureUnit.Cel
 
-    readonly property bool           isHeating:   schedule.systemMode === AppSpec.Heating || scheduleToDisplay.systemMode === AppSpec.EmergencyHeat
+    readonly property bool           isHeating:   schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.EmergencyHeat
     readonly property bool           isCooling:   schedule.systemMode === AppSpec.Cooling
 
-    //! Temperature value: this is always in celsius
+    //! Temperature user selected value: this is always in celsius
     readonly property real  minimumTemperature: {
         var temperatureValue = _tempSlider.first.value;
         if (isHeating) {
             temperatureValue = singleTemperatureSlider.control.value;
         }
 
+        // as UI shows rounded! should be in sync
+        temperatureValue = temperatureValue.toFixed(0);
+
         return (isCelcius ? temperatureValue : Utils.fahrenheitToCelsius(temperatureValue));
     }
 
+    // user selected value
     readonly property real  maximumTemperature: {
         var temperatureValue = _tempSlider.second.value;
         if (isCooling) {
             temperatureValue = singleTemperatureSlider.control.value;
-
         }
+
+        // as UI shows rounded! should be in sync
+        temperatureValue = temperatureValue.toFixed(0);
 
         return (isCelcius ? temperatureValue : Utils.fahrenheitToCelsius(temperatureValue))
     }
 
+    //! Minimum temprature
+    property real               minTemperature: deviceController?.getMinValue(schedule?.systemMode, temperatureUnit) ?? 40
 
-
-    //! Minimum temperature
-    property real               minTemperature: {
-        var minTemp;
-
-        if (isCooling) {
-            minTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.minimumCoolingTemperatiureF) : AppSpec.minimumCoolingTemperatiureF;
-
-        } else if (isHeating) {
-            minTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.minimumHeatingTemperatiureF) : AppSpec.minimumHeatingTemperatiureF;
-
-        } else {
-            minTemp = isCelcius ? AppSpec.autoMinimumTemperatureC : AppSpec.autoMinimumTemperatureF;
-        }
-
-        return minTemp;
-    }
-
-    //! Maximum temperature
-    property real               maxTemperature: {
-        var maxTemp;
-
-        if (isCooling) {
-            maxTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.maximumCoolingTemperatiureF) : AppSpec.maximumCoolingTemperatiureF;
-
-        } else if (isHeating) {
-            maxTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.maximumHeatingTemperatiureF) : AppSpec.maximumHeatingTemperatiureF;
-
-        } else {
-            maxTemp = isCelcius ? AppSpec.autoMaximumTemperatureC : AppSpec.autoMaximumTemperatureF;
-        }
-
-        return maxTemp;
-    }
-
-
+    //! Maximum temprature
+    property real               maxTemperature: deviceController?.getMaxValue(schedule?.systemMode, temperatureUnit) ?? 90
 
     /* Object properties
      * ****************************************************************************************/
@@ -144,24 +118,6 @@ BasePageView {
                 to: maxTemperature
 
                 difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
-
-                first.onPressedChanged: {
-                    if (deviceController && !first.pressed) {
-                        schedule.minimumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(first.value)
-                                                       : first.value);
-                        deviceController.saveSettings();
-                    }
-                }
-
-                second.onPressedChanged: {
-                    if (deviceController && !second.pressed) {
-                        schedule.maximumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(second.value)
-                                                       : second.value);
-                        deviceController.saveSettings();
-                    }
-                }
 
                 labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))
                 leftLabelPrefix:  "<p style='color:#ea0600; font-size:12px;'>Heat to</p>"
@@ -266,8 +222,8 @@ BasePageView {
     //! Save the schedule temperature
     function save() {
         if (schedule) {
-            var minTemperature = _tempSlider.first.value;
-            var maxTemperature = _tempSlider.second.value;
+            let minTemperature = _tempSlider.first.value;
+            let maxTemperature = _tempSlider.second.value;
 
             if (isHeating) {
                 // Update minimum temperature as heating temperature
@@ -277,6 +233,10 @@ BasePageView {
                 // Update maximum temperature as cooling temperature
                 maxTemperature = singleTemperatureSlider.control.value;
             }
+
+            // as UI shows rounded! should be in sync
+            minTemperature = minTemperature.toFixed(0);
+            maxTemperature = maxTemperature.toFixed(0);
 
             // Save temperatures as celcius.
             schedule.minimumTemperature = isCelcius ? minTemperature : Utils.fahrenheitToCelsius(minTemperature);

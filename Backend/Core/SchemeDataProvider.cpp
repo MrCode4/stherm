@@ -19,14 +19,15 @@ void SchemeDataProvider::setMainData(QVariantMap mainData)
     _mainData = mainData;
 
     bool isOk;
-    double tc = mainData.value(temperatureKey).toDouble(&isOk);
-    double currentTemp = UtilityHelper::toFahrenheit(tc);
+    double tc = mainData.value(roundTemperatureKey).toDouble(&isOk);
 
     if (isOk) {
+        double currentTemp = UtilityHelper::toFahrenheit(tc);
         // meaningful change
-        if (qAbs(currentTemp - mCurrentTemperature) > 0.1)
+        if (qAbs(currentTemp - mCurrentTemperature) > 0.1) {
+            mCurrentTemperature = currentTemp;
             emit currentTemperatureChanged();
-        mCurrentTemperature = currentTemp;
+        }
     }
 
     double currentHumidity = mainData.value(humidityKey).toDouble(&isOk);

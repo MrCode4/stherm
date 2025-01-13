@@ -13,6 +13,8 @@ Control {
     property real difference: 0
     property real from: 0.
     property real to: 1.
+    property bool isInteger: false
+
     readonly property bool horizontal: orientation === Qt.Horizontal
     property alias first: handles.first
     property alias second: handles.second
@@ -58,5 +60,6 @@ Control {
         from: Math.min(control.to, control.from)
         difference: control.difference
         handleColor: Style.accent
+        isInteger: control.isInteger
     }
 }

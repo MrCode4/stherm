@@ -94,6 +94,7 @@ public:
 
     //! set settings using uart and file and respond the success
     Q_INVOKABLE bool setSettings(QVariantList data);
+    Q_INVOKABLE void setCelsius(bool isCelsius);
 
     //! update vacation
     Q_INVOKABLE void setVacation(const double min_Temperature, const double max_Temperature,
@@ -265,6 +266,8 @@ Q_SIGNALS:
     void isNeedOutdoorTemperatureChanged();
     void isEligibleOutdoorTemperatureChanged();
 
+    void emulateWarrantyFlow();
+
 private:
     // update main data and send data to scheme.
     void setMainData(QVariantMap mainData, bool addToData = false);
@@ -292,6 +295,9 @@ private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
     void processBackdoorSettingFile(const QString &path);
+    void onCurrentSystemModeChanged(AppSpecCPP::SystemMode obState,
+                                    int currentHeatingStage,
+                                    int currentCoolingStage);
 
 private:
     /* Private Functions
@@ -305,10 +311,14 @@ private:
     void processFanSettings(const QString &path);
     void processBrightnessSettings(const QString &path);
     void processRelaySettings(const QString &path);
+    void processEmulateWarrantyFlow(const QString &path);
     QByteArray defaultSettings(const QString &path);
+    bool writeDefaultSettings(const QString &path);
 
     //! Start/Stop the timer for get the outdoor temperature
     void checkForOutdoorTemperature();
+
+    double calculateProcessedTemperature(const double &temperatureC) const;
 
 private:
     /* Attributes
@@ -319,7 +329,7 @@ private:
     QVariantMap _mainData_override;
     bool _override_by_file = false;
     double _temperatureLast = 0.0;
-
+    bool mIsCelsius = false;
 
     bool mIsDeviceStarted = false;
 
@@ -327,6 +337,7 @@ private:
     DeviceAPI *_deviceAPI;
 
     SystemSetup *mSystemSetup;
+    AppSpecCPP::SystemMode mActiveSystemMode;
 
     //! Create a shared instance of SchemeDataProvider to
     //! provide data for scheme and HumidittScheme
@@ -343,7 +354,7 @@ private:
     NUVE::System *m_system;
 
     QString m_backdoorPath = "/usr/local/bin/backdoor/";
-    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" , "relays.json" };
+    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" , "relays.json", "emulateWarrantyFlow.json" };
     QFileSystemWatcher m_fileSystemWatcher;
 
     QTimer mBacklightTimer;

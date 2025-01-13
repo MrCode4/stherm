@@ -48,6 +48,8 @@ I_DeviceController {
 
     readonly property int  checkSNTryCount: checkSNTimer.tryCount;
 
+    property real           displayCurrentTemp:    18.0
+
     //! Air condition health
     property bool airConditionSensorHealth: false;
 
@@ -86,6 +88,8 @@ I_DeviceController {
     //! true: The system can automatically update without requiring user confirmation.
     property bool canUpdateSystemSetup: system.isForgottenDeviceStarted()
 
+    property bool isNeedSendInstallLog: false
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -95,14 +99,23 @@ I_DeviceController {
     //! Active the Network Connection Watchdog when device has not internet for 1 hour.
     property Timer networkWatchdogTimer: Timer {
         repeat: false
-        running: NetworkInterface.connectedWifi && !NetworkInterface.hasInternet
+        running: (!NetworkInterface.connectedWifi && !NetworkInterface.isWifiDisconnectedManually) ||
+                 (NetworkInterface.connectedWifi && !NetworkInterface.hasInternet)
         interval: 1 * 60 * 60 * 1000
+
+        onRunningChanged: {
+            console.log("Network Watchdog Timer running changed: ", running, NetworkInterface.connectedWifi,
+                        NetworkInterface.isWifiDisconnectedManually, NetworkInterface.hasInternet)
+            // Send network log when hasInternet is true
+            if (!running) {
+                console.log("Save the network log due to Network Watchdog Timer running changed to false.");
+                networkWatchdogLoggerTimer.triggered();
+            }
+        }
 
         onTriggered: {
             //  Check the isValidNetworkRequestRestart to check in direct calls (triggered).
             if (system.isValidNetworkRequestRestart()) {
-                // to prevent another restart call after restarting once unless the condition changed again
-                system.saveNetworkRequestRestart();
                 // Restart the app or device
                 uiSession.popUps.showCountDownPopUp(
                             qsTr("  Restart Device  "),
@@ -110,6 +123,12 @@ I_DeviceController {
                             true,
                             function () {
                                 if (system) {
+                                    // Save the network log before restarting
+                                    system.saveNetworkLogs();
+
+                                    // to prevent another restart call after restarting once unless the condition changed again
+                                    system.saveNetworkRequestRestart();
+
                                     system.rebootDevice();
                                 }
                             });
@@ -142,6 +161,20 @@ I_DeviceController {
                 canRetry = false;
             }
             console.log("sending network logs finished: ", canRetry)
+        }
+    }
+
+    //! Try to send install log if needed.
+    property Timer sendInstallLogTimer: Timer {
+        repeat: false
+        running: false
+        interval: 20000
+
+        onTriggered: {
+            if (root.isNeedSendInstallLog) {
+                console.log("sending install logs")
+                system.generateInstallLog();
+            }
         }
     }
 
@@ -391,6 +424,11 @@ I_DeviceController {
         function onAuxiliaryStatusChanged(isRunning: bool) {
             isRunningAuxiliaryHeating = isRunning;
         }
+
+        function onEmulateWarrantyFlow() {
+            console.log("Emulate warranty flow with backdoor");
+            root.postWarrantyReplacementFinsihed();
+        }
     }
 
 
@@ -406,6 +444,12 @@ I_DeviceController {
                 }
 
             } else {
+                // Save network log when hasInternet is false
+                if (!NetworkInterface.isWifiDisconnectedManually && !NetworkInterface.connectedWifi) {
+                    console.log("Save the network log due to false hasInternet. The auto connection timer started from NetworkInterfase.")
+                    networkWatchdogLoggerTimer.triggered();
+                }
+
                 fetchContractorInfoTimer.stop();
             }
         }
@@ -510,6 +554,11 @@ I_DeviceController {
 
             settingsPush.isPushing = false;
 
+            //! Send install log when updte response data is ready.
+            if(!sendInstallLogTimer.running && root.isNeedSendInstallLog) {
+                sendInstallLogTimer.triggered();
+            }
+
             console.log("DeviceController.qml: Push onPushSuccess", stageMode)
 
         }
@@ -553,6 +602,15 @@ I_DeviceController {
             // proceed with the normal update process using a system timer.
             if (!checkedSWUpdate) {
                 deviceControllerCPP.system.fetchUpdateInformation(true);
+            }
+        }
+
+        function onInstallLogSent(isSuccess: bool) {
+            console.log("Install log sent successfully: ", isSuccess)
+            root.isNeedSendInstallLog = !isSuccess;
+
+            if(root.isNeedSendInstallLog) {
+                sendInstallLogTimer.start();
             }
         }
     }
@@ -660,10 +718,17 @@ I_DeviceController {
 
         function onInstalledSuccess() {
 
+
             // Push all settings to the server after the No Wi-Fi installation flow completed.
             // In a normal initial setup, the system setup will be sent from the system setup page.
-            if (initialSetupNoWIFI)
+            if (initialSetupNoWIFI) {
                 updateEditMode(AppSpec.EMAll);
+
+            }
+
+            // Send install log
+            root.isNeedSendInstallLog = true
+            sendInstallLogTimer.start();
 
             isSendingInitialSetupData = false;
             setInitialSetupNoWIFI(false);
@@ -961,10 +1026,10 @@ I_DeviceController {
             root.lockMode &= ~mode; // remove flag
     }
 
-    function editModeEnabled(mode : int) {
-        return (root.editMode & mode) === mode ||
-                (root.lockMode & mode) === mode ||
-                (root.stageMode & mode) === mode;
+    function editModeEnabled(mode : int) : bool {
+        return ((root.editMode & mode) === mode) ||
+                ((root.lockMode & mode) === mode) ||
+                ((root.stageMode & mode) === mode);
     }
 
     function updateDeviceBacklight(isOn, color) : bool
@@ -1209,6 +1274,7 @@ I_DeviceController {
 
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
+            deviceControllerCPP.setCelsius(temperatureUnit === AppSpec.TempratureUnit.Cel)
         }
 
         return true;
@@ -1290,7 +1356,7 @@ I_DeviceController {
             "temp": device.requestedTemp,
             "humidity": device.requestedHum,
             "current_humidity": device.currentHum.toString(),
-            "current_temp": device.currentTemp.toString(),
+            "current_temp": root.displayCurrentTemp.toString(),
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
@@ -1398,17 +1464,33 @@ I_DeviceController {
             return;
         }
 
-        var temperatureValue = Utils.clampValue(temperature, _minimumTemperatureC, _maximumTemperatureC);
-        setDesiredTemperature(temperatureValue);
+         // the data will be clamped on ui and if changed it will call setDesiredTemperature for updating truncated version
+         // as well as updating clamped version! it will push again if clamped version differs
+        if (device.requestedTemp !== temperature) { // compare fuzzy
+            device.requestedTemp = temperature;
+            root.saveSettings();
+        }
     }
 
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
-        //! Apply temperature in backend
-        deviceControllerCPP.setRequestedTemperature(temperature);
 
-        // Update device temperature when setTemperature is successful.
-        device.requestedTemp = temperature;
+        let truncatedValue = AppUtilities.getTruncatedvalue(temperature);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+        //! Apply temperature in backend
+        deviceControllerCPP.setRequestedTemperature(truncatedValue);
+
+        var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                     ? Utils.fahrenheitToCelsius(temperature)
+                     : temperature);
+        if (Math.abs(device.requestedTemp - value) > 0.05) { // compare fuzzy
+            // Update device temperature when setTemperature is successful.
+            device.requestedTemp = value;
+            root.updateEditMode(AppSpec.EMDesiredTemperature);
+            root.saveSettings();
+        }
     }
 
     function setRequestedHumidityFromServer(humidity: real) {
@@ -1566,36 +1648,60 @@ I_DeviceController {
             return;
         }
 
-        if (true) {
-            var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
-            // TODO: update the hasChanges after merge.
-            var hasChanges = AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type ||
-                    device.systemSetup.heatPumpEmergency != settings.heatPumpEmergency ||
-                    device.systemSetup.heatStage != settings.heatStage ||
-                    device.systemSetup.coolStage != settings.coolStage ||
-                    device.systemSetup.heatPumpOBState != settings.heatPumpOBState ||
-                    device.systemSetup.systemRunDelay != settings.systemRunDelay ||
-                    device.systemSetup.systemAccessories.accessoriesType != settings.systemAccessories.mode ||
-                    device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType ||
+        var hasChangeParams = [];
 
-                    device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold ||
-                    device.systemSetup.isAUXAuto != settings.isAUXAuto ||
-                    device.systemSetup.dualFuelHeatingModeDefault != settings.dualFuelHeatingModeDefault ||
+        if (AppSpec.systemTypeString(device.systemSetup.systemType) != settings.type)
+            hasChangeParams.push("systemType");
+        if (device.systemSetup.heatPumpEmergency != settings.heatPumpEmergency)
+            hasChangeParams.push("heatPumpEmergency");
+        if (device.systemSetup.heatStage != settings.heatStage)
+            hasChangeParams.push("heatStage");
+        if (device.systemSetup.coolStage != settings.coolStage)
+            hasChangeParams.push("coolStage");
+        if (device.systemSetup.heatPumpOBState != settings.heatPumpOBState)
+            hasChangeParams.push("heatPumpOBState");
+        if (device.systemSetup.systemRunDelay != settings.systemRunDelay)
+            hasChangeParams.push("systemRunDelay");
+        if (device.systemSetup.systemAccessories.accessoriesType != settings.systemAccessories.mode)
+            hasChangeParams.push("accessoriesType");
+        var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
+        if (device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType)
+            hasChangeParams.push("accessoriesWireType");
+        if (device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold)
+            hasChangeParams.push("dualFuelThreshold");
+        if (device.systemSetup.isAUXAuto != settings.isAUXAuto)
+            hasChangeParams.push("isAUXAuto");
+        if (device.systemSetup.dualFuelHeatingModeDefault != settings.dualFuelHeatingModeDefault)
+            hasChangeParams.push("dualFuelHeatingModeDefault");
+        if (settings.hasOwnProperty("emergencyMinimumTime") &&
+                device.systemSetup.emergencyMinimumTime != settings.emergencyMinimumTime)
+            hasChangeParams.push("emergencyMinimumTime");
+        if (settings.hasOwnProperty("useAuxiliaryParallelHeatPump") &&
+                device.systemSetup.useAuxiliaryParallelHeatPump != settings.useAuxiliaryParallelHeatPump)
+            hasChangeParams.push("useAuxiliaryParallelHeatPump");
+        if (settings.hasOwnProperty("driveAux1AndETogether") &&
+                device.systemSetup.driveAux1AndETogether != settings.driveAux1AndETogether)
+            hasChangeParams.push("driveAux1AndETogether");
+        if (settings.hasOwnProperty("driveAuxAsEmergency") &&
+                device.systemSetup.driveAuxAsEmergency != settings.driveAuxAsEmergency)
+            hasChangeParams.push("driveAuxAsEmergency");
+        if (settings.hasOwnProperty("auxiliaryHeating") &&
+                device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating)
+            hasChangeParams.push("auxiliaryHeating");
+        if (settings.hasOwnProperty("runFanWithAuxiliary") &&
+                device.systemSetup.runFanWithAuxiliary != settings.runFanWithAuxiliary)
+            hasChangeParams.push("runFanWithAuxiliary");
 
-                    (settings.hasOwnProperty("emergencyMinimumTime")         && device.systemSetup.emergencyMinimumTime != settings.emergencyMinimumTime) ||
-                    (settings.hasOwnProperty("useAuxiliaryParallelHeatPump") && device.systemSetup.useAuxiliaryParallelHeatPump != settings.useAuxiliaryParallelHeatPump) ||
-                    (settings.hasOwnProperty("driveAux1AndETogether")        && device.systemSetup.driveAux1AndETogether != settings.driveAux1AndETogether) ||
-                    (settings.hasOwnProperty("driveAuxAsEmergency")          && device.systemSetup.driveAuxAsEmergency != settings.driveAuxAsEmergency) ||
-                    (settings.hasOwnProperty("auxiliaryHeating")             && device.systemSetup.auxiliaryHeating != settings.auxiliaryHeating) ||
-                    (settings.hasOwnProperty("runFanWithAuxiliary")          && device.systemSetup.runFanWithAuxiliary != settings.runFanWithAuxiliary);
+        if (hasChangeParams.length > 0) {
+            console.log("Changed paramters are :", hasChangeParams, JSON.stringify(settings))
 
-            if (hasChanges) {
+            var allowUser2Choose = false;
+            if (allowUser2Choose) {
                 uiSession.popUps.showSystemSetupUpdateConfirmation(settings);
+            } else {
+                updateEditMode(AppSpec.EMSystemSetup);
+                saveSettings();
             }
-
-        } else {
-            updateEditMode(AppSpec.EMSystemSetup);
-            saveSettings();
         }
     }
 
@@ -1648,7 +1754,6 @@ I_DeviceController {
     //! If the clamping logic has changed, review the corresponding functionality in the
     //! DesiredTemperatureItem class (specifically the updateFirstSecondValues function).
     function setAutoTemperatureFromServer (settings) {
-
         if (!device)
             return;
 
@@ -1663,31 +1768,54 @@ I_DeviceController {
         // If both auto_temp_low and auto_temp_high are zero, use default values.
         // If auto_temp_low or auto_temp_high is undefined, keep default values.
         if (settings?.auto_temp_low !== 0 || settings?.auto_temp_high !== 0) {
-            auto_temp_low = Utils.clampValue(settings?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp,
-                                             AppSpec.autoMinimumTemperatureC,
-                                             AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
-
-            const minimumSecondarySlider = Math.max(AppSpec.minAutoMaxTemp, auto_temp_low + AppSpec.autoModeDiffrenceC);
-            auto_temp_high = Utils.clampValue(settings?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp,
-                                              minimumSecondarySlider,
-                                              AppSpec.autoMaximumTemperatureC);
+            auto_temp_low = settings?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp;
+            auto_temp_high = settings?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp;
         }
 
-        setAutoMinReqTemp(auto_temp_low);
-        setAutoMaxReqTemp(auto_temp_high);
-    }
+         // the data will be clamped on ui and if changed it will call setAutoMinReqTemp and setAutoMaxReqTemp for updating truncated version
+         // as well as updating clamped version! it will push again if clamped version differs
+        if (Math.abs(auto_temp_low - device.autoMinReqTemp) > 0.1) {
+            device.autoMinReqTemp = auto_temp_low;
+        }
 
-    function setAutoMinReqTemp(min) {
-        if (device && device.autoMinReqTemp !== min) {
-            device.autoMinReqTemp = min;
-            deviceControllerCPP.setAutoMinReqTemp(min);
+        if (Math.abs(auto_temp_high - device.autoMaxReqTemp) > 0.1) {
+            device.autoMaxReqTemp = auto_temp_high;
         }
     }
 
-    function setAutoMaxReqTemp(max) {
-        if (device && device.autoMaxReqTemp !== max) {
-            device.autoMaxReqTemp = max;
-            deviceControllerCPP.setAutoMaxReqTemp(max);
+    //!? minTemperature is UI value.
+    function setAutoMinReqTemp(minTemperature: real) {
+        let truncatedValue = AppUtilities.getTruncatedvalue(minTemperature);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+        deviceControllerCPP.setAutoMinReqTemp(truncatedValue);
+
+        var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                ? Utils.fahrenheitToCelsius(minTemperature)
+                : minTemperature);
+        if (Math.abs(device.autoMinReqTemp - value) > 0.05 ) {
+            device.autoMinReqTemp = value;
+            root.updateEditMode(AppSpec.EMAutoMode);
+            root.saveSettings();
+        }
+    }
+
+    //!? maxTemperature is UI value.
+    function setAutoMaxReqTemp(maxTemperature: real) {
+        let truncatedValue = AppUtilities.getTruncatedvalue(maxTemperature);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+        deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
+
+        var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                ? Utils.fahrenheitToCelsius(maxTemperature)
+                : maxTemperature);
+        if (Math.abs(device.autoMaxReqTemp - value) > 0.05 ) {
+            device.autoMaxReqTemp = value;
+            root.updateEditMode(AppSpec.EMAutoMode);
+            root.saveSettings();
         }
     }
 
@@ -1729,7 +1857,8 @@ I_DeviceController {
     {
         //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
-        if (!result.temperature)
+        // if temperature exists roundTemperature will exist for sure
+        if (!result.temperature) // see AppSpecCPP.h for temperatureKey & roundTemperatureKey definition
             return;
 
         var co2 = result?.iaq ?? 0;
@@ -1738,8 +1867,8 @@ I_DeviceController {
         // Fahrenheit is more sensitive than Celsius,
         // so for every one degree change,
         // it needs to be sent to the server.
-        var isVisualTempChangedF = Math.abs(Math.round(device.currentTemp * 1.8 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.8)) > 0
-        var isVisualTempChangedC = Math.abs(Math.round(device.currentTemp * 1.0 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.0)) > 0
+        var isVisualTempChangedF = Math.abs(Math.round(root.displayCurrentTemp * 1.8 ) - Math.round((result?.roundTemperature ?? root.displayCurrentTemp) * 1.8)) > 0
+        var isVisualTempChangedC = Math.abs(Math.round(root.displayCurrentTemp * 1.0 ) - Math.round((result?.roundTemperature ?? root.displayCurrentTemp) * 1.0)) > 0
         var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
         var isCo2IdChanged = device._co2_id !== co2Id;
         var isNeedToPushToServer = isVisualHumChanged ||
@@ -1748,6 +1877,7 @@ I_DeviceController {
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
+        root.displayCurrentTemp = result?.roundTemperature ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = co2 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brightness ?? 0
@@ -1757,7 +1887,7 @@ I_DeviceController {
 
         ProtoDataManager.setSetHumidity(deviceControllerCPP.effectiveHumidity());
         ProtoDataManager.setMCUTemperature(system.cpuTemperature());
-        ProtoDataManager.setCurrentTemperature(device.currentTemp);
+        ProtoDataManager.setCurrentTemperature(root.displayCurrentTemp);
         ProtoDataManager.setCurrentHumidity(device.currentHum);
         ProtoDataManager.setCurrentAirQuality(device._co2_id);
 
@@ -1803,7 +1933,7 @@ I_DeviceController {
 
     function setTestData(temperature, on) {
         var send_data = {
-            "temperature": temperature, // see AppSpecCPP.h for key definition temperatureKey
+            "processedTemperature": temperature, // see AppSpecCPP.h for key definition processedTemperatureKey
         }
         deviceControllerCPP.setOverrideMainData(on ? send_data : {})
     }

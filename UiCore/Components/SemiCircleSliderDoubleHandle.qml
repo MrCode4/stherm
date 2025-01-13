@@ -50,7 +50,7 @@ Control {
         value: from
 
         Component.onCompleted: {
-            setMaxValue(firstValueCeil);
+            setMaxValue(firstValueCeil.toFixed(0));
         }
 
         onValueChanged: {
@@ -77,7 +77,7 @@ Control {
             setPosition(Math.max(0, Math.min(1, (value - from) / Math.abs(to - from))));
 
             //! Set max value of first handler
-            first.setMaxValue(Math.min(firstValueCeil, value - difference));
+            first.setMaxValue(Math.min(firstValueCeil.toFixed(0), value - difference));
         }
     }
 
@@ -100,7 +100,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+            color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
         }
 
         Rectangle {
@@ -109,7 +109,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+            color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
         }
 
         Shape {
@@ -128,12 +128,12 @@ Control {
                     centerY: _control.background.shapeHeight
 
                     GradientStop {
-                        position: 0
+                        position: 0.55
                         color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
                     }
 
                     GradientStop {
-                        position: 0.55
+                        position: 0
                         color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
                     }
                 }
@@ -276,7 +276,7 @@ Control {
                     angle = angle < -170 ? angle + 360 : angle;
                     var diffAngle = angle - startAngle;
                     var newValue = first.value + diffAngle / (firstHandle.angleRange) * Math.abs(to - from);
-                    first.setValue(Math.max(from, Math.min(firstValueCeil, to, newValue)));
+                    first.setValue(Math.max(from, Math.min(firstValueCeil.toFixed(0), to, newValue)));
 
 
                     startAngle = angle;

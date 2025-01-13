@@ -273,7 +273,7 @@ void NmCli::connectToUnsavedWifi(const QString& bssid, const QString& password, 
 
 void NmCli::connectToSavedWifi(const QString& ssid, const QString& security, const QString& password, ExitedCallback callback)
 {
-    //! If security is empty remove 802-11-wireless-security settting from profile.
+    //! If security is empty remove 802-11-wireless-security setting from profile.
     //! Doesn't emit error if 802-11-wireless-security not exist
     if (security.isEmpty()) {
         const QStringList args({

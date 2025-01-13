@@ -41,6 +41,9 @@ BasePageView {
 
     Connections {
         target: system
+
+        enabled: root.visible
+
         function onLogPrepared(isSuccess){
             logBusyPop.close()
             if (isSuccess){

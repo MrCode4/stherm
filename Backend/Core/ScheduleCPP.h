@@ -71,6 +71,7 @@ public:
     //! Determine the effective temperarure in the cooling and heating mode.
     //! Return maximumTemperature in the cooling mode.
     //! Return minimumTemperature in the heating mode.
+    //! The return value is original and do not convert to truncated value.
     Q_INVOKABLE double effectiveTemperature(const AppSpecCPP::SystemMode& sysMode);
 
 signals:
