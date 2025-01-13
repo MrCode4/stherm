@@ -119,24 +119,6 @@ BasePageView {
 
                 difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
 
-                first.onPressedChanged: {
-                    if (deviceController && !first.pressed) {
-                        schedule.minimumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(first.value)
-                                                       : first.value);
-                        deviceController.saveSettings();
-                    }
-                }
-
-                second.onPressedChanged: {
-                    if (deviceController && !second.pressed) {
-                        schedule.maximumTemperature = (temperatureUnit === AppSpec.TempratureUnit.Fah
-                                                       ? Utils.fahrenheitToCelsius(second.value)
-                                                       : second.value);
-                        deviceController.saveSettings();
-                    }
-                }
-
                 labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))
                 leftLabelPrefix:  "<p style='color:#ea0600; font-size:12px;'>Heat to</p>"
                 rightLabelPrefix: "<p style='color:#0097cd; font-size:12px;'>Cool to</p>"

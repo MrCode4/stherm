@@ -1791,11 +1791,11 @@ double DeviceControllerCPP::calculateProcessedTemperature(const double &temperat
 
     if (qAbs(processedTemperatureF - temperatureF) >= m_IncrementPerStep) {
         if (processedTemperatureF - temperatureF > 0) {
-            processedTemperatureF -= m_IncrementPerStep;
+            temperatureF = processedTemperatureF - m_IncrementPerStep;
         } else {
-            processedTemperatureF += m_IncrementPerStep;
+            temperatureF = processedTemperatureF + m_IncrementPerStep;
         }
     }
-    // should we return temperatureF or processed?
-    return UtilityHelper::toCelsius(processedTemperatureF);
+
+    return UtilityHelper::toCelsius(temperatureF);
 }

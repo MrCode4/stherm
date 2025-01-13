@@ -1656,7 +1656,7 @@ void Scheme::fanWork(bool isOn) {
 void Scheme::checkForRestart()
 {
     const auto sys = mDataProvider.data()->systemSetup();
-    if (sys->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
+    if (sys && sys->systemType == AppSpecCPP::SystemType::DualFuelHeating &&
         (mActiveSysTypeHeating == AppSpecCPP::HeatPump ||
          mActiveSysTypeHeating == AppSpecCPP::HeatingOnly)) {
         auto activeType = activeSystemTypeHeating();
