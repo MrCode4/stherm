@@ -1,6 +1,38 @@
 
 Release Note
 -------------
+## Release R 1.4.10
+ 13th January 2025
+ Branch- r1_4_10, commit- b161627c
+ 
+### Release Articles
+update-V.1.4.10.zip
+
+### Reason
+Add new feature and fix some issues.
+
+### What’s Brand New
+- Temperature smoothing and rounding added for better user experience.
+- Network watchdog added to recover better from offline cases.
+- System setup protection added to prevent unwanted changes.
+- Progress bar added for sending logs to the cloud.
+- Factory reset option added for contractors to clear device data after uninstallation.
+- Alerts will be sent to cloud when device has internet connection.
+
+### What Been Updated
+- Contractors will be able to load their data before installing at client location.
+- More verbose logs for installation process.
+- Humidity configuration added to schedules.
+- Privacy policy updated with minor changes.
+
+### What’s Been Fixed
+- Fix some issues in the scheme.
+- Auto update time after restarting has been fixed.
+- Minor bug fixes and improvements.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
 ## Release R 1.4.9
  21th December 2024
  Branch- r1_4_9, commit- 56cca7636
