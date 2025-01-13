@@ -431,6 +431,12 @@ enum LedEffect
 };
 }
 
+enum RoundType {
+    RoundUp = 0,
+    RoundDown,
+    Round
+};
+
 /*! ***********************************************************************************************
  * The UtilityHelper class is a container that encapsulates
  *  a collection of static methods providing a range of general-purpose functionalities.
@@ -527,5 +533,7 @@ public:
 
     //! Convert Fahrenheit to Celcius
     static double toCelsius(const double &fahrenheit);
+
+    static double roundNumber(const RoundType &roundType, const double &value);
 };
 

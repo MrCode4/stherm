@@ -87,8 +87,8 @@ BasePageView {
                 writeSensorResult(key, value, iaqMin, iaqMax, true)
             } else if (key === "pressure") {
                 writeSensorResult(key, value, pressureMin, pressureMax, false)
-            } else if (key === "temperature") { // see AppSpecCPP.h for key definition temperatureKey
-                writeSensorResult(key, value, temperatureMin, temperatureMax, true)
+            } else if (key === "processedTemperature") { // see AppSpecCPP.h for key definition processedTemperatureKey
+                writeSensorResult("temperature", value, temperatureMin, temperatureMax, true)
             }
         }
     }
@@ -150,7 +150,7 @@ BasePageView {
             if (checked)
                 temperatureField.forceActiveFocus();
             else
-                deviceController.setTestData(model.temperature, true);
+                deviceController.setTestData(model.processedTemperature, true);
         }
     }
 
@@ -166,7 +166,7 @@ BasePageView {
         visible: !overrideBtn.checked
         checkable: false
         onClicked: {
-            deviceController.setTestData(model.temperature, false)
+            deviceController.setTestData(model.processedTemperature, false)
         }
     }
 
@@ -208,11 +208,11 @@ BasePageView {
         TextField {
             id: temperatureField
 
-            property bool valid : (root.model?.temperature >= temperatureMin && root.model?.temperature <= temperatureMax) ?? false
+            property bool valid : (root.model?.processedTemperature >= temperatureMin && root.model?.processedTemperature <= temperatureMax) ?? false
 
             readOnly: !overrideBtn.checked
             Layout.preferredHeight: 50
-            text: readOnly ? (root.model?.temperature?.toFixed(3)  ?? "") : text
+            text: readOnly ? (root.model?.processedTemperature?.toFixed(3)  ?? "") : text
             color:  valid ? Material.foreground : Style.testFailColor
 
             validator: DoubleValidator {
@@ -223,7 +223,7 @@ BasePageView {
 
             onEditingFinished: {
                 if (acceptableInput)
-                    model.temperature = text
+                    model.processedTemperature = text
             }
         }
 

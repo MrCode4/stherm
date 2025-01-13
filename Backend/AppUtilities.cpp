@@ -45,3 +45,12 @@ QString AppUtilities::decodeLockPassword(QString pass)
     TRACE << "Decoded Password: " << QString::fromStdString(ss.str());
     return QString::fromStdString(ss.str());
 }
+
+double AppUtilities::getTruncatedvalue(double value, int decimalCount) 
+{
+    if (decimalCount < 0) {
+        return value; // Return the original value if decimal is less than 0;
+    }
+    const double factor = qPow(10, decimalCount);
+    return qFloor(value * factor) / factor;
+}

@@ -94,6 +94,7 @@ public:
 
     //! set settings using uart and file and respond the success
     Q_INVOKABLE bool setSettings(QVariantList data);
+    Q_INVOKABLE void setCelsius(bool isCelsius);
 
     //! update vacation
     Q_INVOKABLE void setVacation(const double min_Temperature, const double max_Temperature,
@@ -294,6 +295,9 @@ private Q_SLOTS:
     /* Private Slots
      * ****************************************************************************************/
     void processBackdoorSettingFile(const QString &path);
+    void onCurrentSystemModeChanged(AppSpecCPP::SystemMode obState,
+                                    int currentHeatingStage,
+                                    int currentCoolingStage);
 
 private:
     /* Private Functions
@@ -314,6 +318,8 @@ private:
     //! Start/Stop the timer for get the outdoor temperature
     void checkForOutdoorTemperature();
 
+    double calculateProcessedTemperature(const double &temperatureC) const;
+
 private:
     /* Attributes
      * ****************************************************************************************/
@@ -323,7 +329,7 @@ private:
     QVariantMap _mainData_override;
     bool _override_by_file = false;
     double _temperatureLast = 0.0;
-
+    bool mIsCelsius = false;
 
     bool mIsDeviceStarted = false;
 
@@ -331,6 +337,7 @@ private:
     DeviceAPI *_deviceAPI;
 
     SystemSetup *mSystemSetup;
+    AppSpecCPP::SystemMode mActiveSystemMode;
 
     //! Create a shared instance of SchemeDataProvider to
     //! provide data for scheme and HumidittScheme

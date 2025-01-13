@@ -15,6 +15,7 @@ static  const QString m_DTIHeader             = "Delta Temperature Integrator";
 static  const QString m_BacklightFactorHeader = "backlightFactor";
 static  const QString m_BrightnessHeader      = "Brightness (%)";
 static  const QString m_RawTemperatureHeader  = "Raw Temperature (F)";
+static  const QString m_ProcessedTemperatureHeader  = "Processed Temperature (F)";
 static  const QString m_NightModeHeader       = "Is Night Mode Running";
 static  const QString m_BacklightRHeader      = "Backlight - R";
 static  const QString m_BacklightGHeader      = "Backlight - G";
@@ -28,6 +29,8 @@ static  const QString m_T1                    = "Temperature compensation T1 (F)
 static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
 static  const char* m_GetOutdoorTemperatureReceived  = "GetOutdoorTemperatureRecieved";
+
+static const double m_IncrementPerStep = 1.0; // Increment temperature smoothly by 1°F per update
 
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
@@ -89,6 +92,22 @@ inline void setCPUGovernorMode(QString governer) {
         }
     }
 #endif
+}
+
+//! Calculate round type based on the system mode
+inline RoundType getRoundType(AppSpecCPP::SystemMode mode) {
+    switch (mode) {
+    case AppSpecCPP::SystemMode::Cooling:
+        return RoundType::RoundUp;
+
+    case AppSpecCPP::SystemMode::Heating:
+    case AppSpecCPP::SystemMode::Emergency:
+    case AppSpecCPP::SystemMode::EmergencyHeat:
+        return RoundType::RoundDown;
+
+    default:
+        return RoundType::Round;
+    }
 }
 
 DeviceControllerCPP* DeviceControllerCPP::sInstance = nullptr;
@@ -242,7 +261,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
         DC_LOG << "Brightness: " << brightness;
 
-        DC_LOG << "Raw Temperature: " << _mainData.value(temperatureRawKey);
+        DC_LOG << "Raw Temperature: " << _mainData.value(temperatureRawKey) << ", Processed Temperature: " << _mainData.value(processedTemperatureKey);
         DC_LOG << "Corrected Temperature: " << _mainData.value(temperatureKey);
 
         DC_LOG << "Is night mode running: " << mIsNightModeRunning;
@@ -253,7 +272,6 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     });
 
 #endif
-
 
     mBacklightPowerTimer.setTimerType(Qt::PreciseTimer);
     mBacklightPowerTimer.setSingleShot(false);
@@ -362,7 +380,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(mTempScheme, &Scheme::startSystemDelayCountdown, this, &DeviceControllerCPP::startSystemDelayCountdown);
     connect(mTempScheme, &Scheme::stopSystemDelayCountdown, this, &DeviceControllerCPP::stopSystemDelayCountdown);
-    connect(mTempScheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::currentSystemModeChanged);
+    connect(mTempScheme, &Scheme::currentSystemModeChanged, this, &DeviceControllerCPP::onCurrentSystemModeChanged);
     connect(mTempScheme, &Scheme::actualModeStarted, this, &DeviceControllerCPP::actualModeStarted);
     connect(mTempScheme, &Scheme::dfhSystemTypeChanged, this, &DeviceControllerCPP::dfhSystemTypeChanged);
     connect(mTempScheme, &Scheme::manualEmergencyModeUnblockedAfter, this, &DeviceControllerCPP::manualEmergencyModeUnblockedAfter);
@@ -555,6 +573,11 @@ bool DeviceControllerCPP::setSettings(QVariantList data)
     }
 
     return false;
+}
+
+void DeviceControllerCPP::setCelsius(bool isCelsius)
+{
+    mIsCelsius = isCelsius;
 }
 
 void DeviceControllerCPP::setVacation(const double min_Temperature, const double max_Temperature,
@@ -802,14 +825,19 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
         if (mFanOff)
             mainData.insert(fanSpeedKey, 0);
 
-        if (_mainData == mainData)
-            return;
+        // Keep the latest processed temperature.
+        if (_mainData.contains(processedTemperatureKey))
+            mainData.insert(processedTemperatureKey, _mainData.value(processedTemperatureKey));
 
         _mainData = mainData;
 
         // Average of the last two temperature and humidity
         auto rt = _lastMainData.value(temperatureKey, tc).toDouble();
-        _mainData.insert(temperatureKey, (tc + rt) / 2);
+        auto rtAvg = (tc + rt) / 2;
+        _mainData.insert(temperatureKey, rtAvg);
+
+        auto processedTemperatureC = calculateProcessedTemperature(rtAvg);
+        _mainData.insert(processedTemperatureKey, processedTemperatureC);
 
         auto mh = mainData.value(humidityKey, 0.0).toDouble();
         auto rh = _lastMainData.value(humidityKey, mh).toDouble();
@@ -893,6 +921,14 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
     } else {
         qWarning() << "Incompatible backdoor file, processed nothing";
     }
+}
+
+void DeviceControllerCPP::onCurrentSystemModeChanged(AppSpecCPP::SystemMode obState,
+                                                     int currentHeatingStage,
+                                                     int currentCoolingStage)
+{
+    mActiveSystemMode = obState;
+    emit currentSystemModeChanged(obState, currentHeatingStage, currentCoolingStage);
 }
 
 bool DeviceControllerCPP::checkSN()
@@ -1061,7 +1097,7 @@ QVariantMap DeviceControllerCPP::getMainData()
     if (hasOverride) {
         auto overrideTemp = override.value("temp").toDouble();
         LOG_CHECK_DC(!_override_by_file) << "temperature will be overriden by value: " << overrideTemp << ", read from " << MAIN_DATA_OVERRIDE_PATH << " file.";
-        overrideData.insert(temperatureKey, overrideTemp);
+        overrideData.insert(processedTemperatureKey, overrideTemp);
     }
 
     if (_override_by_file != hasOverride){
@@ -1075,9 +1111,22 @@ QVariantMap DeviceControllerCPP::getMainData()
         mainData.insert(pair.first, pair.second);
     }
 
-    // to make effect of overriding instantly, TODO  remove or disable later
     bool isOk;
-    double currentTemp = mainData.value(temperatureKey).toDouble(&isOk);
+    double currentTemp = mainData.value(processedTemperatureKey).toDouble(&isOk);
+
+    // Determine rounding direction based on system mode or active system mode
+    auto mode = mSchemeDataProvider->systemSetup()->systemMode;
+    RoundType roundType = getRoundType(mode);
+    if (roundType == RoundType::Round) {
+        roundType = getRoundType(mActiveSystemMode);
+    }
+
+    currentTemp = mIsCelsius ? currentTemp : UtilityHelper::toFahrenheit(currentTemp);
+    currentTemp = UtilityHelper::roundNumber(roundType, currentTemp);
+    currentTemp = mIsCelsius ? currentTemp : UtilityHelper::toCelsius(currentTemp);
+    mainData.insert(roundTemperatureKey, currentTemp);
+
+    // to make effect of overriding instantly, TODO  remove or disable later
     if (isOk && currentTemp != _temperatureLast) {
         _temperatureLast = currentTemp;
         if (mSchemeDataProvider.isNull())
@@ -1165,7 +1214,6 @@ QString DeviceControllerCPP::beginTesting()
         err = "Kernel is empty.";
     saveTestResult("Kernel version", !kernel.isEmpty(), kernel);
 
-
     if (ti.isEmpty())
         err = "TI software version is empty.";
     saveTestResult("TI version", !ti.isEmpty(), ti);
@@ -1191,7 +1239,6 @@ void DeviceControllerCPP::testFinished()
     saveTestResult("SN", !sn.isEmpty(), sn);
 
     LOG_DC << "test finsihed with SN: " << sn;
-
 
     QStringList failedTests;
     for (const auto &testName : mAllTestNames) {
@@ -1252,10 +1299,9 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 #ifdef DEBUG_MODE
 
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
-                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader,
+                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader, m_ProcessedTemperatureHeader
                           m_NightModeHeader, m_BacklightState, m_BacklightRHeader, m_BacklightGHeader,
                           m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus};
-
 
     QFile file(mGeneralSystemDatafilePath);
 
@@ -1265,7 +1311,6 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
         // Check the header
         auto checkHeader = out.readAll().contains(m_DateTimeHeader);
         if (!checkHeader) {
-
             for (auto var = 0; var < cpuData.length(); var++) {
                 header.append(QString("Temperature CPU%0").arg(var));
             }
@@ -1311,7 +1356,11 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 
             } else if (key == m_RawTemperatureHeader) {
                 auto rawTemperatureC = _mainData.value(temperatureRawKey).toDouble();
-                dataStrList.append(QString::number(rawTemperatureC * 1.8 + 32));
+                dataStrList.append(QString::number(UtilityHelper::toFahrenheit(rawTemperatureC)));
+
+            } else if (key == m_ProcessedTemperatureHeader) {
+                auto processedTemperatureC = _mainData.value(processedTemperatureKey).toDouble();
+                dataStrList.append(QString::number(UtilityHelper::toFahrenheit(processedTemperatureC)));
 
             } else if (key == m_NightModeHeader) {
                 dataStrList.append(mIsNightModeRunning ? "true" : "false");
@@ -1727,4 +1776,26 @@ void DeviceControllerCPP::revertPerfTest()
 
 double DeviceControllerCPP::effectiveHumidity() {
     return mSchemeDataProvider->effectiveHumidity();
+}
+
+double DeviceControllerCPP::calculateProcessedTemperature(const double &temperatureC) const {
+    // currentValue
+    auto temperatureF = UtilityHelper::toFahrenheit(temperatureC);
+
+    // previously processed temperature to allow only 1F increment
+    auto processedTemperatureF = temperatureF;
+    if (_mainData.contains(processedTemperatureKey)) {
+        processedTemperatureF = _mainData.value(processedTemperatureKey).toDouble();
+        processedTemperatureF = UtilityHelper::toFahrenheit(processedTemperatureF);
+    }
+
+    if (qAbs(processedTemperatureF - temperatureF) >= m_IncrementPerStep) {
+        if (processedTemperatureF - temperatureF > 0) {
+            temperatureF = processedTemperatureF - m_IncrementPerStep;
+        } else {
+            temperatureF = processedTemperatureF + m_IncrementPerStep;
+        }
+    }
+
+    return UtilityHelper::toCelsius(temperatureF);
 }

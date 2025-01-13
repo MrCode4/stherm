@@ -26,12 +26,12 @@ RangeSliderLabeled {
         gradient: Gradient {
             orientation: Gradient.Horizontal
             GradientStop {
-                position: 0.0
+                position: 1.0
                 color: enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
             }
 
             GradientStop {
-                position: 1.0
+                position: 0.0
                 color: enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
             }
         }

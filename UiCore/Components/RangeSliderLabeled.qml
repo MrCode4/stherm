@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * A RangeSlider with labels for handles
+ * RangeSliderLabeled A RangeSlider with labels for handles
  * ***********************************************************************************************/
 LimitedRangeSlider {
     id: _root

@@ -48,6 +48,8 @@ I_DeviceController {
 
     readonly property int  checkSNTryCount: checkSNTimer.tryCount;
 
+    property real           displayCurrentTemp:    18.0
+
     //! Air condition health
     property bool airConditionSensorHealth: false;
 
@@ -1235,6 +1237,7 @@ I_DeviceController {
 
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
+            deviceControllerCPP.setCelsius(temperatureUnit === AppSpec.TempratureUnit.Cel)
         }
 
         return true;
@@ -1316,7 +1319,7 @@ I_DeviceController {
             "temp": device.requestedTemp,
             "humidity": device.requestedHum,
             "current_humidity": device.currentHum.toString(),
-            "current_temp": device.currentTemp.toString(),
+            "current_temp": root.displayCurrentTemp.toString(),
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
             "mode_id" : device.systemSetup.systemMode + 1,
@@ -1424,17 +1427,33 @@ I_DeviceController {
             return;
         }
 
-        var temperatureValue = Utils.clampValue(temperature, _minimumTemperatureC, _maximumTemperatureC);
-        setDesiredTemperature(temperatureValue);
+         // the data will be clamped on ui and if changed it will call setDesiredTemperature for updating truncated version
+         // as well as updating clamped version! it will push again if clamped version differs
+        if (device.requestedTemp !== temperature) { // compare fuzzy
+            device.requestedTemp = temperature;
+            root.saveSettings();
+        }
     }
 
     //! Set temperature to device (system) and update model.
     function setDesiredTemperature(temperature: real) {
-        //! Apply temperature in backend
-        deviceControllerCPP.setRequestedTemperature(temperature);
 
-        // Update device temperature when setTemperature is successful.
-        device.requestedTemp = temperature;
+        let truncatedValue = AppUtilities.getTruncatedvalue(temperature);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+        //! Apply temperature in backend
+        deviceControllerCPP.setRequestedTemperature(truncatedValue);
+
+        var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                     ? Utils.fahrenheitToCelsius(temperature)
+                     : temperature);
+        if (Math.abs(device.requestedTemp - value) > 0.05) { // compare fuzzy
+            // Update device temperature when setTemperature is successful.
+            device.requestedTemp = value;
+            root.updateEditMode(AppSpec.EMDesiredTemperature);
+            root.saveSettings();
+        }
     }
 
     function setRequestedHumidityFromServer(humidity: real) {
@@ -1698,7 +1717,6 @@ I_DeviceController {
     //! If the clamping logic has changed, review the corresponding functionality in the
     //! DesiredTemperatureItem class (specifically the updateFirstSecondValues function).
     function setAutoTemperatureFromServer (settings) {
-
         if (!device)
             return;
 
@@ -1713,31 +1731,54 @@ I_DeviceController {
         // If both auto_temp_low and auto_temp_high are zero, use default values.
         // If auto_temp_low or auto_temp_high is undefined, keep default values.
         if (settings?.auto_temp_low !== 0 || settings?.auto_temp_high !== 0) {
-            auto_temp_low = Utils.clampValue(settings?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp,
-                                             AppSpec.autoMinimumTemperatureC,
-                                             AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
-
-            const minimumSecondarySlider = Math.max(AppSpec.minAutoMaxTemp, auto_temp_low + AppSpec.autoModeDiffrenceC);
-            auto_temp_high = Utils.clampValue(settings?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp,
-                                              minimumSecondarySlider,
-                                              AppSpec.autoMaximumTemperatureC);
+            auto_temp_low = settings?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp;
+            auto_temp_high = settings?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp;
         }
 
-        setAutoMinReqTemp(auto_temp_low);
-        setAutoMaxReqTemp(auto_temp_high);
-    }
+         // the data will be clamped on ui and if changed it will call setAutoMinReqTemp and setAutoMaxReqTemp for updating truncated version
+         // as well as updating clamped version! it will push again if clamped version differs
+        if (Math.abs(auto_temp_low - device.autoMinReqTemp) > 0.1) {
+            device.autoMinReqTemp = auto_temp_low;
+        }
 
-    function setAutoMinReqTemp(min) {
-        if (device && device.autoMinReqTemp !== min) {
-            device.autoMinReqTemp = min;
-            deviceControllerCPP.setAutoMinReqTemp(min);
+        if (Math.abs(auto_temp_high - device.autoMaxReqTemp) > 0.1) {
+            device.autoMaxReqTemp = auto_temp_high;
         }
     }
 
-    function setAutoMaxReqTemp(max) {
-        if (device && device.autoMaxReqTemp !== max) {
-            device.autoMaxReqTemp = max;
-            deviceControllerCPP.setAutoMaxReqTemp(max);
+    //!? minTemperature is UI value.
+    function setAutoMinReqTemp(minTemperature: real) {
+        let truncatedValue = AppUtilities.getTruncatedvalue(minTemperature);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+        deviceControllerCPP.setAutoMinReqTemp(truncatedValue);
+
+        var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                ? Utils.fahrenheitToCelsius(minTemperature)
+                : minTemperature);
+        if (Math.abs(device.autoMinReqTemp - value) > 0.05 ) {
+            device.autoMinReqTemp = value;
+            root.updateEditMode(AppSpec.EMAutoMode);
+            root.saveSettings();
+        }
+    }
+
+    //!? maxTemperature is UI value.
+    function setAutoMaxReqTemp(maxTemperature: real) {
+        let truncatedValue = AppUtilities.getTruncatedvalue(maxTemperature);
+        truncatedValue = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                          ? Utils.fahrenheitToCelsius(truncatedValue)
+                          : truncatedValue);
+        deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
+
+        var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
+                ? Utils.fahrenheitToCelsius(maxTemperature)
+                : maxTemperature);
+        if (Math.abs(device.autoMaxReqTemp - value) > 0.05 ) {
+            device.autoMaxReqTemp = value;
+            root.updateEditMode(AppSpec.EMAutoMode);
+            root.saveSettings();
         }
     }
 
@@ -1779,7 +1820,8 @@ I_DeviceController {
     {
         //        console.log("--------------- Start: updateInformation -------------------")
         var result = deviceControllerCPP.getMainData();
-        if (!result.temperature)
+        // if temperature exists roundTemperature will exist for sure
+        if (!result.temperature) // see AppSpecCPP.h for temperatureKey & roundTemperatureKey definition
             return;
 
         var co2 = result?.iaq ?? 0;
@@ -1788,8 +1830,8 @@ I_DeviceController {
         // Fahrenheit is more sensitive than Celsius,
         // so for every one degree change,
         // it needs to be sent to the server.
-        var isVisualTempChangedF = Math.abs(Math.round(device.currentTemp * 1.8 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.8)) > 0
-        var isVisualTempChangedC = Math.abs(Math.round(device.currentTemp * 1.0 ) - Math.round((result?.temperature ?? device.currentTemp) * 1.0)) > 0
+        var isVisualTempChangedF = Math.abs(Math.round(root.displayCurrentTemp * 1.8 ) - Math.round((result?.roundTemperature ?? root.displayCurrentTemp) * 1.8)) > 0
+        var isVisualTempChangedC = Math.abs(Math.round(root.displayCurrentTemp * 1.0 ) - Math.round((result?.roundTemperature ?? root.displayCurrentTemp) * 1.0)) > 0
         var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
         var isCo2IdChanged = device._co2_id !== co2Id;
         var isNeedToPushToServer = isVisualHumChanged ||
@@ -1798,6 +1840,7 @@ I_DeviceController {
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
+        root.displayCurrentTemp = result?.roundTemperature ?? 0
         device.currentTemp = result?.temperature ?? 0
         device.co2 = co2 // use iaq as indicator for air quality
         //        device.setting.brightness = result?.brightness ?? 0
@@ -1807,7 +1850,7 @@ I_DeviceController {
 
         ProtoDataManager.setSetHumidity(deviceControllerCPP.effectiveHumidity());
         ProtoDataManager.setMCUTemperature(system.cpuTemperature());
-        ProtoDataManager.setCurrentTemperature(device.currentTemp);
+        ProtoDataManager.setCurrentTemperature(root.displayCurrentTemp);
         ProtoDataManager.setCurrentHumidity(device.currentHum);
         ProtoDataManager.setCurrentAirQuality(device._co2_id);
 
@@ -1853,7 +1896,7 @@ I_DeviceController {
 
     function setTestData(temperature, on) {
         var send_data = {
-            "temperature": temperature, // see AppSpecCPP.h for key definition temperatureKey
+            "processedTemperature": temperature, // see AppSpecCPP.h for key definition processedTemperatureKey
         }
         deviceControllerCPP.setOverrideMainData(on ? send_data : {})
     }

@@ -24,6 +24,15 @@ BasePageView {
     //!
     readonly property ScheduleCPP   scheduleToDisplay: isEditable ? internal.scheduleToEdit : schedule
 
+    property int temperatureUnit:      appModel?.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
+
+    //! Minimum temprature
+    property real               minTemperature: deviceController?.getMinValue(schedule?.systemMode, temperatureUnit) ?? 40
+
+    //! Maximum temprature
+    property real               maxTemperature: deviceController?.getMaxValue(schedule?.systemMode, temperatureUnit) ?? 90
+
+
     /* Signals
      * ****************************************************************************************/
     signal done();
@@ -237,26 +246,29 @@ BasePageView {
                         text: {
                             if (scheduleToDisplay.systemMode === AppSpec.Heating || scheduleToDisplay.systemMode === AppSpec.EmergencyHeat) {
                                 // Show the minimum temperature
-                                return Number(Utils.convertedTemperature(scheduleToDisplay?.minimumTemperature ?? 10,
-                                                                         appModel?.setting?.tempratureUnit)
-                                              ).toLocaleString(locale, "f", 0) + ` \u00b0${unit}`;
+                                var value =  Utils.convertedTemperatureClamped(scheduleToDisplay?.minimumTemperature ?? 10, appModel?.setting?.tempratureUnit, minTemperature, maxTemperature);
+                                value = AppUtilities.getTruncatedvalue(value);
+
+                                return Number(value).toLocaleString(locale, "f", 0) + ` \u00b0${unit}`;
 
                             } else if (scheduleToDisplay.systemMode === AppSpec.Cooling) {
                                 // Show the maximum temperature
-                                return Number(Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0,
-                                                                         appModel?.setting?.tempratureUnit)
-                                              ).toLocaleString(locale, "f", 0)
+                                var value = Utils.convertedTemperatureClamped(scheduleToDisplay?.maximumTemperature ?? 0, appModel?.setting?.tempratureUnit, minTemperature, maxTemperature);
+                                value = AppUtilities.getTruncatedvalue(value);
+                                return Number(value).toLocaleString(locale, "f", 0)
                                         + ` \u00b0${unit}`;
 
                             } else {
 
+                                var minValue = Utils.convertedTemperatureClamped(scheduleToDisplay?.minimumTemperature ?? 10, appModel?.setting?.tempratureUnit, minTemperature, maxTemperature);
+                                minValue = AppUtilities.getTruncatedvalue(minValue);
+
+                                var maxValue = Utils.convertedTemperatureClamped(scheduleToDisplay?.maximumTemperature ?? 0, appModel?.setting?.tempratureUnit, minTemperature, maxTemperature);
+                                maxValue = AppUtilities.getTruncatedvalue(maxValue);
+
                                 // Show the maximum and minimum temperature values.
-                                return Number(Utils.convertedTemperature(scheduleToDisplay?.minimumTemperature ?? 10,
-                                                                         appModel?.setting?.tempratureUnit)
-                                              ).toLocaleString(locale, "f", 0) + " - " +
-                                        Number(Utils.convertedTemperature(scheduleToDisplay?.maximumTemperature ?? 0,
-                                                                          appModel?.setting?.tempratureUnit)
-                                               ).toLocaleString(locale, "f", 0)
+                                return Number(minValue).toLocaleString(locale, "f", 0) + " - " +
+                                        Number(maxValue).toLocaleString(locale, "f", 0)
                                         + ` \u00b0${unit}`
                             }
                         }

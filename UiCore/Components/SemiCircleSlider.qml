@@ -48,7 +48,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+            color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
         }
 
         Rectangle {
@@ -57,7 +57,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+            color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
         }
 
         Shape {
@@ -77,11 +77,11 @@ Control {
                     y2: y1
 
                     GradientStop {
-                        position: 0
+                        position: 1
                         color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
                     }
                     GradientStop {
-                        position: 1
+                        position: 0
                         color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
                     }
                 }
@@ -202,8 +202,8 @@ Control {
                     angle = angle < -170 ? angle + 360 : angle;
                     var diffAngle = angle - startAngle;
                     var newValue = value + diffAngle / (_handle.angleRange) * Math.abs(to - from);
-                    value = Math.max(from, Math.min(to, newValue));
 
+                    value = Math.max(from, Math.min(to, newValue));
 
                     startAngle = angle;
                 }
