@@ -29,7 +29,7 @@ BasePageView {
     readonly property bool           isHeating:   schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.EmergencyHeat
     readonly property bool           isCooling:   schedule.systemMode === AppSpec.Cooling
 
-    //! Temperature value: this is always in celsius
+    //! Temperature user selected value: this is always in celsius
     readonly property real  minimumTemperature: {
         var temperatureValue = _tempSlider.first.value;
         if (isHeating) {
@@ -39,53 +39,21 @@ BasePageView {
         return (isCelcius ? temperatureValue : Utils.fahrenheitToCelsius(temperatureValue));
     }
 
+    // user selected value
     readonly property real  maximumTemperature: {
         var temperatureValue = _tempSlider.second.value;
         if (isCooling) {
             temperatureValue = singleTemperatureSlider.control.value;
-
         }
 
         return (isCelcius ? temperatureValue : Utils.fahrenheitToCelsius(temperatureValue))
     }
 
+    //! Minimum temprature
+    property real               minTemperature: deviceController?.getMinValue(schedule?.systemMode, temperatureUnit) ?? 40
 
-
-    //! Minimum temperature
-    property real               minTemperature: {
-        var minTemp;
-
-        if (isCooling) {
-            minTemp = isCelcius ? AppSpec.minimumCoolingTemperatiureC : AppSpec.minimumCoolingTemperatiureF;
-
-        } else if (isHeating) {
-            minTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.minimumHeatingTemperatiureF) : AppSpec.minimumHeatingTemperatiureF;
-
-        } else {
-            minTemp = isCelcius ? AppSpec.autoMinimumTemperatureC : AppSpec.autoMinimumTemperatureF;
-        }
-
-        return minTemp;
-    }
-
-    //! Maximum temperature
-    property real               maxTemperature: {
-        var maxTemp;
-
-        if (isCooling) {
-            maxTemp = isCelcius ? AppSpec.maximumCoolingTemperatiureC : AppSpec.maximumCoolingTemperatiureF;
-
-        } else if (isHeating) {
-            maxTemp = isCelcius ? Utils.fahrenheitToCelsius(AppSpec.maximumHeatingTemperatiureF) : AppSpec.maximumHeatingTemperatiureF;
-
-        } else {
-            maxTemp = isCelcius ? AppSpec.autoMaximumTemperatureC : AppSpec.autoMaximumTemperatureF;
-        }
-
-        return maxTemp;
-    }
-
-
+    //! Maximum temprature
+    property real               maxTemperature: deviceController?.getMaxValue(schedule?.systemMode, temperatureUnit) ?? 90
 
     /* Object properties
      * ****************************************************************************************/
@@ -225,7 +193,7 @@ BasePageView {
             leftSideColor:  "#ea0600"
             rightSideColor: "#0097cd"
             labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
-            from: AppUtilities.getTruncatedvalue(minTemperature);
+            from: minTemperature;
             to: maxTemperature;
         }
 
@@ -246,39 +214,28 @@ BasePageView {
 
     function updateSliderValues() {
         if (isHeating) {
-            var value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
-                                                          minTemperature, maxTemperature);
-
-            singleTemperatureSlider.control.value =  AppUtilities.getTruncatedvalue(value);
-
-        } else if (isCooling) {
-            var value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
+            singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
                                                                                       minTemperature, maxTemperature);
 
-            singleTemperatureSlider.control.value = AppUtilities.getTruncatedvalue(value);
+        } else if (isCooling) {
+            singleTemperatureSlider.control.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? singleTemperatureSlider.control.from, temperatureUnit,
+                                                                                      minTemperature, maxTemperature);
 
         } else {
-            var minValue = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? _tempSlider.from, temperatureUnit,
-                                                             minTemperature, maxTemperature - _tempSlider.difference);
-            minValue = AppUtilities.getTruncatedvalue(minValue);
-
-            var maxValue = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? _tempSlider.to, temperatureUnit,
-                                                             _tempSlider.first.value + _tempSlider.difference, maxTemperature);
-            maxValue = AppUtilities.getTruncatedvalue(maxValue);
-
-
             //! Create schedule in auto and off mode.
-            _tempSlider.first.value = minValue;
+            _tempSlider.first.value = Utils.convertedTemperatureClamped(schedule?.minimumTemperature ?? _tempSlider.from, temperatureUnit,
+                                                                        minTemperature, maxTemperature - _tempSlider.difference);
 
-            _tempSlider.second.value = maxValue;
+            _tempSlider.second.value = Utils.convertedTemperatureClamped(schedule?.maximumTemperature ?? _tempSlider.to, temperatureUnit,
+                                                                         _tempSlider.first.value + _tempSlider.difference, maxTemperature);
         }
     }
 
     //! Save the schedule temperature
     function save() {
         if (schedule) {
-            var minTemperature = _tempSlider.first.value;
-            var maxTemperature = _tempSlider.second.value;
+            let minTemperature = _tempSlider.first.value;
+            let maxTemperature = _tempSlider.second.value;
 
             if (isHeating) {
                 // Update minimum temperature as heating temperature
@@ -289,8 +246,9 @@ BasePageView {
                 maxTemperature = singleTemperatureSlider.control.value;
             }
 
-            minTemperature = AppUtilities.getTruncatedvalue(minTemperature);
-            maxTemperature = AppUtilities.getTruncatedvalue(maxTemperature);
+            // as UI shows rounded! should be in sync
+            minTemperature = minTemperature.toFixed(0);
+            maxTemperature = maxTemperature.toFixed(0);
 
             // Save temperatures as celcius.
             schedule.minimumTemperature = isCelcius ? minTemperature : Utils.fahrenheitToCelsius(minTemperature);

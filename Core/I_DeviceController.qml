@@ -19,15 +19,9 @@ QtObject {
 
     readonly property int        temperatureUnit: device.setting?.tempratureUnit ?? AppSpec.defaultTemperatureUnit
 
-    //! Minimum value for temperature model (Fah)
-    property real               _minimumTemperatureF: 40
-
-    //! Maximum value for temperature model (Fah)
-    property real               _maximumTemperatureF: 90
-
     //! Actual values of minimum and maximum temperatures based on temperature unit to use in UI
     property real               _minimumTemperatureUI: getMinValue(device.systemSetup.systemMode, temperatureUnit)
-    property real               _maximumTemperatureUI:  getMaxValue(device.systemSetup.systemMode, temperatureUnit)
+    property real               _maximumTemperatureUI: getMaxValue(device.systemSetup.systemMode, temperatureUnit)
 
     /* Object Properties
      * ****************************************************************************************/
@@ -93,7 +87,7 @@ QtObject {
 
     function getMinValue(systemMode, temperatureUnit) {
 
-        var minimumTemperature = _minimumTemperatureF;
+        var minimumTemperature = AppSpec.autoMinimumTemperatureF;
 
         switch(systemMode) {
         case AppSpec.EmergencyHeat:
@@ -121,7 +115,7 @@ QtObject {
 
 
     function getMaxValue(systemMode, temperatureUnit) {
-        var maximumTemperature = _maximumTemperatureF;
+        var maximumTemperature = AppSpec.autoMaximumTemperatureF;
 
         switch(systemMode) {
         case AppSpec.EmergencyHeat:

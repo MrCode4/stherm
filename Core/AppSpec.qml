@@ -58,10 +58,6 @@ AppSpecCPP {
     property real minimumCoolingTemperatiureF: 60
     property real maximumCoolingTemperatiureF: 90
 
-    //! Celcius
-    property real minimumCoolingTemperatiureC: 15.5556
-    property real maximumCoolingTemperatiureC: 32
-
     //! Percent
     property int defaultBrightness: 100
     //! Percent
