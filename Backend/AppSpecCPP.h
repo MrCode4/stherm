@@ -205,9 +205,14 @@ public:
         Alert_Light_Low,
         Alert_Efficiency_Issue,
         Alert_No_Data_Received,
+        Alert_Air_Quality,
         NO_ALlert
     };
     Q_ENUM(AlertTypes)
+
+    Q_INVOKABLE static QString alertTypeToMessage(const AlertTypes &alertType);
+    Q_INVOKABLE static AlertTypes messageToAlertType(const QString &message);
+    Q_INVOKABLE static QString alertTypeToString(const AlertTypes &alertType);
 
     Q_INVOKABLE QVariant readFromFile(const QString &fileUrl);
 

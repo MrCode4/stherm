@@ -186,7 +186,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(mTempScheme, &Scheme::alert, this, [this]() {
         emit alert(STHERM::AlertLevel::LVL_Emergency,
                    AppSpecCPP::AlertTypes::Alert_Efficiency_Issue,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_Efficiency_Issue));
+                   AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_Efficiency_Issue));
     });
 
     connect(mTempScheme, &Scheme::auxiliaryStatusChanged, this, &DeviceControllerCPP::auxiliaryStatusChanged);

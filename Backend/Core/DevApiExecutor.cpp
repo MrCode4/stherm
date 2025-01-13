@@ -30,7 +30,13 @@ QJsonObject DevApiExecutor::prepareJsonResponse(const QString& endpoint, const Q
     const QJsonObject rootObject = RestApiExecutor::prepareJsonResponse(endpoint, rawData);
 
     if (rootObject.contains("data")) {
-        data = rootObject.value("data").toObject();
+        if (rootObject.value("data").isObject())
+            data = rootObject.value("data").toObject();
+
+        if (rootObject.value("data").isArray()) {
+            TRACE << endpoint << " return an array...";
+            data = rootObject;
+        }
     }
     else {
         TRACE << "API ERROR (" << endpoint << ") : " << " Reponse contains no data object";

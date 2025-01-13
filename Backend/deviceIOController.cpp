@@ -123,10 +123,10 @@ DeviceIOController::DeviceIOController(QObject *parent)
             // Send co2 sensor malfunction alert, No Co2 data available.
             // emit alert(STHERM::AlertLevel::LVL_Emergency,
             //            AppSpecCPP::AlertTypes::Alert_iaq_high,
-            //            STHERM::getAlertTypeString(AppSpecCPP::Alert_iaq_high));
+            //            AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_iaq_high));
             emit alert(STHERM::AlertLevel::LVL_Emergency,
                        AppSpecCPP::AlertTypes::Alert_No_Data_Received,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_No_Data_Received));
+                       AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_No_Data_Received));
 
             emit co2SensorStatus(false);
             emit temperatureSensorStatus(false);
@@ -136,7 +136,7 @@ DeviceIOController::DeviceIOController(QObject *parent)
             // Send  humidity/temperature malfunction alert (bad data).
             emit alert(STHERM::AlertLevel::LVL_Emergency,
                        AppSpecCPP::AlertTypes::Alert_temperature_humidity_malfunction,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_temperature_humidity_malfunction));
+                       AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_temperature_humidity_malfunction));
 
         }
 
@@ -1430,23 +1430,23 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
         if (values.temp > m_p->throlds_aq.temp_high) {
             if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
                 emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_high,
-                           STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high));
+                           AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_temp_high));
                 m_TemperatureAlertET.restart();
 
             } else if (!m_TemperatureAlertET.isValid()) {
                 m_TemperatureAlertET.start();
-                LOG_CHECK_IO(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_high);
+                LOG_CHECK_IO(false) << AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_temp_high);
             }
 
         } else if (values.temp < m_p->throlds_aq.temp_low) {
             if (m_TemperatureAlertET.isValid() && m_TemperatureAlertET.elapsed() >= 15 * 60 * 1000) {
                 emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_temp_low,
-                           STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low));
+                           AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_temp_low));
                 m_TemperatureAlertET.restart();
 
             } else if (!m_TemperatureAlertET.isValid()) {
                 m_TemperatureAlertET.start();
-                LOG_CHECK_IO(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_temp_low);
+                LOG_CHECK_IO(false) << AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_temp_low);
             }
 
         } else {
@@ -1458,23 +1458,23 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
         if (values.humidity > m_p->throlds_aq.humidity_high) {
             if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
                 emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_high,
-                           STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high));
+                           AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_humidity_high));
                 m_HumidityAlertET.restart();
 
             } else if (!m_HumidityAlertET.isValid()) {
                 m_HumidityAlertET.start();
-                LOG_CHECK_IO(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_high);
+                LOG_CHECK_IO(false) << AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_humidity_high);
             }
 
         } else if (values.humidity < m_p->throlds_aq.humidity_low) {
             if (m_HumidityAlertET.isValid() && m_HumidityAlertET.elapsed() >= 15 * 60 * 1000) {
                 emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_humidity_low,
-                           STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low));
+                           AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_humidity_low));
                 m_HumidityAlertET.restart();
 
             } else if (!m_HumidityAlertET.isValid()) {
                 m_HumidityAlertET.start();
-                LOG_CHECK_IO(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_humidity_low);
+                LOG_CHECK_IO(false) << AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_humidity_low);
             }
 
         } else {
@@ -1490,12 +1490,12 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
    /* if (fanSpeed > m_p->throlds_aq.fan_high) {
         if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_High,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High));
+                       AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_fan_High));
             m_FanAlertET.restart();
 
         } else if (!m_FanAlertET.isValid()) {
             m_FanAlertET.start();
-            LOG_CHECK_IO(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_High);
+            LOG_CHECK_IO(false) << AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_fan_High);
 
         }
 
@@ -1505,12 +1505,12 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
     if (fanSpeed < m_p->throlds_aq.fan_low) {
         if (m_FanAlertET.isValid() && m_FanAlertET.elapsed() >= 5 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_fan_low,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low));
+                       AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_fan_low));
             m_FanAlertET.restart();
 
         } else if (!m_FanAlertET.isValid()) {
             m_FanAlertET.start();
-            LOG_CHECK_IO(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_fan_low);
+            LOG_CHECK_IO(false) << AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_fan_low);
 
         }
 
@@ -1522,24 +1522,24 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
     if (luminosity < m_p->throlds_aq.light_low) {
         if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 10 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_Low,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low));
+                       AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_Light_Low));
             m_LightAlertET.restart();
 
         } else if (!m_LightAlertET.isValid()) {
             m_LightAlertET.start();
-            LOG_CHECK_IO(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_Low);
+            LOG_CHECK_IO(false) << AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_Light_Low);
 
         }
 
     } else if (luminosity > m_p->throlds_aq.light_high) {
         if (m_LightAlertET.isValid() && m_LightAlertET.elapsed() >= 10 * 60 * 1000) {
             emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Light_High,
-                       STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High));
+                       AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_Light_High));
             m_LightAlertET.restart();
 
         } else if (!m_LightAlertET.isValid()) {
             m_LightAlertET.start();
-            LOG_CHECK_IO(false) << STHERM::getAlertTypeString(AppSpecCPP::Alert_Light_High);
+            LOG_CHECK_IO(false) << AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_Light_High);
         }
 
     } else {
@@ -1548,30 +1548,30 @@ void DeviceIOController::checkMainDataAlert(const STHERM::AQ_TH_PR_vals &values,
 
     if (values.pressure > m_p->throlds_aq.pressure_high) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_pressure_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_pressure_high));
+                   AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_pressure_high));
     }
 
     // TODO: Wait for logic
     // if (values.c02 > m_p->throlds_aq.c02_high) {
     //     emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_high,
-    //                STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_high));
+    //                AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_c02_high));
 
     // } else if (values.c02 < m_p->throlds_aq.c02_low) {
     //     emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_c02_low,
-    //                STHERM::getAlertTypeString(AppSpecCPP::Alert_c02_low));
+    //                AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_c02_low));
 
     // }
 
     if (values.Tvoc > m_p->throlds_aq.Tvoc_high * 1000) {
         emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_Tvoc_high,
-                   STHERM::getAlertTypeString(AppSpecCPP::Alert_Tvoc_high));
+                   AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_Tvoc_high));
 
     }
 
     // TODO: Wait for logic
     // if (values.etoh > m_p->throlds_aq.etoh_high * 100) {
         // emit alert(STHERM::LVL_Emergency, AppSpecCPP::Alert_etoh_high,
-                   // STHERM::getAlertTypeString(AppSpecCPP::Alert_etoh_high));
+                   // AppSpecCPP::alertTypeToMessage(AppSpecCPP::Alert_etoh_high));
 
     // }
 

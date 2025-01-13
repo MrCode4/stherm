@@ -355,60 +355,6 @@ struct SensorConfigThresholds {
     int max_alert_value;//in 100ms increments
 };
 
-
-static QString getAlertTypeString(AppSpecCPP::AlertTypes alertType) {
-    switch (alertType) {
-    case AppSpecCPP::Alert_temp_high:
-        return QString("Temperature is very high.");
-
-    case AppSpecCPP::Alert_temp_low:
-        return QString("Temperature is very low.");
-
-    case AppSpecCPP::Alert_humidity_high:
-        return QString("Humidity is very high.");
-
-    case AppSpecCPP::Alert_humidity_low:
-        return QString("Humidity is very low.");
-
-    case AppSpecCPP::Alert_temperature_humidity_malfunction:
-        return QString("Temperature and Humidity sensor malfunction.  Please contact your contractor.");
-
-    case AppSpecCPP::Alert_Tvoc_high:
-        return QString("Tvoc is high");
-    case AppSpecCPP::Alert_etoh_high:
-        return QString("etoh is high");
-
-    case AppSpecCPP::Alert_iaq_high:
-    case AppSpecCPP::Alert_iaq_low:
-    case AppSpecCPP::Alert_c02_low:
-        return QString("Air Quality Sensor Malfunction\nPlease contact your contractor.");
-
-    case AppSpecCPP::Alert_fan_High:
-    case AppSpecCPP::Alert_fan_low:
-        return QString("Fan Malfunction\nPlease contact your contractor.");
-
-    case AppSpecCPP::Alert_pressure_high:
-        return QString("Pressure is high");
-    case AppSpecCPP::Alert_wiring_not_connected:
-        return QString("Wiring is not connected.");
-    case AppSpecCPP::Alert_could_not_set_relay:
-        return QString("Could not set relay.");
-
-    case AppSpecCPP::Alert_Light_High:
-    case AppSpecCPP::Alert_Light_Low:
-        return QString("Ambient sensor malfunction.\nPlease contact your contractor.");
-
-    case AppSpecCPP::Alert_Efficiency_Issue:
-        return QString("**System Efficiency Issue:**\nThe system is unable to reach the set temperature.");
-
-    case AppSpecCPP::Alert_No_Data_Received:
-        return QString("Controller failure.\nPlease contact your contractor.");
-
-    default:
-        return QString();
-    }
-}
-
 /**
  * @brief Enumeration for alert levels.
  */
