@@ -104,12 +104,17 @@ BasePageView {
             Layout.leftMargin: 25
             Layout.alignment: Qt.AlignLeft
             text: {
+                if ((device?.systemSetup?.systemAccessories?.accessoriesWireType ?? AppSpecCPP.None) !== AppSpecCPP.None) {
+                    return "No Accessories"
+                }
+
                 if (systemAccessories.accessoriesType === AppSpec.Humidifier)
                     return "Humidifier";
                 else if (systemAccessories.accessoriesType === AppSpec.Dehumidifier)
                     return "Dehumidifier";
-                else
-                    return "No Accessories"
+
+
+                return "No Accessories"
             }
 
         }
