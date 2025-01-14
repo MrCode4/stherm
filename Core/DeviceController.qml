@@ -1871,8 +1871,8 @@ I_DeviceController {
     }
 
     function setMessagesServer(messages: var) {
-        console.log("device.messages: ", device.messages.length)
-        console.log("messages: ", messages.length)
+        console.log("Local Messages Retrieved from Server (saved in local): ", device.messages.filter(msg => msg.sourceType === Message.SourceType.Server).length)
+        console.log("New messages from server: ", messages.length)
 
         // Send messages to message controller.
         messageController.setMessagesServer(messages);

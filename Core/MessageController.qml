@@ -58,6 +58,17 @@ QtObject {
         onTriggered: {
             activeAlerts = true;
 
+            console.log("Messages Report (All messages): ", device.messages.length)
+            console.log("Messages: Unknown type: ", device.messages.filter(msg => msg.type === Message.Type.Unknown).length)
+            console.log("Messages: Alert type: ", device.messages.filter(msg => msg.type === Message.Type.Alert).length)
+            console.log("Messages: Notification type: ", device.messages.filter(msg => msg.type === Message.Type.Notification).length)
+            console.log("Messages: SystemNotification type: ", device.messages.filter(msg => msg.type === Message.Type.SystemNotification).length)
+            console.log("Messages: SystemAlert type: ", device.messages.filter(msg => msg.type === Message.Type.SystemAlert).length)
+            console.log("Messages: Error type: ", device.messages.filter(msg => msg.type === Message.Type.Error).length)
+
+            console.log("Messages: Device messages: ", device.messages.filter(msg => msg.sourceType === Message.SourceType.Device).length)
+            console.log("Messages: Server messages: ", device.messages.filter(msg => msg.sourceType === Message.SourceType.Server).length)
+
             // Remove the ability to show unread alerts
             if (false) {
                 // Show messages that isRead is false
@@ -646,13 +657,12 @@ QtObject {
         }
 
         // Check unread messages
-        var msgAlertIndex = device.messages.findIndex((element, index) => (element.type === Message.Type.Alert ||
-                                                                           element.type === Message.Type.SystemAlert ||
-                                                                           element.type === Message.Type.SystemNotification) && !element.isRead);
+        var msgAlertIndex = device.messages.findIndex((element, index) => (element.type === Message.Type.Alert) && !element.isRead);
 
         uiSession.hasUnreadAlerts = msgAlertIndex > -1;
 
         // Wifi alerts (and maybe another types in future) which not yet supported in the model.
+        // If an alert type is open in the screen, we should consider it as a unread message.
         if (!uiSession.hasUnreadAlerts) {
             msgAlertIndex = messagesShowing.findIndex((element, index) => (element.type === Message.Type.Alert ||
                                                                            element.type === Message.Type.SystemAlert ||
