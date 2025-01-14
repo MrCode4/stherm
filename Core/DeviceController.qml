@@ -1386,7 +1386,7 @@ I_DeviceController {
             "current_temp": root.displayCurrentTemp.toString(),
             "co2_id": device._co2_id + 1,
             "hold" : device.isHold,
-            "mode_id" : device.systemSetup.systemMode + 1,
+            "mode_id" : (device.systemSetup.isVacation ? AppSpec.Vacation : device.systemSetup.systemMode) + 1,
             // "auto_temp_high" : device.autoMaxReqTemp,
             // "auto_temp_low" : device.autoMinReqTemp,
             "fan" : {
