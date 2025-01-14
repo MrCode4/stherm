@@ -30,7 +30,7 @@ QSObject {
     property real           currentTemp:    18.0
 
     //! Requested Humidity (Percent)
-    property real           requestedHum:   45.0
+    property real           requestedHum:   AppSpec.defaultHumidity
 
     //! Current Humidity (Percent)
     property real           currentHum:     0.0
