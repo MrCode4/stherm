@@ -1116,6 +1116,20 @@ I_DeviceController {
         var minimumHumidity = Utils.clampValue(settings.min_humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity - AppSpec.minStepHum);
         var maximumHumidity = Utils.clampValue(settings.max_humidity, minimumHumidity + AppSpec.minStepHum, AppSpec.maximumHumidity);
 
+        if (root.temperatureUnit === AppSpec.TempratureUnit.Fah) {
+            minimumTemperature = Utils.convertedTemperature(minimumTemperature, AppSpec.TempratureUnit.Fah);
+            minimumTemperature = minimumTemperature.toFixed(0);
+            minimumTemperature = Utils.fahrenheitToCelsius(minimumTemperature);
+
+            maximumTemperature = Utils.convertedTemperature(maximumTemperature, AppSpec.TempratureUnit.Fah);
+            maximumTemperature = maximumTemperature.toFixed(0);
+            maximumTemperature = Utils.fahrenheitToCelsius(maximumTemperature);
+
+        } else {
+            minimumTemperature = minimumTemperature.toFixed(0);
+            maximumTemperature = maximumTemperature.toFixed(0);
+        }
+
         setVacation(minimumTemperature, maximumTemperature, minimumHumidity, maximumHumidity)
         setVacationOnFromServer(settings.is_enable)
     }
@@ -1125,19 +1139,32 @@ I_DeviceController {
         if (!device)
             return;
 
-        if (device.vacation.temp_min === temp_min &&
-            device.vacation.temp_max === temp_max &&
-            device.vacation.hum_min  === hum_min &&
-            device.vacation.hum_max  === hum_max) {
-            return;
+        let hasChanges = false;
+        if (Math.abs(device.vacation.temp_min - temp_min) > 0.05) {
+            device.vacation.temp_min = temp_min;
+            hasChanges = true;
         }
 
-        deviceControllerCPP.setVacation(temp_min, temp_max, hum_min, hum_max);
+        if (Math.abs(device.vacation.temp_max - temp_max) > 0.05) {
+            device.vacation.temp_max = temp_max;
+            hasChanges = true;
+        }
 
-        device.vacation.temp_min = temp_min;
-        device.vacation.temp_max = temp_max;
-        device.vacation.hum_min  = hum_min;
-        device.vacation.hum_max  = hum_max ;
+        if (Math.abs(device.vacation.hum_min - hum_min) > 0.05) {
+            device.vacation.hum_min  = hum_min;
+            hasChanges = true;
+        }
+
+        if (Math.abs(device.vacation.hum_max - hum_max) > 0.05) {
+            device.vacation.hum_max  = hum_max ;
+            hasChanges = true;
+        }
+
+        if (hasChanges) {
+            deviceControllerCPP.setVacation(temp_min, temp_max, hum_min, hum_max);
+            updateEditMode(AppSpec.EMVacation);
+            saveSettings();
+        }
     }
 
     function setSystemModeTo(systemMode: int, force = false, dualFuelManualHeating = AppSpecCPP.DFMOff, save = true) : bool

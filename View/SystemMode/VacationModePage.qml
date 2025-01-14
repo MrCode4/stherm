@@ -52,8 +52,8 @@ BasePageView {
         onClicked: {
             //! Apply settings and go back
             if (deviceController) {
-                var minValue = _tempSlider.first.value;
-                var maxValue = _tempSlider.second.value;
+                var minValue = _tempSlider.first.value.toFixed(0);
+                var maxValue = _tempSlider.second.value.toFixed(0);
 
                 if (tempratureUnit === AppSpec.TempratureUnit.Fah) {
                     minValue = Utils.fahrenheitToCelsius(minValue)
@@ -62,9 +62,6 @@ BasePageView {
 
                 deviceController.setVacation(minValue, maxValue,
                                              _humSlider.first.value, _humSlider.second.value);
-
-                deviceController.updateEditMode(AppSpec.EMVacation);
-                deviceController.saveSettings();
             }
 
             saved();
@@ -102,9 +99,9 @@ BasePageView {
             to: tempratureUnit === AppSpec.TempratureUnit.Fah ?
                     AppSpec.vacationMaximumTemperatureF : AppSpec.vacationMaximumTemperatureC
 
-            first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, tempratureUnit, minTemperature, maxTemperature)
+            first.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_min ?? from, tempratureUnit, minTemperature, maxTemperature).toFixed(0)
 
-            second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, tempratureUnit, minTemperature, maxTemperature)
+            second.value: Utils.convertedTemperatureClamped(appModel?.vacation?.temp_max ?? to, tempratureUnit, minTemperature, maxTemperature).toFixed(0)
             difference: tempratureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.minStepTempF : AppSpec.minStepTempC
 
             labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(tempratureUnit))
