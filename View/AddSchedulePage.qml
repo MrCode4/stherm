@@ -20,6 +20,8 @@ BasePageView {
 
     readonly property ScheduleCPP    defaultSchedule:     AppSpec.getDefaultSchedule(_internal.newSchedule.type, _internal.newSchedule.systemMode);
 
+    readonly property bool hasHumidityWire: ((device.systemSetup?.systemAccessories?.accessoriesWireType ?? AppSpecCPP.None) !== AppSpecCPP.None)
+
     /* Object properties
      * ****************************************************************************************/
     title: "Add New Schedule"
@@ -84,7 +86,8 @@ BasePageView {
                 }
             } else {
                 // if sensors are empty we skip this page!
-                if (_newSchedulePages.currentItem instanceof ScheduleHumidityPage) {
+                if ((root.hasHumidityWire && _newSchedulePages.currentItem instanceof ScheduleHumidityPage) ||
+                        (!root.hasHumidityWire && _newSchedulePages.currentItem instanceof ScheduleTempraturePage)) {
                     if (device?._sensors.length === 0) {
                         _internal.newSchedule.dataSource = "Onboard Sensor";
                         _newSchedulePages.push(_preivewPage)
@@ -214,7 +217,7 @@ BasePageView {
 
         ScheduleTempraturePage {
             // Move to enable/disable page
-            readonly property Component nextPage:  _humidityPage
+            readonly property Component nextPage: root.hasHumidityWire ? _humidityPage : _dataSourcePageCompo
 
             uiSession: root.uiSession
 

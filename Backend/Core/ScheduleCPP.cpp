@@ -9,7 +9,7 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     // Defaults
     enable     = true;
     active     = false;
-    humidity   = AppSpecCPP::defaultHumidity();  // Percentage
+    humidity   = 0;  // Percentage
 
     // Set defaults for minimum and maximum temperatures
     // Celsius

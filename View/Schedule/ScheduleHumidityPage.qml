@@ -104,7 +104,7 @@ BasePageView {
             Layout.leftMargin: 25
             Layout.alignment: Qt.AlignLeft
             text: {
-                if ((device?.systemSetup?.systemAccessories?.accessoriesWireType ?? AppSpecCPP.None) !== AppSpecCPP.None) {
+                if ((device?.systemSetup?.systemAccessories?.accessoriesWireType ?? AppSpecCPP.None) === AppSpecCPP.None) {
                     return "No Accessories"
                 }
 

@@ -32,6 +32,7 @@ BasePageView {
     //! Maximum temprature
     property real               maxTemperature: deviceController?.getMaxValue(schedule?.systemMode, temperatureUnit) ?? 90
 
+    readonly property bool      hasHumidityWire: ((appModel.systemSetup?.systemAccessories?.accessoriesWireType ?? AppSpecCPP.None) !== AppSpecCPP.None)
 
     /* Signals
      * ****************************************************************************************/
@@ -293,8 +294,7 @@ BasePageView {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Material.delegateHeight
 
-                // TODO hide Humudity:page when accessories is None.
-                // visible: false
+                visible: _root.hasHumidityWire
 
                 verticalPadding: 0
                 horizontalPadding: 8

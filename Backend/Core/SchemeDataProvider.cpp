@@ -332,8 +332,11 @@ double SchemeDataProvider::effectiveSetHumidity() const
         }
 
     } else if (schedule()) {
-        effHumidity  = schedule()->humidity;
+        effHumidity = schedule()->humidity;
 
+        if (effHumidity < 0.1) {
+            effHumidity = setPointHumidity();
+        }
     }
 
     return effHumidity;
