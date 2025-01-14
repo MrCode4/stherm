@@ -30,7 +30,7 @@ static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
 static  const char* m_GetOutdoorTemperatureReceived  = "GetOutdoorTemperatureRecieved";
 
-static const double m_IncrementPerStep = 1.0; // Increment temperature smoothly by 1°F per update
+static const double m_IncrementPerStep = 1.0; // Increment temperature smoothly by 1Â°F per update
 
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
@@ -1775,7 +1775,7 @@ void DeviceControllerCPP::revertPerfTest()
 }
 
 double DeviceControllerCPP::effectiveHumidity() {
-    return mSchemeDataProvider->effectiveHumidity();
+    return mSchemeDataProvider->effectiveSetHumidity();
 }
 
 double DeviceControllerCPP::calculateProcessedTemperature(const double &temperatureC) const {

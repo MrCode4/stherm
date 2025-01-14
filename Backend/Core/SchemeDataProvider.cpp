@@ -148,33 +148,6 @@ double SchemeDataProvider::effectiveTemperature() const
     return effTemperature;
 }
 
-double SchemeDataProvider::effectiveHumidity()
-{
-    double effectiveHumidity = setPointHumidity();
-
-    if (isVacationEffective()) {
-        if (getAccessoriesType() == AppSpecCPP::AccessoriesType::Humidifier) {
-            effectiveHumidity = mVacation.minimumHumidity;
-            if ((mVacation.minimumHumidity - currentHumidity()) > 0.001) {
-                effectiveHumidity = mVacation.maximumHumidity;
-            }
-
-        } else if (getAccessoriesType() == AppSpecCPP::AccessoriesType::Dehumidifier) {
-            effectiveHumidity = mVacation.maximumHumidity;
-            if (currentHumidity() - mVacation.maximumHumidity > 0.001) {
-                effectiveHumidity = mVacation.minimumHumidity;
-            }
-        }
-
-    } else if (mSchedule) {
-        //! TODO
-    }
-
-    emit effectiveHumidityChanged(effectiveHumidity);
-
-    return effectiveHumidity;
-}
-
 void SchemeDataProvider::setAutoMinReqTempF(const double &fah_value)
 {
     if (qAbs(mAutoMinReqTempF - fah_value) > 0.001)
@@ -321,14 +294,17 @@ double SchemeDataProvider::effectiveSetHumidity() const
 
     // will not happen for now, in vacation it is handled internally
     if (isVacationEffective()) {
-        double vacationMinimumHumidity =vacation().minimumHumidity;
-        double vacationMaximumHumidity = vacation().maximumHumidity;
+        if (getAccessoriesType() == AppSpecCPP::AccessoriesType::Humidifier) {
+            effHumidity = mVacation.minimumHumidity;
+            if ((mVacation.minimumHumidity - currentHumidity()) > 0.001) {
+                effHumidity = mVacation.maximumHumidity;
+            }
 
-        if ((vacationMinimumHumidity - mCurrentHumidity) > 0.001) {
-            effHumidity  = vacationMinimumHumidity;
-
-        } else if ((vacationMaximumHumidity - mCurrentHumidity) < 0.001) {
-            effHumidity  = vacationMaximumHumidity;
+        } else if (getAccessoriesType() == AppSpecCPP::AccessoriesType::Dehumidifier) {
+            effHumidity = mVacation.maximumHumidity;
+            if (currentHumidity() - mVacation.maximumHumidity > 0.001) {
+                effHumidity = mVacation.minimumHumidity;
+            }
         }
 
     } else if (schedule()) {
@@ -338,6 +314,8 @@ double SchemeDataProvider::effectiveSetHumidity() const
             effHumidity = setPointHumidity();
         }
     }
+
+    emit effectiveHumidityChanged(effHumidity);
 
     return effHumidity;
 }

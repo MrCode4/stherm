@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * HumidityPage is a page for controlling desired humidity
+ * ScheduleHumidityPage is a page for controlling schedule humidity
  * ***********************************************************************************************/
 BasePageView {
     id: root
