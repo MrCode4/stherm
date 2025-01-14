@@ -102,6 +102,9 @@ public:
     bool  isRelaysInitialized();
     void setIsRelaysInitialized(const bool &isRelaysInitialized);
 
+     //! Return the effective humidity
+    double effectiveSetHumidity() const;
+
 signals:
 
     /* Public Signals

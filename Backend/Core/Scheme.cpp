@@ -98,7 +98,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK_SCHEME(isRunning() && mFanHourTimer.isActive()) << "fan on 1 hour stage finishes in " << mFanHourTimer.remainingTime() / 60000 << "minutes";
         LOG_CHECK_SCHEME(isRunning() && mFanWPHTimer.isActive()) << "fan on stage finishes in " << mFanWPHTimer.remainingTime() / 60000 << "minutes";
         LOG_CHECK_SCHEME(isRunning()) << "Current Temperature : " << effectiveCurrentTemperature() << "Effective Set Temperature: " << effectiveTemperature();
-        LOG_CHECK_SCHEME(isRunning()) << "Current Humidity : " << mDataProvider.data()->currentHumidity() << "Effective Set Humidity: " << effectiveSetHumidity();
+        LOG_CHECK_SCHEME(isRunning()) << "Current Humidity : " << mDataProvider->currentHumidity() << "Effective Set Humidity: " << mDataProvider->effectiveSetHumidity();
         LOG_CHECK_SCHEME(isRunning() && dualFuelLog) << "Current Outdoor temperature : " << mDataProvider.data()->outdoorTemperatureF();
         LOG_CHECK_SCHEME(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
         LOG_CHECK_SCHEME(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";

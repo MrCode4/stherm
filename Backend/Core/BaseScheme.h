@@ -65,9 +65,6 @@ protected:
     //! use low values for timeout in exit cases as it might had abrupt changes previously
     virtual int waitLoop(int timeout = 10000, AppSpecCPP::ChangeTypes overrideModes = AppSpecCPP::ChangeType::ctAll);
 
-    //! Return the effective humidity
-    double effectiveSetHumidity() const;
-
     void setIsSendingRelays(bool sending);
 
 protected:

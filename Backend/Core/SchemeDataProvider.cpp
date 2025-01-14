@@ -311,6 +311,35 @@ double SchemeDataProvider::setPointTemperature() const
     return mSetPointTemperature;
 }
 
+double SchemeDataProvider::effectiveSetHumidity() const
+{
+    double effHumidity = setPointHumidity();
+
+    if (isPerfTestRunning()) {
+        return effHumidity;
+    }
+
+    // will not happen for now, in vacation it is handled internally
+    if (isVacationEffective()) {
+        double vacationMinimumHumidity =vacation().minimumHumidity;
+        double vacationMaximumHumidity = vacation().maximumHumidity;
+
+        if ((vacationMinimumHumidity - mCurrentHumidity) > 0.001) {
+            effHumidity  = vacationMinimumHumidity;
+
+        } else if ((vacationMaximumHumidity - mCurrentHumidity) < 0.001) {
+            effHumidity  = vacationMaximumHumidity;
+        }
+
+    } else if (schedule()) {
+        effHumidity  = schedule()->humidity;
+
+    }
+
+    return effHumidity;
+}
+
+
 void SchemeDataProvider::setRequestedHumidity(const double &setPointHumidity)
 {
     if (qAbs(mSetPointHumidity - setPointHumidity) < 0.001) {

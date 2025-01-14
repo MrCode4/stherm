@@ -238,7 +238,7 @@ void HumidityScheme::VacationLoop()
     SCHEME_LOG << "Start VacationLoop, AccessoriesType: " << mDataProvider->getAccessoriesType() <<
         " - mVacationMinimumHumidity" << mVacationMinimumHumidity <<
         " - mVacationMaximumHumidity" << mVacationMaximumHumidity <<
-        " - currentHumidity" <<mDataProvider.data()->currentHumidity();
+        " - currentHumidity" <<mDataProvider->currentHumidity();
 
     if (mDataProvider->getAccessoriesType() == AppSpecCPP::AccessoriesType::Humidifier) {
 
@@ -291,13 +291,13 @@ void HumidityScheme::normalLoop()
 {
     SCHEME_LOG << "AccessoriesType: " << mDataProvider->getAccessoriesType() <<
         " - currentHumidity: " << mDataProvider->currentHumidity() <<
-        " - effectiveSetHumidity: " << effectiveSetHumidity();
+        " - effectiveSetHumidity: " << mDataProvider->effectiveSetHumidity();
 
     if (mDataProvider->getAccessoriesType() == AppSpecCPP::AccessoriesType::Dehumidifier) {
 
-        if (mDataProvider.data()->currentHumidity() > effectiveSetHumidity()) {
+        if (mDataProvider.data()->currentHumidity() > mDataProvider->effectiveSetHumidity()) {
 
-            while (effectiveSetHumidity() - mDataProvider.data()->currentHumidity() < 10) {
+            while (mDataProvider->effectiveSetHumidity() - mDataProvider.data()->currentHumidity() < 10) {
                 // Exit from loop
                 if (stopWork) {
                     break;
@@ -310,9 +310,9 @@ void HumidityScheme::normalLoop()
 
     } else if (mDataProvider->getAccessoriesType() == AppSpecCPP::AccessoriesType::Humidifier) {
 
-        if (mDataProvider.data()->currentHumidity() < effectiveSetHumidity()) {
+        if (mDataProvider.data()->currentHumidity() < mDataProvider->effectiveSetHumidity()) {
 
-            while (mDataProvider.data()->currentHumidity() - effectiveSetHumidity() < 10) {
+            while (mDataProvider.data()->currentHumidity() - mDataProvider->effectiveSetHumidity() < 10) {
                 // Exit from loop
                 if (stopWork) {
                     break;

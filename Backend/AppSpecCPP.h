@@ -36,7 +36,9 @@ class AppSpecCPP : public QObject
     Q_PROPERTY(double defaultEmergencyTemperatureDifferenceF READ defaultEmergencyTemperatureDifferenceF  CONSTANT)
     Q_PROPERTY(double defaultEmergencyTemperatureDifferenceC READ defaultEmergencyTemperatureDifferenceC  CONSTANT)
 
-    Q_PROPERTY(double defaultEmergencyMinimumTime READ defaultEmergencyMinimumTime  CONSTANT)
+    Q_PROPERTY(int defaultEmergencyMinimumTime READ defaultEmergencyMinimumTime  CONSTANT)
+
+    Q_PROPERTY(double defaultHumidity READ defaultHumidity  CONSTANT)
 
     QML_ELEMENT
 public:
@@ -50,6 +52,8 @@ public:
 
     //! Minutes
     static int defaultEmergencyMinimumTime();
+
+    static double defaultHumidity();
 
     enum ChangeType {
         ctNone               = 0,
