@@ -331,9 +331,11 @@ BasePageView {
 
         function onResetFactoryFinished(ok: bool, message: string) {
             busyPopUp.close()
-            if(ok === true) {
+            if(ok === true && message.length === 0) {
                 root.showCountDownPopUpForResetFactory()
             } else {
+                if (ok === true)
+                    alertNotifPopup.message.message = message;
                 alertNotifPopup.open();
             }
         }
