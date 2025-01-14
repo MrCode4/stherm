@@ -285,6 +285,22 @@ Item {
         }
     }
 
+    Component {
+        id: manualDateTimeWarningPopup
+
+        ManualDateTimeWarningPopup {
+
+            onAccepted: {
+                _root.mainStackView.push("qrc:/Stherm/View/DateTime/DateTimePage.qml", {})
+                close()
+            }
+
+            onClosed: {
+                destroy(this)
+            }
+        }
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -455,5 +471,10 @@ Item {
         _systemSetupConfirmationPopup.systemSetup = settings;
 
         uiSession.popupLayout.displayPopUp(_systemSetupConfirmationPopup);
+    }
+
+    function showManualDateTimeWarningPopup() {
+        var mdtPopup = manualDateTimeWarningPopup.createObject(root)
+        mdtPopup.open()
     }
 }
