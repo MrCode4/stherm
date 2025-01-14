@@ -84,7 +84,7 @@ BasePageView {
                 }
             } else {
                 // if sensors are empty we skip this page!
-                if (_newSchedulePages.currentItem instanceof ScheduleTempraturePage) {
+                if (_newSchedulePages.currentItem instanceof ScheduleHumidityPage) {
                     if (device?._sensors.length === 0) {
                         _internal.newSchedule.dataSource = "Onboard Sensor";
                         _newSchedulePages.push(_preivewPage)
@@ -214,7 +214,7 @@ BasePageView {
 
         ScheduleTempraturePage {
             // Move to enable/disable page
-            readonly property Component nextPage:  _dataSourcePageCompo
+            readonly property Component nextPage:  _humidityPage
 
             uiSession: root.uiSession
 
@@ -237,6 +237,23 @@ BasePageView {
                     schedule.minimumTemperature = appModel.autoMinReqTemp;
                     schedule.maximumTemperature = appModel.autoMaxReqTemp;
                 }
+            }
+        }
+    }
+
+    Component {
+        id: _humidityPage
+
+        ScheduleHumidityPage {
+            // Move to enable/disable page
+            readonly property Component nextPage:  _dataSourcePageCompo
+
+            uiSession: root.uiSession
+
+            schedule: root.defaultSchedule
+
+            onHumidityChanged: {
+                _internal.newSchedule.humidity = humidity;
             }
         }
     }

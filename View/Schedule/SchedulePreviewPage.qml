@@ -293,8 +293,8 @@ BasePageView {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Material.delegateHeight
 
-                // Hide Humudity
-                visible: false
+                // TODO hide Humudity:page when accessories is None.
+                // visible: false
 
                 verticalPadding: 0
                 horizontalPadding: 8
@@ -310,7 +310,20 @@ BasePageView {
                     Label {
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
-                        text: scheduleToDisplay?.humidity ?? 0
+                        text: `${scheduleToDisplay?.humidity ?? 0} %`
+                    }
+                }
+
+                onClicked: {
+                    if (!isEditable) return;
+                    //! Open ScheduleNamePage for editing
+                    if (_root.StackView.view) {
+                        _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleHumidityPage.qml", {
+                                                      "uiSession": uiSession,
+                                                      "backButtonVisible": _root.backButtonVisible,
+                                                      "schedule": internal.scheduleToEdit,
+                                                      "editMode": true
+                                                  });
                     }
                 }
             }
