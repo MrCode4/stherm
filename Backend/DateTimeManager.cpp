@@ -25,8 +25,14 @@ DateTimeManager::DateTimeManager(QObject *parent)
 
     mProcess.setReadChannel(QProcess::StandardOutput);
 
-    //! Check auto-update time
-    checkAutoUpdateTime();
+    QSettings settings;
+    if (settings.value("ntpSetAsDefaultAtFirstRun", false).toBool()) {
+        setAutoUpdateTime(true);
+        settings.setValue("ntpSetAsDefaultAtFirstRun", true);
+    } else {
+        //! Check auto-update time
+        checkAutoUpdateTime();
+    }
 
     //! Set up current date time timer
     mNowTimer.setInterval(100);
@@ -60,6 +66,7 @@ void DateTimeManager::setAutoUpdateTime(bool autoUpdate)
         }, Qt::SingleShotConnection);
 
     if (autoUpdate) {
+        enableTimeSyncdService();
         mProcess.start("systemctl", { "start" , "systemd-timesyncd" });
     } else {
         mProcess.start(TDC_COMMAND, { TDC_SET_NTP, "false" });
@@ -295,6 +302,19 @@ QString DateTimeManager::nowUTC(const QString& outputFormat)
     return QDateTime::currentDateTimeUtc().toString(outputFormat);
 }
 
+void DateTimeManager::enableTimeSyncdService()
+{
+    mServiceProcess.start("systemctl", {"enable", "systemd-timesyncd"});
+
+    connect(&mServiceProcess,
+            &QProcess::finished,
+            this,
+            [this](int exitCode, QProcess::ExitStatus exitStatus) {
+                if (exitStatus != QProcess::NormalExit || exitCode != 0) {
+                    qWarning() << "Error: DTM enableTimeSyncdService failed to enable service";
+                }
+            });
+}
 void DateTimeManager::callProcessFinished(const QJSValueList& args)
 {
     emit systemUpdated();

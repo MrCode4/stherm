@@ -1775,7 +1775,7 @@ void DeviceControllerCPP::revertPerfTest()
 }
 
 double DeviceControllerCPP::effectiveHumidity() {
-    return mSchemeDataProvider->effectiveHumidity();
+    return mSchemeDataProvider->effectiveSetHumidity();
 }
 
 double DeviceControllerCPP::calculateProcessedTemperature(const double &temperatureC) const {

@@ -74,35 +74,3 @@ int BaseScheme::waitLoop(int timeout, AppSpecCPP::ChangeTypes overrideModes)
 {
     return 0;
 }
-
-double BaseScheme::effectiveSetHumidity() const
-{
-    double effHumidity = mDataProvider->setPointHumidity();
-
-    if (mDataProvider->isPerfTestRunning()) {
-        return effHumidity;
-    }
-
-    auto currentHumidity = mDataProvider.data()->currentHumidity();
-
-
-    // will not happen for now, in vacation it is handled internally
-    if (mDataProvider.data()->isVacationEffective()) {
-        double vacationMinimumHumidity = mDataProvider->vacation().minimumHumidity;
-        double vacationMaximumHumidity = mDataProvider->vacation().maximumHumidity;
-
-        if ((vacationMinimumHumidity - currentHumidity) > 0.001) {
-            effHumidity  = vacationMinimumHumidity;
-
-        } else if ((vacationMaximumHumidity - currentHumidity) < 0.001) {
-            effHumidity  = vacationMaximumHumidity;
-        }
-
-    } else if (mDataProvider.data()->schedule()) {
-        effHumidity  = mDataProvider.data()->schedule()->humidity;
-
-    }
-
-    return effHumidity;
-}
-

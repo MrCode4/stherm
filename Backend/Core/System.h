@@ -133,6 +133,10 @@ public:
     //! Device starts after being forgotten.
     Q_INVOKABLE bool isForgottenDeviceStarted();
 
+    Q_INVOKABLE bool getRestartFlag();
+    Q_INVOKABLE void setRestartFlag();
+    Q_INVOKABLE void removeRestartFlag();
+
     void wifiConnected(bool hasInternet);
 
     //! Getters

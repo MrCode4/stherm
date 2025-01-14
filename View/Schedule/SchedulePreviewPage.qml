@@ -32,6 +32,7 @@ BasePageView {
     //! Maximum temprature
     property real               maxTemperature: deviceController?.getMaxValue(schedule?.systemMode, temperatureUnit) ?? 90
 
+    readonly property bool      hasHumidityWire: ((appModel.systemSetup?.systemAccessories?.accessoriesWireType ?? AppSpecCPP.None) !== AppSpecCPP.None)
 
     /* Signals
      * ****************************************************************************************/
@@ -293,8 +294,7 @@ BasePageView {
                 Layout.fillWidth: true
                 Layout.preferredHeight: Material.delegateHeight
 
-                // Hide Humudity
-                visible: false
+                visible: _root.hasHumidityWire
 
                 verticalPadding: 0
                 horizontalPadding: 8
@@ -310,7 +310,20 @@ BasePageView {
                     Label {
                         Layout.fillWidth: true
                         horizontalAlignment: "AlignRight"
-                        text: scheduleToDisplay?.humidity ?? 0
+                        text: `${scheduleToDisplay?.humidity ?? 0} %`
+                    }
+                }
+
+                onClicked: {
+                    if (!isEditable) return;
+                    //! Open ScheduleNamePage for editing
+                    if (_root.StackView.view) {
+                        _root.StackView.view.push("qrc:/Stherm/View/Schedule/ScheduleHumidityPage.qml", {
+                                                      "uiSession": uiSession,
+                                                      "backButtonVisible": _root.backButtonVisible,
+                                                      "schedule": internal.scheduleToEdit,
+                                                      "editMode": true
+                                                  });
                     }
                 }
             }

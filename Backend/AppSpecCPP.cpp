@@ -63,6 +63,11 @@ int AppSpecCPP::defaultEmergencyMinimumTime() {
     return 2;
 }
 
+double AppSpecCPP::defaultHumidity()
+{
+    return 45.0;
+}
+
 QString AppSpecCPP::systemTypeString(SystemType systemType) {
     switch (systemType) {
     case Conventional:

@@ -247,6 +247,7 @@ qt6_add_qml_module(appStherm
         View/Schedule/SchedulePreviewPage.qml
         View/Schedule/ScheduleNamePage.qml
         View/Schedule/ScheduleDataSourcePage.qml
+        View/Schedule/ScheduleHumidityPage.qml
         View/SystemSetupPage.qml
         View/SystemSetup/SystemTypePage.qml
         View/SystemSetup/SystemTypeTraditionPage.qml
@@ -350,6 +351,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/PerfTestPopup.qml
         UiCore/PopUps/ScheduleSystemModeErrorPopup.qml
         UiCore/PopUps/ResetFactoryPopUp.qml
+        UiCore/PopUps/ManualDateTimeWarningPopup.qml
 
         # Dialogs
         UiCore/Dialogs/ResetSettingsDialog.qml
