@@ -856,6 +856,7 @@ void Sync::resetFactory()
         }
     };
 
+    TRACE << "factory reset called forget api" << reqData;
     auto reply = callPostApi(baseUrl() + QString("api/sync/forget?sn=%1").arg(mSerialNumber),
                              QJsonDocument(reqData).toJson(),
                              callback);
