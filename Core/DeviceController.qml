@@ -305,6 +305,13 @@ I_DeviceController {
         }
     }
 
+    property Connections controllerConnections: Connections {
+        target: root
+        function onTemperatureUnitChanged() {
+            deviceControllerCPP?.setCelsius(temperatureUnit === AppSpec.TempratureUnit.Cel)
+        }
+    }
+
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
@@ -1301,7 +1308,6 @@ I_DeviceController {
 
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
-            deviceControllerCPP.setCelsius(temperatureUnit === AppSpec.TempratureUnit.Cel)
         }
 
         return true;

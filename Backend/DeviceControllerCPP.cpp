@@ -577,6 +577,7 @@ bool DeviceControllerCPP::setSettings(QVariantList data)
 
 void DeviceControllerCPP::setCelsius(bool isCelsius)
 {
+    TRACE << "Unit changed, isCelsius: " << isCelsius << mIsCelsius;
     mIsCelsius = isCelsius;
 }
 
