@@ -491,6 +491,7 @@ private:
     QString mLogRemoteFolder;
     QString mLogRemoteFolderUID;
     QMap<QString, QString> mLastReceivedCommands;
+    bool mNetworkLogShouldSend = false;
 
     QTimer *mAutoSendLogtimer{nullptr};
     bool    mFirstLogSent;
