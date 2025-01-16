@@ -554,7 +554,6 @@ void DeviceControllerCPP::forgetDevice()
 void DeviceControllerCPP::resetToFactorySetting()
 {
     forgetDevice();
-    m_system->removeLogPartition();
 
     // Completely remove all settings, maybe forget device save some settings that should be remove.
     QSettings settings;

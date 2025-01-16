@@ -1104,6 +1104,7 @@ void NUVE::System::forgetDevice()
 
     QFile::remove(qApp->applicationDirPath() + "/files_info.json");
     QFile::remove(mUpdateFilePath);
+    removeLogPartition();
 
     mSync->forgetDevice();
 }
