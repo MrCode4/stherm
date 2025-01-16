@@ -2445,6 +2445,10 @@ void NUVE::System::saveNetworkLogs() {
     networkLogCounter += 1;
     SYS_LOG << "Save network log called for " << networkLogCounter;
 
+    // disabled for now to prevent filling up the disc
+    // TODO: add file management to remove excessive files for enabling this
+    return;
+
     auto generatedFilename = generateLog();
     if (generatedFilename.isEmpty())
         return;
