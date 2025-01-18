@@ -1251,7 +1251,9 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
             SYS_LOG << "The file update needs to be redownloaded.";
     }
 
-    SYS_LOG << "byte available" << storageInfo.bytesAvailable() << "update file size" << updateFileSize << "required memory" << m_RequiredMemory;
+    SYS_LOG << "byte available" << storageInfo.bytesAvailable() << "update file size" << updateFileSize << "required memory" << mRequiredMemory;
+    // here we just check for the storage needed for app to be downloaded
+    // once download is completed and verified, it will be checked for extraction in updateAndRestart
     if (storageInfo.bytesAvailable() < updateFileSize) {
 
         QDir dir(mUpdateDirectory);
@@ -1263,7 +1265,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         SYS_LOG << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
 #endif
 
-        SYS_LOG << "byte available" << storageInfo.bytesAvailable() << "update file size" << updateFileSize << "required memory" << m_RequiredMemory;
+        SYS_LOG << "byte available" << storageInfo.bytesAvailable() << "update file size" << updateFileSize << "required memory" << mRequiredMemory;
         if (storageInfo.bytesAvailable() < updateFileSize) {
             emit error(QString("The update directory has no memory. Required memory is %0, and available memory is %1.")
                            .arg(QString::number(updateFileSize), QString::number(storageInfo.bytesAvailable())));
@@ -1431,11 +1433,14 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     // Use to unzip the downloaded files.
     QStorageInfo updateStorageInfo (mUpdateDirectory);
 
+    auto requiredMemory = isBackdoor ? mBackdoorRequiredMemory : mRequiredMemory;
     auto updateFileSize = isBackdoor ? mBackdoorUpdateFileSize : mUpdateFileSize;
-    if (updateStorageInfo.bytesAvailable() < updateFileSize) {
+    SYS_LOG << updateStorageInfo.bytesAvailable() <<  updateFileSize << requiredMemory;
+    // we are checking spece needed here for extraction
+    if (updateStorageInfo.bytesAvailable() < requiredMemory) {
 
         QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
-                          .arg(QString::number(updateFileSize), QString::number(updateStorageInfo.bytesAvailable()));
+                          .arg(QString::number(requiredMemory), QString::number(updateStorageInfo.bytesAvailable()));
         emit error(err);
         SYS_LOG << err;
 
@@ -1445,10 +1450,12 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     QStorageInfo installStorageInfo (qApp->applicationDirPath());
     QFileInfo appInfo(qApp->applicationFilePath());
 
-    auto requiredMemory = isBackdoor ? mBackdoorRequiredMemory : mRequiredMemory;;
-    if ((installStorageInfo.bytesAvailable() + appInfo.size()) < requiredMemory) {
-        QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
-                          .arg(QString::number(requiredMemory), QString::number(installStorageInfo.bytesAvailable()));
+    SYS_LOG << installStorageInfo.bytesFree() << installStorageInfo.bytesAvailable() << appInfo.size() <<  requiredMemory;
+    // we check space needed for deployment
+    // in this partition byteFree allows us to do copy operation
+    if ((installStorageInfo.bytesFree() + appInfo.size()) < requiredMemory) {
+        QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and Free memory is %1 bytes.")
+                          .arg(QString::number(requiredMemory), QString::number(installStorageInfo.bytesFree()));
         emit error(err);
         SYS_LOG << err;
 
@@ -1481,7 +1488,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     installUpdateService();
 
     QTimer::singleShot(200, this, [=]() {
-        TRACE << updateServiceState("appStherm-update", true);
+        SYS_LOG << updateServiceState("appStherm-update", true);
     });
 #endif
 }
