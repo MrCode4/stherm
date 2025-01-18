@@ -89,6 +89,7 @@ BasePageView {
                 ButtonInverted {
                     Layout.alignment: Qt.AlignRight
 
+                    visible: false
                     text: qsTr("Clear")
                     font.pointSize: Application.font.pointSize * 0.8
 
