@@ -2,6 +2,8 @@
 
 #include <random>
 #include <sstream>
+#include <QDir>
+#include <QStorageInfo>
 
 #include "LogHelper.h"
 
@@ -53,4 +55,73 @@ double AppUtilities::getTruncatedvalue(double value, int decimalCount)
     }
     const double factor = qPow(10, decimalCount);
     return qFloor(value * factor) / factor;
+}
+
+bool AppUtilities::removeDirectory(const QString &path)
+{
+    QDir dir(path);
+
+    if (dir.exists()) {
+        if (dir.removeRecursively()) {
+            TRACE << "Successfully removed:" << path;
+        } else {
+            TRACE << "Failed to remove:" << path;
+            return false;
+        }
+    } else {
+        TRACE << "Directory does not exist:" << path;
+    }
+
+    return true;
+}
+
+int AppUtilities::getStorageFreeBytes(const QString path) {
+    QStorageInfo storageInfo (path);
+
+    if (!storageInfo.isValid()) {
+        return 0;
+    }
+
+    return storageInfo.bytesFree();
+}
+
+int AppUtilities::getStorageAvailableBytes(const QString path) {
+    QStorageInfo storageInfo (path);
+
+    if (!storageInfo.isValid()) {
+        return 0;
+    }
+
+    return storageInfo.bytesAvailable();
+}
+
+int AppUtilities::getFolderUsedBytes(const QString path) {
+    int totalSize = 0;
+    QDir dir(path);
+
+    if (dir.exists()) {
+        QFileInfoList fileList = dir.entryInfoList(QDir::Files | QDir::NoDotAndDotDot, QDir::Size | QDir::Name);
+
+        for (const QFileInfo& fileInfo : fileList) {
+            totalSize += fileInfo.size();
+        }
+
+        // Recursively calculate the size of subfolders
+        QFileInfoList subDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+        for (const QFileInfo& subDirInfo : subDirs) {
+            totalSize += AppUtilities::getFolderUsedBytes(subDirInfo.absoluteFilePath());
+        }
+    }
+
+    return totalSize;
+}
+
+int AppUtilities::getFileSizeBytes(const QString file) {
+    QFileInfo fileInfo(file);
+
+    if(!fileInfo.exists()) {
+        return 0;
+    }
+
+    return fileInfo.size();
 }

@@ -3,6 +3,7 @@
 #include "PerfTestService.h"
 #include "DeviceInfo.h"
 #include "NetworkInterface.h"
+#include "AppUtilities.h"
 
 #include "ProtoDataManager.h"
 
@@ -700,6 +701,7 @@ bool NUVE::System::mountDirectory(const QString targetDirectory, const QString t
         return false;
 #endif
 
+    mUsedDirectories.append(targetFolder);
     return true;
 }
 
@@ -1119,7 +1121,7 @@ bool NUVE::System::removeLogPartition()
                                "/mnt/recovery/recovery/"};
     bool ok = true;
     for (const QString &dirPath : directories) {
-        ok &= removeDirectory(dirPath);
+        ok &= AppUtilities::removeDirectory(dirPath);
     }
 
     return ok;
@@ -2238,24 +2240,6 @@ void NUVE::System::sendResultsFile(const QString &filepath,
     mFileSender.start("/bin/bash", {"-c", copyFile});
 }
 
-bool NUVE::System::removeDirectory(const QString &path)
-{
-    QDir dir(path);
-
-    if (dir.exists()) {
-        if (dir.removeRecursively()) {
-            TRACE << "Successfully removed:" << path;
-        } else {
-            TRACE << "Failed to remove:" << path;
-            return false;
-        }
-    } else {
-        TRACE << "Directory does not exist:" << path;
-    }
-
-    return true;
-}
-
 void NUVE::System::startAutoSendLogTimer(int interval)
 {
     if (mFirstLogSent) {
@@ -2647,4 +2631,9 @@ void NUVE::System::saveNetworkRequestRestart()
     int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt() + 1;
 
     settings.setValue(m_NetworkRequestRestartSetting, networkRequestRestartTimes);
+}
+
+QStringList NUVE::System::usedDirectories() const
+{
+    return mUsedDirectories;
 }

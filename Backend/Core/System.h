@@ -276,6 +276,8 @@ public:
 
     Q_INVOKABLE void generateInstallLog();
 
+    Q_INVOKABLE QStringList usedDirectories() const;
+
 protected slots:
     void onSerialNumberReady();
     void onAppDataReady(QVariantMap data);
@@ -403,7 +405,6 @@ private:
     void sendFirstRunLogFile();
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
-    bool removeDirectory(const QString &path);
 
     bool sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog = false, bool isInstallLog = false);
     bool checkSendLog(bool showAlert);
@@ -494,6 +495,8 @@ private:
 
     QTimer *mAutoSendLogtimer{nullptr};
     bool    mFirstLogSent;
+
+    QStringList mUsedDirectories;
 };
 
 } // namespace NUVE
