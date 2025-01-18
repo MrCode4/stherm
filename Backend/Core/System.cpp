@@ -214,7 +214,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         if (!version.isEmpty()) {
             // Check with current version
             if (version != qApp->applicationVersion()) {
-                TRACE << "Install firmware version from server " << version;
+                TRACE << "Install firmware version from server " << version <<
+                    "started with manual update" << mStartedWithManualUpdate <<
+                    "started with server update" << mStartedWithFWServerUpdate;
                 // We'll try to install the requested version, but if it's unavailable,
                 // we keep the current version
                 // If a version has been installed manually (manual version),
@@ -1188,11 +1190,13 @@ void NUVE::System::partialUpdate(const bool isBackdoor) {
     }
 #endif
 
+    SYS_LOG << mLatestVersionKey << isBackdoor;
     checkAndDownloadPartialUpdate(mLatestVersionKey, isBackdoor);
 }
 
 void NUVE::System::partialUpdateByVersion(const QString version)
 {
+    SYS_LOG << version;
     checkAndDownloadPartialUpdate(version, false, true);
 }
 
@@ -1222,8 +1226,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         m_expectedUpdateChecksum = QByteArray::fromHex(versionObj.value(m_CheckSum).toString().toLatin1());
     }
 
-
-    // Check
+    // Checking validation
     QStorageInfo storageInfo (mUpdateDirectory);
 
     if (!storageInfo.isValid()) {
@@ -1245,23 +1248,26 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         if (verifyDownloadedFiles(downloadedData, false, isBackdoor, isResetVersion))
             return;
         else
-            TRACE << "The file update needs to be redownloaded.";
+            SYS_LOG << "The file update needs to be redownloaded.";
     }
 
-    if (storageInfo.bytesFree() < updateFileSize) {
+    SYS_LOG << "byte available" << storageInfo.bytesAvailable() << "update file size" << updateFileSize << "required memory" << m_RequiredMemory;
+    if (storageInfo.bytesAvailable() < updateFileSize) {
 
         QDir dir(mUpdateDirectory);
-        // Removes the directory, including all its contents.
+        // Removes the update directory, including all its contents to make some room.
         dir.removeRecursively();
 
 // Create the latestVersion directory
 #ifdef __unix__
-        TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
+        SYS_LOG << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
 #endif
 
-        if (storageInfo.bytesFree() < updateFileSize) {
+        SYS_LOG << "byte available" << storageInfo.bytesAvailable() << "update file size" << updateFileSize << "required memory" << m_RequiredMemory;
+        if (storageInfo.bytesAvailable() < updateFileSize) {
             emit error(QString("The update directory has no memory. Required memory is %0, and available memory is %1.")
-                           .arg(QString::number(updateFileSize), QString::number(storageInfo.bytesFree())));
+                           .arg(QString::number(updateFileSize), QString::number(storageInfo.bytesAvailable())));
+            // we should remove logs folder if force?
             return;
         }
     }
@@ -1277,6 +1283,10 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     auto callback = [this, isBackdoor, isResetVersion, isFWServerVersion]
         (QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         mIsBusyDownloader = false;
+
+        SYS_LOG << "Downloading update finished. isBackdoor, isResetVersion, isFWServerVersion, error:" <<
+            isBackdoor << isResetVersion << isFWServerVersion << reply->error();
+
         if (reply->error() == QNetworkReply::NoError) {
             // Check data and prepare to set up.
             if (isBackdoor) {
@@ -1287,6 +1297,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
             }
         }
         else {
+            SYS_LOG << "Downloading update error: " << reply->errorString() << isInitialSetup();
             emit error("Download error: " + reply->errorString());
 
             if (isInitialSetup() && !isBackdoor) {
@@ -1310,10 +1321,11 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     QNetworkReply* reply = downloadFile(m_updateServerUrl + versionAddressInServer, callback, false);
     if (!reply) {
         // another call in progress, so ignore
-        TRACE << "Downloading file " << (m_updateServerUrl + versionAddressInServer) << " got called more than once";
+        SYS_LOG << "Downloading file " << (m_updateServerUrl + versionAddressInServer) << " got called more than once";
         return;
     }
 
+    SYS_LOG << "downloading update started" << m_updateServerUrl + versionAddressInServer;
     setPartialUpdateProgress(0);
 
     if (mElapsedTimer.isValid())
@@ -1420,12 +1432,12 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     QStorageInfo updateStorageInfo (mUpdateDirectory);
 
     auto updateFileSize = isBackdoor ? mBackdoorUpdateFileSize : mUpdateFileSize;
-    if (updateStorageInfo.bytesFree() < updateFileSize) {
+    if (updateStorageInfo.bytesAvailable() < updateFileSize) {
 
         QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
-                          .arg(QString::number(updateFileSize), QString::number(updateStorageInfo.bytesFree()));
+                          .arg(QString::number(updateFileSize), QString::number(updateStorageInfo.bytesAvailable()));
         emit error(err);
-        TRACE << err;
+        SYS_LOG << err;
 
         return;
     }
@@ -1434,16 +1446,16 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     QFileInfo appInfo(qApp->applicationFilePath());
 
     auto requiredMemory = isBackdoor ? mBackdoorRequiredMemory : mRequiredMemory;;
-    if ((installStorageInfo.bytesFree() + appInfo.size()) < requiredMemory) {
+    if ((installStorageInfo.bytesAvailable() + appInfo.size()) < requiredMemory) {
         QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
-                          .arg(QString::number(requiredMemory), QString::number(installStorageInfo.bytesFree()));
+                          .arg(QString::number(requiredMemory), QString::number(installStorageInfo.bytesAvailable()));
         emit error(err);
-        TRACE << err;
+        SYS_LOG << err;
 
         return;
     }
 
-    TRACE << "starting update" ;
+    SYS_LOG << "starting update" ;
 
 #ifdef __unix__
     // It's incorrect if the update process failed,
@@ -1472,10 +1484,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
         TRACE << updateServiceState("appStherm-update", true);
     });
 #endif
-
-
 }
-
 
 // Checksum verification after download
 bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite, bool isBackdoor,
@@ -1484,17 +1493,51 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
 
     auto expectedBA = isBackdoor ? mExpectedBackdoorChecksum : m_expectedUpdateChecksum;
     if (downloadedChecksum == expectedBA) {
-
         // Checksums match - downloaded app is valid
         // Save the downloaded data
         if (withWrite) {
             QFile file(mUpdateDirectory + "/update.zip");
             if (!file.open(QIODevice::WriteOnly)) {
+                SYS_LOG << "can not open, update directory path:" << mUpdateDirectory << file.errorString();
                 emit error("Unable to open file for writing in " + mUpdateDirectory);
                 return false;
             }
-            file.write(downloadedData);
+
+            auto wroteSize = file.write(downloadedData);
             file.close();
+            if (wroteSize == -1) {
+                SYS_LOG << "can not write, update directory path:" << mUpdateDirectory << file.errorString();
+                emit error("Unable to write in " + mUpdateDirectory);
+                // should we check for removing needed space?
+                return false;
+
+            } else if (wroteSize != downloadedData.size()) {
+                SYS_LOG << "Write corrupted, update directory path:" << mUpdateDirectory << file.errorString();
+
+                emit error("Write corrupted in " + mUpdateDirectory);
+                // should we check for removing needed space?
+                // should we return false or let it be checked again by reading the file?
+                return false;
+            }
+
+            // Check update file for validation
+            QFile fileRead(mUpdateDirectory + "/update.zip");
+            if (fileRead.exists() && fileRead.open(QIODevice::ReadOnly)) {
+
+                auto downloadedData = fileRead.readAll();
+                fileRead.close();
+
+                auto verified = verifyDownloadedFiles(downloadedData, false, isBackdoor, isResetVersion, isFWServerVersion);
+                if (!verified){
+                    SYS_LOG << "Write corrupted after reading, update directory path:" << mUpdateDirectory << fileRead.errorString();
+                    emit error("Write corrupted after reading " + mUpdateDirectory);
+                }
+                return verified;
+            }
+
+            SYS_LOG << "Write lost after reading, update directory path:" << mUpdateDirectory << fileRead.errorString();
+            emit error("Write lost in " + mUpdateDirectory);
+            return false;
         }
 
         emit partialUpdateReady(isBackdoor, isResetVersion, isFWServerVersion);
@@ -1502,11 +1545,11 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
         return true;
 
     } else if (withWrite) {
-        // Checksums don't match - downloaded app might be corrupted
-        TRACE << "Checksums don't match - downloaded app might be corrupted";
-
+        // Checksums don't match - downloaded app might be corrupted, we show the error to user only on downloading option.
         emit error("Checksums don't match - downloaded app might be corrupted");
     }
+
+    SYS_LOG << "Checksums don't match - downloaded app might be corrupted" << withWrite << downloadedChecksum << expectedBA;
 
     return false;
 }
@@ -1692,9 +1735,10 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     // Manual update must be exit for force update
     if (installLatestVersion || (mHasForceUpdate && !manualUpdateInstalled)) {
+        SYS_LOG << installLatestVersion << mHasForceUpdate;
         partialUpdate();
     } else {
-        TRACE << "update not started" << installLatestVersion << mHasForceUpdate << manualUpdateInstalled;
+        SYS_LOG << "update not started" << installLatestVersion << mHasForceUpdate << manualUpdateInstalled;
     }
 }
 
@@ -1894,7 +1938,7 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
 #ifdef __unix__
     QStorageInfo storageInfo (directory);
 
-    return (storageInfo.isValid() && storageInfo.bytesFree() >= minimumSizeBytes);
+    return (storageInfo.isValid() && storageInfo.bytesAvailable() >= minimumSizeBytes);
 #endif
 
     return true;
