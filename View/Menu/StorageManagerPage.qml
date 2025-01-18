@@ -53,6 +53,11 @@ BasePageView {
             }
 
             Label {
+                text: `Total bytes: ${AppUtilities.getStorageTotalBytes("/")}`
+                font.pointSize: Application.font.pointSize * 0.8
+            }
+
+            Label {
                 id: rootFreeBytes
                 text: `Free bytes: ${AppUtilities.getStorageFreeBytes("/")}`
                 font.pointSize: Application.font.pointSize * 0.8
@@ -97,7 +102,7 @@ BasePageView {
                     }
 
                     function update() {
-                        AppUtilities.removeDirectory(modelData);
+                        AppUtilities.removeDirectory("/mnt/log");
                         updateTimer.start();
                     }
 
@@ -106,6 +111,11 @@ BasePageView {
                         clearDirectoryConfirmPopup.hid.disconnect(this, disconect);
                     }
                 }
+            }
+
+            Label {
+                text: `Total bytes: ${AppUtilities.getStorageTotalBytes("/mnt/log")}`
+                font.pointSize: Application.font.pointSize * 0.8
             }
 
             Label {

@@ -85,6 +85,16 @@ int AppUtilities::getStorageFreeBytes(const QString path) {
     return storageInfo.bytesFree();
 }
 
+int AppUtilities::getStorageTotalBytes(const QString path) {
+    QStorageInfo storageInfo (path);
+
+    if (!storageInfo.isValid()) {
+        return 0;
+    }
+
+    return storageInfo.bytesTotal();
+}
+
 int AppUtilities::getStorageAvailableBytes(const QString path) {
     QStorageInfo storageInfo (path);
 

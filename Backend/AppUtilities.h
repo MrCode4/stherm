@@ -20,6 +20,7 @@ public:
 
     Q_INVOKABLE static bool removeDirectory(const QString &path);
     Q_INVOKABLE static int getStorageFreeBytes(const QString path);
+    Q_INVOKABLE static int getStorageTotalBytes(const QString path);
     Q_INVOKABLE static int getStorageAvailableBytes(const QString path);
     Q_INVOKABLE static int getFolderUsedBytes(const QString path);
     Q_INVOKABLE static int getFileSizeBytes(const QString file);
