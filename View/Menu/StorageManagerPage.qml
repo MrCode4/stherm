@@ -89,7 +89,21 @@ BasePageView {
 
                     onClicked: {
                         clearDirectoryConfirmPopup.directoryName = "/mnt/log";
+
+                        clearDirectoryConfirmPopup.accepted.connect(this, update);
+                        clearDirectoryConfirmPopup.hid.connect(this, disconect);
+
                         clearDirectoryConfirmPopup.open();
+                    }
+
+                    function update() {
+                        AppUtilities.removeDirectory(modelData);
+                        updateTimer.start();
+                    }
+
+                    function disconect() {
+                        clearDirectoryConfirmPopup.accepted.disconnect(this, update);
+                        clearDirectoryConfirmPopup.hid.disconnect(this, disconect);
                     }
                 }
             }
@@ -135,6 +149,7 @@ BasePageView {
                 delegate: GridLayout {
                     Layout.preferredWidth: parent.width
                     columns: 2
+                    rowSpacing: -5
 
                     Label {
                         Layout.preferredWidth: parent.width * 0.7
@@ -153,12 +168,30 @@ BasePageView {
 
                         onClicked: {
                             clearDirectoryConfirmPopup.directoryName = modelData;
+
+                            clearDirectoryConfirmPopup.accepted.connect(this, update);
+                            clearDirectoryConfirmPopup.hid.connect(this, disconnect);
+
                             clearDirectoryConfirmPopup.open();
+                        }
+
+                        function update() {
+                            AppUtilities.removeDirectory(modelData);
+                            modelDataSizeLabel.update();
+                            updateTimer.start();
+                        }
+
+                        function disconnect() {
+                            clearDirectoryConfirmPopup.accepted.disconnect(this, update);
+                            clearDirectoryConfirmPopup.hid.disconnect(this, disconnect);
                         }
                     }
 
                     Label {
                         id: modelDataSizeLabel
+
+                        Layout.columnSpan: 2
+                        Layout.alignment: Qt.AlignTop
 
                         text: qsTr(`used: ${AppUtilities.getFolderUsedBytes(modelData)} bytes`)
                         font.pointSize: Application.font.pointSize * 0.8
@@ -198,8 +231,10 @@ BasePageView {
                 ]
 
                 delegate: GridLayout {
-                    columns: 2
                     Layout.preferredWidth: parent.width
+
+                    columns: 2
+                    rowSpacing: -5
 
                     Label {
                         Layout.preferredWidth: parent.width * 0.7
@@ -218,13 +253,30 @@ BasePageView {
 
                         onClicked: {
                             deleteFileConfirmPopup.fileName = modelData;
+                            deleteFileConfirmPopup.accepted.connect(this, update);
+                            deleteFileConfirmPopup.hid.connect(this, disconnect);
+
                             deleteFileConfirmPopup.open();
+                        }
+
+                        function update() {
+                            QSFileIO.removeFile(modelData);
+
+                             modelDataFileSizeLabel.update();
+                             updateTimer.start();
+                        }
+
+                        function disconnect() {
+                            deleteFileConfirmPopup.accepted.disconnect(this, update);
+                            deleteFileConfirmPopup.hid.disconnect(this, disconnect);
                         }
                     }
 
                     Label {
                         id: modelDataFileSizeLabel
 
+                        Layout.columnSpan: 2
+                        Layout.alignment: Qt.AlignTop
 
                         text: qsTr(`size: ${AppUtilities.getFileSizeBytes(modelData)} bytes`)
                         font.pointSize: Application.font.pointSize * 0.8
@@ -257,13 +309,6 @@ BasePageView {
 
         message: "Clear directory"
         detailMessage: `Are you sure you want to clear ${directoryName}?`
-
-        onAccepted: {
-            AppUtilities.removeDirectory(directoryName);
-
-            modelDataSizeLabel.update();
-            updateTimer.start();
-        }
     }
 
     ConfirmPopup {
@@ -273,13 +318,6 @@ BasePageView {
 
           message: "Delete file"
           detailMessage: `Are you sure you want to delete ${fileName}?`
-
-          onAccepted: {
-              QSFileIO.removeFile(fileName);
-
-               modelDataFileSizeLabel.update();
-               updateTimer.start();
-          }
     }
 
     function update() {
