@@ -54,7 +54,7 @@ BasePageView {
 
             Label {
                 property int totalBytes: AppUtilities.getStorageTotalBytes("/")
-                text: `  Total bytes: ${AppUtilities.bytesToNearestBigUnit(totalBytes)}`
+                text: `  Total volume size: ${AppUtilities.bytesToNearestBigUnit(totalBytes)}`
                 font.pointSize: Application.font.pointSize * 0.8
             }
 
@@ -67,7 +67,7 @@ BasePageView {
 
                 function update() {
                     let sizeBytres = AppUtilities.getStorageFreeBytes("/");
-                    text = `  Free bytes: ${AppUtilities.bytesToNearestBigUnit(sizeBytres)}`
+                    text = `  Free volume size: ${AppUtilities.bytesToNearestBigUnit(sizeBytres)}`
 
                     return text;
                 }
@@ -81,7 +81,7 @@ BasePageView {
 
                 function update() {
                     let sizeBytres = AppUtilities.getStorageAvailableBytes("/");
-                    text =  qsTr(`  Available bytes: ${AppUtilities.bytesToNearestBigUnit(sizeBytres)}`);
+                    text =  qsTr(`  Available volume size: ${AppUtilities.bytesToNearestBigUnit(sizeBytres)}`);
 
                     return text;
                 }
@@ -126,7 +126,7 @@ BasePageView {
 
             Label {
                 property int totalBytes: AppUtilities.getStorageTotalBytes("/mnt/log")
-                text: `  Total bytes: ${AppUtilities.bytesToNearestBigUnit(totalBytes)}`
+                text: `  Total volume size: ${AppUtilities.bytesToNearestBigUnit(totalBytes)}`
 
                 font.pointSize: Application.font.pointSize * 0.8
             }
@@ -139,7 +139,7 @@ BasePageView {
 
                 function update() {
                     let sizeBytes = AppUtilities.getStorageFreeBytes("/mnt/log");
-                    text =  qsTr(`  Free bytes: ${AppUtilities.bytesToNearestBigUnit(sizeBytes)}`);
+                    text =  qsTr(`  Free volume size: ${AppUtilities.bytesToNearestBigUnit(sizeBytes)}`);
 
                     return text;
                 }
@@ -153,7 +153,7 @@ BasePageView {
 
                 function update() {
                     let sizeBytes = AppUtilities.getStorageAvailableBytes("/mnt/log");
-                    text =  qsTr(`  Available bytes: ${AppUtilities.bytesToNearestBigUnit(sizeBytes)}`);
+                    text =  qsTr(`  Available volume size: ${AppUtilities.bytesToNearestBigUnit(sizeBytes)}`);
 
                     return text;
                 }
