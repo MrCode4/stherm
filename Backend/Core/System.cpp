@@ -692,13 +692,14 @@ bool NUVE::System::mountDirectory(const QString targetDirectory, const QString t
         mUsedDirectories.append(targetFolder);
 #ifdef __unix__
     int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir "+ targetDirectory + "; mount /dev/mmcblk1p3 " + targetDirectory });
+    SYS_LOG << targetDirectory << exitCode;
     if (exitCode < 0)
         return false;
 
-    TRACE << "Device mounted successfully." << exitCode;
+    SYS_LOG << "Device mounted successfully.";
 
     exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir " + targetFolder});
-    TRACE << exitCode;
+    SYS_LOG << targetFolder << exitCode;
     if (exitCode < 0)
         return false;
 #endif
@@ -2143,14 +2144,14 @@ QString NUVE::System::generateLog()
 {
     QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
 
-    TRACE << "generating log file in " << filename;
+    SYS_LOG << "generating log file in " << filename;
 
     // Create log
     auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
-    if (exitCode < 0)
+    if (exitCode != 0)
     {
         QString error("Unable to create log file.");
-        qWarning() << error << exitCode;
+        SYS_LOG << error << exitCode;
         emit logAlert(error);
         return "";
     }
@@ -2599,7 +2600,7 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
     QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
                        arg(m_logPassword, filenames.join(" "), m_logUsername, m_logServerAddress, mLogRemoteFolder);
-    TRACE << "sending log to server " << mLogRemoteFolder;
+    SYS_LOG << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
 
     return true;
