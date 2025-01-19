@@ -75,6 +75,27 @@ bool AppUtilities::removeDirectory(const QString &path)
     return true;
 }
 
+bool AppUtilities::removeContentDirectory(const QString &path)
+{
+    QDir dir(path);
+
+    if (dir.exists()) {
+        QFileInfoList fileList = dir.entryInfoList(QDir::Files);
+
+        for (const QFileInfo& fileInfo : fileList) {
+            QFile::remove(fileInfo.absoluteFilePath());
+        }
+
+        // Recursively remove contents of subfolders
+        QFileInfoList subDirs = dir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+        for (const QFileInfo& subDirInfo : subDirs) {
+            AppUtilities::removeContentDirectory(subDirInfo.absoluteFilePath());
+        }
+    }
+
+    return true;
+}
+
 int AppUtilities::getStorageFreeBytes(const QString path) {
     QStorageInfo storageInfo (path);
 
@@ -134,4 +155,29 @@ int AppUtilities::getFileSizeBytes(const QString file) {
     }
 
     return fileInfo.size();
+}
+
+QString AppUtilities::bytesToNearestBigUnit(int bytes) {
+
+    if (bytes < 0) {
+        return "0 bytes";
+
+    } else if (bytes < 1024) {
+        return QString::number(bytes) + " bytes";
+
+    } else if (bytes < qPow(1024, 2)) {
+        return QString::number(static_cast<double>(bytes) / 1024, 'f', 2) + " KB";
+
+    } else if (bytes < qPow(1024, 3)) {
+        return QString::number(static_cast<double>(bytes) / qPow(1024, 2), 'f', 2) + " MB";
+
+    } else if (bytes < qPow(1024, 4)) {
+        return QString::number(static_cast<double>(bytes) / qPow(1024, 3), 'f', 2) + " GB";
+
+    } else if (bytes < qPow(1024, 5)) {
+        return QString::number(static_cast<double>(bytes) / qPow(1024, 4), 'f', 2) + " TB";
+
+    } else {
+        return QString::number(static_cast<double>(bytes) / qPow(1024, 5), 'f', 2) + " PB";
+    }
 }

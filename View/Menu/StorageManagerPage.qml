@@ -49,31 +49,41 @@ BasePageView {
 
             Label {
                 text: qsTr("root:")
-                font.pointSize: Application.font.pointSize * 0.8
+                font.pointSize: Application.font.pointSize * 0.85
             }
 
             Label {
-                text: `Total bytes: ${AppUtilities.getStorageTotalBytes("/")}`
+                property int totalBytes: AppUtilities.getStorageTotalBytes("/")
+                text: `  Total bytes: ${AppUtilities.bytesToNearestBigUnit(totalBytes)}`
                 font.pointSize: Application.font.pointSize * 0.8
             }
 
             Label {
                 id: rootFreeBytes
-                text: `Free bytes: ${AppUtilities.getStorageFreeBytes("/")}`
+
+
                 font.pointSize: Application.font.pointSize * 0.8
+                text: update();
 
                 function update() {
-                    text =  `Available bytes: ${AppUtilities.getStorageFreeBytes("/")}`;
+                    let sizeBytres = AppUtilities.getStorageFreeBytes("/");
+                    text = `  Free bytes: ${AppUtilities.bytesToNearestBigUnit(sizeBytres)}`
+
+                    return text;
                 }
             }
 
             Label {
                 id: rootAvailableBytes
-                text: qsTr(`Available bytes: ${AppUtilities.getStorageAvailableBytes("/")}`)
+
+                text: update();
                 font.pointSize: Application.font.pointSize * 0.8
 
                 function update() {
-                    text =  qsTr(`Available bytes: ${AppUtilities.getStorageAvailableBytes("/")}`);
+                    let sizeBytres = AppUtilities.getStorageAvailableBytes("/");
+                    text =  qsTr(`  Available bytes: ${AppUtilities.bytesToNearestBigUnit(sizeBytres)}`);
+
+                    return text;
                 }
             }
 
@@ -83,7 +93,7 @@ BasePageView {
                 Label {
                     text: qsTr("/mnt/log:")
 
-                    font.pointSize: Application.font.pointSize * 0.8
+                    font.pointSize: Application.font.pointSize * 0.85
                 }
 
                 ButtonInverted {
@@ -103,7 +113,7 @@ BasePageView {
                     }
 
                     function update() {
-                        AppUtilities.removeDirectory("/mnt/log");
+                        AppUtilities.removeContentDirectory("/mnt/log");
                         updateTimer.start();
                     }
 
@@ -115,29 +125,37 @@ BasePageView {
             }
 
             Label {
-                text: `Total bytes: ${AppUtilities.getStorageTotalBytes("/mnt/log")}`
+                property int totalBytes: AppUtilities.getStorageTotalBytes("/mnt/log")
+                text: `  Total bytes: ${AppUtilities.bytesToNearestBigUnit(totalBytes)}`
+
                 font.pointSize: Application.font.pointSize * 0.8
             }
 
             Label {
                 id: mntFreeBytes
 
-                text: qsTr(`Free bytes: ${AppUtilities.getStorageFreeBytes("/mnt/log")}`)
+                text: update()
                 font.pointSize: Application.font.pointSize * 0.8
 
                 function update() {
-                    text =  qsTr(`Free bytes: ${AppUtilities.getStorageFreeBytes("/mnt/log")}`);
+                    let sizeBytes = AppUtilities.getStorageFreeBytes("/mnt/log");
+                    text =  qsTr(`  Free bytes: ${AppUtilities.bytesToNearestBigUnit(sizeBytes)}`);
+
+                    return text;
                 }
             }
 
             Label {
                 id: mntAvailableBytes
 
-                text: qsTr(`Available bytes: ${AppUtilities.getStorageAvailableBytes("/mnt/log")}`)
+                text: update()
                 font.pointSize: Application.font.pointSize * 0.8
 
                 function update() {
-                    text =  qsTr(`Available bytes: ${AppUtilities.getStorageAvailableBytes("/mnt/log")}`);
+                    let sizeBytes = AppUtilities.getStorageAvailableBytes("/mnt/log");
+                    text =  qsTr(`  Available bytes: ${AppUtilities.bytesToNearestBigUnit(sizeBytes)}`);
+
+                    return text;
                 }
             }
 
@@ -155,7 +173,33 @@ BasePageView {
 
             Repeater {
                 Layout.preferredWidth: parent.width
-                model: [...deviceController.system.usedDirectories(), "/usr/local/bin/backdoor"]
+
+                property var dirs: [
+                    ...deviceController.system.usedDirectories(),
+                    "/usr/local/bin/backdoor"
+                ]
+
+                //! To detect the duplicate keys
+                property var tempMap: []
+                model: dirs.map(dir => {
+                                    var dirNames = dir.split('/');
+                                    var dirName = dirNames.pop();
+                                    var key = dirName;
+
+                                    // Handle duplicates within the map function
+                                    while (tempMap.indexOf(key) != -1) {
+                                        let tempKey = dirNames.pop();
+                                        if ((tempKey?.length ?? 0) > 0) {
+                                            key = `${tempKey}/${key}`;
+                                        } else {
+                                            break;
+                                        }
+                                    }
+
+                                    tempMap.push(key);
+                                    return {"key": key, "value": dir};
+                                });
+
 
                 delegate: GridLayout {
                     Layout.preferredWidth: parent.width
@@ -166,7 +210,7 @@ BasePageView {
                         Layout.preferredWidth: parent.width * 0.7
                         Layout.alignment: Qt.AlignVCenter
 
-                        text: modelData
+                        text: modelData.key
                         font.pointSize: Application.font.pointSize * 0.8
                         wrapMode: Text.WordWrap
                     }
@@ -178,7 +222,7 @@ BasePageView {
                         font.pointSize: Application.font.pointSize * 0.8
 
                         onClicked: {
-                            clearDirectoryConfirmPopup.directoryName = modelData;
+                            clearDirectoryConfirmPopup.directoryName = modelData.key;
 
                             clearDirectoryConfirmPopup.accepted.connect(this, update);
                             clearDirectoryConfirmPopup.hid.connect(this, disconnect);
@@ -187,7 +231,7 @@ BasePageView {
                         }
 
                         function update() {
-                            AppUtilities.removeDirectory(modelData);
+                            AppUtilities.removeContentDirectory(modelData.value);
                             modelDataSizeLabel.update();
                             updateTimer.start();
                         }
@@ -204,11 +248,16 @@ BasePageView {
                         Layout.columnSpan: 2
                         Layout.alignment: Qt.AlignTop
 
-                        text: qsTr(`used: ${AppUtilities.getFolderUsedBytes(modelData)} bytes`)
+                        text: update();
                         font.pointSize: Application.font.pointSize * 0.8
 
                         function  update() {
-                            text = qsTr(`used: ${AppUtilities.getFolderUsedBytes(modelData)} bytes`);
+                            let size = AppUtilities.getFolderUsedBytes(modelData.value);
+                            let sizeUnit = AppUtilities.bytesToNearestBigUnit(size);
+
+                            text = qsTr(`used: ${sizeUnit}`);
+
+                            return text;
                         }
                     }
                 }
@@ -230,15 +279,15 @@ BasePageView {
                 Layout.preferredWidth: parent.width
 
                 model: [
-                    "/test_results.csv",
-                    "customIcon.png",
-                    "/usr/local/bin/QSCore.cfg",
-                    "/usr/local/bin/files_info.json",
-                    "/usr/local/bin/updateInfoV1.json",
-                    "/usr/local/bin/updateInfo.json",
-                    "/usr/local/bin/sthermConfig.QQS.json",
-                    "/usr/local/bin/output.bin",
-                    "/usr/local/bin/override.ini"
+                    { "key": "test_result",               "value": "/test_results.csv" },
+                    { "key": "customIcon",                "value":"customIcon.png" } ,
+                    { "key": "QSCore",                    "value":"/usr/local/bin/QSCore.cfg" },
+                    { "key": "files_info",                "value":"/usr/local/bin/files_info.json" },
+                    { "key": "updateInfoV1",              "value":"/usr/local/bin/updateInfoV1.json" },
+                    { "key": "updateInfo",                "value":"/usr/local/bin/updateInfo.json" },
+                    { "key": "sthermConfig",              "value":"/usr/local/bin/sthermConfig.QQS.json" },
+                    { "key": "Proto output",              "value":"/usr/local/bin/output.bin" },
+                    { "key": "override config",           "value":"/usr/local/bin/override.ini" }
                 ]
 
                 delegate: GridLayout {
@@ -251,7 +300,7 @@ BasePageView {
                         Layout.preferredWidth: parent.width * 0.7
                         Layout.alignment: Qt.AlignVCenter
 
-                        text: modelData
+                        text: modelData.key
                         font.pointSize: Application.font.pointSize * 0.8
                         wrapMode: Text.WordWrap
                     }
@@ -263,7 +312,7 @@ BasePageView {
                         font.pointSize: Application.font.pointSize * 0.8
 
                         onClicked: {
-                            deleteFileConfirmPopup.fileName = modelData;
+                            deleteFileConfirmPopup.fileName = modelData.key;
                             deleteFileConfirmPopup.accepted.connect(this, update);
                             deleteFileConfirmPopup.hid.connect(this, disconnect);
 
@@ -271,7 +320,7 @@ BasePageView {
                         }
 
                         function update() {
-                            QSFileIO.removeFile(modelData);
+                            QSFileIO.removeFile(modelData.value);
 
                              modelDataFileSizeLabel.update();
                              updateTimer.start();
@@ -289,11 +338,16 @@ BasePageView {
                         Layout.columnSpan: 2
                         Layout.alignment: Qt.AlignTop
 
-                        text: qsTr(`size: ${AppUtilities.getFileSizeBytes(modelData)} bytes`)
+                        text: update()
                         font.pointSize: Application.font.pointSize * 0.8
 
                         function  update() {
-                            text = qsTr(`size: ${AppUtilities.getFileSizeBytes(modelData)} bytes`);
+                            let size = AppUtilities.getFileSizeBytes(modelData.value);
+                            let sizeUnit = AppUtilities.bytesToNearestBigUnit(size);
+
+                            text = qsTr(`size: ${sizeUnit}`);
+
+                            return text;
                         }
                     }
                 }

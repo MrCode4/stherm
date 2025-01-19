@@ -688,6 +688,8 @@ void NUVE::System::systemCtlRestartApp()
 
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
 {
+    if (!mUsedDirectories.contains(targetFolder))
+        mUsedDirectories.append(targetFolder);
 #ifdef __unix__
     int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir "+ targetDirectory + "; mount /dev/mmcblk1p3 " + targetDirectory });
     if (exitCode < 0)
@@ -700,8 +702,6 @@ bool NUVE::System::mountDirectory(const QString targetDirectory, const QString t
     if (exitCode < 0)
         return false;
 #endif
-
-    mUsedDirectories.append(targetFolder);
     return true;
 }
 
