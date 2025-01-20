@@ -104,12 +104,13 @@ BasePageView {
                     font.pointSize: Application.font.pointSize * 0.8
 
                     onClicked: {
-                        clearDirectoryConfirmPopup.directoryName = "/mnt/log";
+                        confirmPopup.message = "Clear directory"
+                        confirmPopup.detailMessage = `Are you sure you want to clear log drive?`
 
-                        clearDirectoryConfirmPopup.accepted.connect(this, update);
-                        clearDirectoryConfirmPopup.hid.connect(this, disconect);
+                        confirmPopup.accepted.connect(this, update);
+                        confirmPopup.hid.connect(this, disconect);
 
-                        clearDirectoryConfirmPopup.open();
+                        confirmPopup.open();
                     }
 
                     function update() {
@@ -118,8 +119,8 @@ BasePageView {
                     }
 
                     function disconect() {
-                        clearDirectoryConfirmPopup.accepted.disconnect(this, update);
-                        clearDirectoryConfirmPopup.hid.disconnect(this, disconect);
+                        confirmPopup.accepted.disconnect(this, update);
+                        confirmPopup.hid.disconnect(this, disconect);
                     }
                 }
             }
@@ -222,12 +223,13 @@ BasePageView {
                         font.pointSize: Application.font.pointSize * 0.8
 
                         onClicked: {
-                            clearDirectoryConfirmPopup.directoryName = modelData.key;
+                            confirmPopup.message = "Clear directory"
+                            confirmPopup.detailMessage = `Are you sure you want to clear ${modelData.key}?`
 
-                            clearDirectoryConfirmPopup.accepted.connect(this, update);
-                            clearDirectoryConfirmPopup.hid.connect(this, disconnect);
+                            confirmPopup.accepted.connect(this, update);
+                            confirmPopup.hid.connect(this, disconnect);
 
-                            clearDirectoryConfirmPopup.open();
+                            confirmPopup.open();
                         }
 
                         function update() {
@@ -237,8 +239,8 @@ BasePageView {
                         }
 
                         function disconnect() {
-                            clearDirectoryConfirmPopup.accepted.disconnect(this, update);
-                            clearDirectoryConfirmPopup.hid.disconnect(this, disconnect);
+                            confirmPopup.accepted.disconnect(this, update);
+                            confirmPopup.hid.disconnect(this, disconnect);
                         }
                     }
 
@@ -312,11 +314,13 @@ BasePageView {
                         font.pointSize: Application.font.pointSize * 0.8
 
                         onClicked: {
-                            deleteFileConfirmPopup.fileName = modelData.key;
-                            deleteFileConfirmPopup.accepted.connect(this, update);
-                            deleteFileConfirmPopup.hid.connect(this, disconnect);
+                            confirmPopup.message = "Delete file"
+                            confirmPopup.detailMessage = `Are you sure you want to delete the ${modelData.key} file?`
 
-                            deleteFileConfirmPopup.open();
+                            confirmPopup.accepted.connect(this, update);
+                            confirmPopup.hid.connect(this, disconnect);
+
+                            confirmPopup.open();
                         }
 
                         function update() {
@@ -327,8 +331,8 @@ BasePageView {
                         }
 
                         function disconnect() {
-                            deleteFileConfirmPopup.accepted.disconnect(this, update);
-                            deleteFileConfirmPopup.hid.disconnect(this, disconnect);
+                            confirmPopup.accepted.disconnect(this, update);
+                            confirmPopup.hid.disconnect(this, disconnect);
                         }
                     }
 
@@ -367,24 +371,14 @@ BasePageView {
         }
     }
 
+    //! Confirm popup to clear and delete files.
     ConfirmPopup {
-        id: clearDirectoryConfirmPopup
-
-        property string directoryName: ""
-
-        message: "Clear directory"
-        detailMessage: `Are you sure you want to clear ${directoryName}?`
+        id: confirmPopup
     }
 
-    ConfirmPopup {
-         id: deleteFileConfirmPopup
 
-         property string fileName: ""
-
-          message: "Delete file"
-          detailMessage: `Are you sure you want to delete ${fileName}?`
-    }
-
+    /* Functions
+     * ****************************************************************************************/
     function update() {
         rootFreeBytes.update();
         rootAvailableBytes.update();
