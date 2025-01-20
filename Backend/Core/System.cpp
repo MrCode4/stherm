@@ -592,10 +592,10 @@ bool  NUVE::System::mountRecoveryDirectory()
 bool NUVE::System::mountNRF_FW_Directory()
 {
     if (mountDirectory("/mnt/update", "/mnt/update/nrf_fw")) {
-        TRACE << "nrf fw mounted to /mnt/recovery/recovery";
+        SYS_LOG << "nrf fw mounted to /mnt/update/nrf_fw";
         return true;
     }
-    TRACE << "nrf fw did not mount";
+    SYS_LOG << "nrf fw did not mount";
     return false;
 }
 
@@ -1143,12 +1143,9 @@ bool NUVE::System::updateSequenceOnStart()
 {
     QSettings settings;
     auto update = settings.value(m_updateOnStartKey);
-    // TODO remove later
-    auto updateOld = settings.value("m_updateOnStartKey");
     settings.setValue(m_updateOnStartKey, false);
-    settings.setValue("m_updateOnStartKey", false);
 
-    return (update.isValid() && update.toBool()) || (updateOld.isValid() && updateOld.toBool());
+    return (update.isValid() && update.toBool());
 }
 
 bool NUVE::System::hasForceUpdate()
@@ -1254,26 +1251,31 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
             SYS_LOG << "The file update needs to be redownloaded.";
     }
 
-    SYS_LOG << "byte available" << storageInfo.bytesAvailable() << "update file size" << updateFileSize << "required memory" << mRequiredMemory;
     // here we just check for the storage needed for app to be downloaded
     // once download is completed and verified, it will be checked for extraction in updateAndRestart
-    if (storageInfo.bytesAvailable() < updateFileSize) {
-
-        QDir dir(mUpdateDirectory);
-        // Removes the update directory, including all its contents to make some room.
-        dir.removeRecursively();
-
-// Create the latestVersion directory
-#ifdef __unix__
-        SYS_LOG << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
-#endif
-
+    auto hasFreeBytesDownloading = [&]() {
         SYS_LOG << "byte available" << storageInfo.bytesAvailable() << "update file size" << updateFileSize << "required memory" << mRequiredMemory;
-        if (storageInfo.bytesAvailable() < updateFileSize) {
-            emit error(QString("The update directory has no memory. Required memory is %0, and available memory is %1.")
-                           .arg(QString::number(updateFileSize), QString::number(storageInfo.bytesAvailable())));
-            // we should remove logs folder if force?
-            return;
+
+        return (storageInfo.bytesAvailable() > updateFileSize);
+    };
+
+    if (!hasFreeBytesDownloading()) {
+        // Removes the update directory, including all its contents to make some room.
+        AppUtilities::removeContentDirectory(mUpdateDirectory);
+        SYS_LOG << "update directory removed to make room for update download.";
+
+        if (!hasFreeBytesDownloading()) {
+            // remove more data to make some room for update
+            AppUtilities::removeContentDirectory("/mnt/log/log/");
+            AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+            SYS_LOG << "logs directory removed to make room for update download.";
+
+            // show error and return if still has no room
+            if (!hasFreeBytesDownloading()) {
+                emit error(QString("The update directory has no memory. Required memory is %0, and available memory is %1.")
+                               .arg(QString::number(updateFileSize), QString::number(storageInfo.bytesAvailable())));
+                return;
+            }
         }
     }
 
@@ -1438,31 +1440,53 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
 
     auto requiredMemory = isBackdoor ? mBackdoorRequiredMemory : mRequiredMemory;
     auto updateFileSize = isBackdoor ? mBackdoorUpdateFileSize : mUpdateFileSize;
-    SYS_LOG << updateStorageInfo.bytesAvailable() <<  updateFileSize << requiredMemory;
     // we are checking spece needed here for extraction
-    if (updateStorageInfo.bytesAvailable() < requiredMemory) {
+    auto hasFreeBytesExtraction = [&]() {
+        SYS_LOG << updateStorageInfo.bytesAvailable() <<  updateFileSize << requiredMemory;
+        return (updateStorageInfo.bytesAvailable() > requiredMemory);
+    };
 
-        QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
-                          .arg(QString::number(requiredMemory), QString::number(updateStorageInfo.bytesAvailable()));
-        emit error(err);
-        SYS_LOG << err;
+    if (!hasFreeBytesExtraction()) {
+        // remove some logs to make some room for extraction
+        AppUtilities::removeContentDirectory("/mnt/log/log/");
+        AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+        SYS_LOG << "logs directory removed to make room for update extraction.";
 
-        return;
+        if (!hasFreeBytesExtraction()) {
+            QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
+                              .arg(QString::number(requiredMemory), QString::number(updateStorageInfo.bytesAvailable()));
+            emit error(err);
+            SYS_LOG << err;
+
+            return;
+        }
     }
 
     QStorageInfo installStorageInfo (qApp->applicationDirPath());
     QFileInfo appInfo(qApp->applicationFilePath());
 
-    SYS_LOG << installStorageInfo.bytesFree() << installStorageInfo.bytesAvailable() << appInfo.size() <<  requiredMemory;
     // we check space needed for deployment
     // in this partition byteFree allows us to do copy operation
-    if ((installStorageInfo.bytesFree() + appInfo.size()) < requiredMemory) {
-        QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and Free memory is %1 bytes.")
-                          .arg(QString::number(requiredMemory), QString::number(installStorageInfo.bytesFree()));
-        emit error(err);
-        SYS_LOG << err;
+    auto hasFreeBytesInstallation = [&]() {
+        SYS_LOG << installStorageInfo.bytesFree() << installStorageInfo.bytesAvailable() << appInfo.size() <<  requiredMemory;
+        return ((installStorageInfo.bytesFree() + appInfo.size()) > requiredMemory);
+    };
 
-        return;
+    if (!hasFreeBytesInstallation()) {
+
+        QFile::remove("/test_results.csv");
+        QFile::remove("/usr/local/bin/files_info.json");
+        QFile::remove("/usr/local/bin/updateInfo.json");
+        SYS_LOG << "Temporary files removed to make room for update installation.";
+
+        if (!hasFreeBytesInstallation()) {
+            QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and Free memory is %1 bytes.")
+                              .arg(QString::number(requiredMemory), QString::number(installStorageInfo.bytesFree()));
+            emit error(err);
+            SYS_LOG << err;
+
+            return;
+        }
     }
 
     SYS_LOG << "starting update" ;
@@ -1518,15 +1542,18 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
             if (wroteSize == -1) {
                 SYS_LOG << "can not write, update directory path:" << mUpdateDirectory << file.errorString();
                 emit error("Unable to write in " + mUpdateDirectory);
-                // should we check for removing needed space?
+
+                AppUtilities::removeContentDirectory("/mnt/log/log/");
+                AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+
                 return false;
 
             } else if (wroteSize != downloadedData.size()) {
                 SYS_LOG << "Write corrupted, update directory path:" << mUpdateDirectory << file.errorString();
-
                 emit error("Write corrupted in " + mUpdateDirectory);
-                // should we check for removing needed space?
-                // should we return false or let it be checked again by reading the file?
+
+                AppUtilities::removeContentDirectory("/mnt/log/log/");
+                AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
                 return false;
             }
 
