@@ -248,7 +248,7 @@ public:
     //! - /mnt/log/log/
     //! - /mnt/log/nrf_fw/
     //! - /mnt/log/recovery/
-    Q_INVOKABLE bool removeLogPartition();
+    Q_INVOKABLE bool removeLogPartition(bool removeDirs = true);
 
     //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);

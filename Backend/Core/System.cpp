@@ -688,8 +688,10 @@ void NUVE::System::systemCtlRestartApp()
 
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
 {
+    // add to remove on factory reset and to be used in storage manager
     if (!mUsedDirectories.contains(targetFolder))
         mUsedDirectories.append(targetFolder);
+
 #ifdef __unix__
     int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir "+ targetDirectory + "; mount /dev/mmcblk1p3 " + targetDirectory });
     SYS_LOG << targetDirectory << exitCode;
@@ -1113,15 +1115,14 @@ void NUVE::System::forgetDevice()
     mSync->forgetDevice();
 }
 
-bool NUVE::System::removeLogPartition()
+bool NUVE::System::removeLogPartition(bool removeDirs)
 {
-    QStringList directories = {"/mnt/update/latestVersion/",
-                               "/mnt/data/sensor/",
-                               "/mnt/log/log/",
-                               "/mnt/update/nrf_fw/",
-                               "/mnt/recovery/recovery/"};
     bool ok = true;
-    for (const QString &dirPath : directories) {
+    for (const QString &dirPath : mUsedDirectories) {
+        if (!removeDirs){
+            ok &= AppUtilities::removeContentDirectory(dirPath);
+            continue;
+        }
         ok &= AppUtilities::removeDirectory(dirPath);
     }
 
