@@ -211,6 +211,7 @@ public:
         Alert_Efficiency_Issue,
         Alert_No_Data_Received,
         Alert_Air_Quality,
+        Alert_Too_Long_Aux,
         NO_ALlert
     };
     Q_ENUM(AlertTypes)

@@ -34,6 +34,7 @@ static QMap<AppSpecCPP::AlertTypes, QString> AlertToMessageMap() {
         alertStringMap[AppSpecCPP::Alert_Efficiency_Issue] =  QString("**System Efficiency Issue:**\nThe system is unable to reach the set temperature.");
         alertStringMap[AppSpecCPP::Alert_No_Data_Received] =  QString("Controller failure.\nPlease contact your contractor.");
         alertStringMap[AppSpecCPP::Alert_Air_Quality] =  QString("Poor air quality detected. Please ventilate the room.");
+        alertStringMap[AppSpecCPP::Alert_Too_Long_Aux] =  QString("Auxiliary heating is running non stop for 1 hour, if this is normal for your HVAC system ignore the alert, otherwise please contact your Contractor.");
     }
 
     return alertStringMap;
@@ -217,6 +218,8 @@ QString AppSpecCPP::alertTypeToString(const AlertTypes &alertType)
         return "no_data_received";
     case AlertTypes::Alert_Air_Quality:
         return "air_quality";
+    case AlertTypes::Alert_Too_Long_Aux:
+        return "too_long_aux";
 
     default:
         return "Unknown";

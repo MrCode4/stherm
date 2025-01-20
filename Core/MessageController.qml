@@ -112,7 +112,7 @@ QtObject {
         interval: 1 * 60 * 60 * 1000
 
         onTriggered: {
-            var alertMessage = "Auxiliary heating is running non stop for 1 hour, if this is normal for your HVAC system ignore the alert, otherwise please contact your Contractor";
+            var alertMessage = AppSpec.alertTypeToMessage(AppSpec.Alert_Too_Long_Aux);
             addNewMessageFromData(Message.Type.SystemAlert, alertMessage, DateTimeManager.nowUTC());
         }
     }
@@ -718,6 +718,7 @@ QtObject {
         var alertType = AppSpec.messageToAlertType(fisrtAlert.message);
         var alertTypeString = AppSpec.alertTypeToString(alertType);
 
+        console.log("Will send alert to server: message:", fisrtAlert.message, "Type", alertTypeString)
         var sendData = {
             "alerts": [
                 {
@@ -726,6 +727,6 @@ QtObject {
             ]
         };
 
-         deviceController.sync.pushAlertToServer(fisrtAlert._qsUuid , sendData);
+        deviceController.sync.pushAlertToServer(fisrtAlert._qsUuid , sendData);
     }
 }
