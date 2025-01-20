@@ -48,7 +48,7 @@ BasePageView {
             }
 
             Label {
-                text: qsTr("root:")
+                text: qsTr("Main drive:")
                 font.pointSize: Application.font.pointSize * 0.85
             }
 
@@ -91,7 +91,7 @@ BasePageView {
                 Layout.preferredWidth: parent.width
 
                 Label {
-                    text: qsTr("/mnt/log:")
+                    text: qsTr("Extras:")
 
                     font.pointSize: Application.font.pointSize * 0.85
                 }
@@ -105,7 +105,7 @@ BasePageView {
 
                     onClicked: {
                         confirmPopup.message = "Clear directory"
-                        confirmPopup.detailMessage = `Are you sure you want to clear log drive?`
+                        confirmPopup.detailMessage = `Are you sure you want to clear extras drive?`
 
                         confirmPopup.accepted.connect(this, update);
                         confirmPopup.hid.connect(this, disconect);
@@ -281,15 +281,15 @@ BasePageView {
                 Layout.preferredWidth: parent.width
 
                 model: [
-                    { "key": "test_result",               "value": "/test_results.csv" },
-                    { "key": "customIcon",                "value":"customIcon.png" } ,
-                    { "key": "QSCore",                    "value":"/usr/local/bin/QSCore.cfg" },
-                    { "key": "files_info",                "value":"/usr/local/bin/files_info.json" },
-                    { "key": "updateInfoV1",              "value":"/usr/local/bin/updateInfoV1.json" },
-                    { "key": "updateInfo",                "value":"/usr/local/bin/updateInfo.json" },
-                    { "key": "sthermConfig",              "value":"/usr/local/bin/sthermConfig.QQS.json" },
-                    { "key": "Proto output",              "value":"/usr/local/bin/output.bin" },
-                    { "key": "override config",           "value":"/usr/local/bin/override.ini" }
+                    { "key": "Test result",               "value": "/test_results.csv" },
+                    { "key": "Vendor Icon",               "value": "/home/root/customIcon.png" } ,
+                    { "key": "Core config",               "value": "/usr/local/bin/QSCore.cfg" },
+                    { "key": "Updates data",              "value": "/usr/local/bin/files_info.json" },
+                    { "key": "Updates info",              "value": "/usr/local/bin/updateInfoV1.json" },
+                    { "key": "Obsolete files",            "value": "/usr/local/bin/updateInfo.json" },
+                    { "key": "App config",                "value": "/usr/local/bin/sthermConfig.QQS.json" },
+                    { "key": "Live data buffer",          "value": "/usr/local/bin/output.bin" },
+                    { "key": "Sensors config",            "value": "/usr/local/bin/override.ini" }
                 ]
 
                 delegate: GridLayout {
