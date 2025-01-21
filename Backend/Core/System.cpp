@@ -2170,7 +2170,37 @@ void NUVE::System::prepareResultsDirectory(const QString &remoteIP,
 
 QString NUVE::System::generateLog()
 {
-    QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
+    // Validating the storage
+    QStorageInfo storageInfo("/mnt/log/log/");
+
+    if (!storageInfo.isValid()) {
+        mountDirectory("/mnt/log", "/mnt/log/log");
+    }
+
+    if (!storageInfo.isValid() || !storageInfo.isReady()) {
+        emit error("The Logging directory is not ready.");
+        return "";
+    }
+
+    auto hasFreeBytes = [&]() {
+        SYS_LOG << "byte available" << storageInfo.bytesAvailable();
+
+        return (storageInfo.bytesAvailable() > 100 * 1024 * 1024);
+    };
+
+    // clear some logs folder and try again
+    if (!hasFreeBytes()) {
+        AppUtilities::removeContentDirectory("/mnt/log/log/");
+        AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+
+        if (!hasFreeBytes()) {
+            emit error("The Logging directory has no space.");
+            return "";
+        }
+    }
+
+    QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss")
+                       + ".log";
 
     SYS_LOG << "generating log file in " << filename;
 
@@ -2178,9 +2208,12 @@ QString NUVE::System::generateLog()
     auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
     if (exitCode != 0)
     {
+        bool removed = QFile::remove(filename); // to ensure no residue is remained
+
         QString error("Unable to create log file.");
-        SYS_LOG << error << exitCode;
+        SYS_LOG << error << exitCode << removed;
         emit logAlert(error);
+
         return "";
     }
 
@@ -2233,7 +2266,7 @@ bool NUVE::System::sendLogFile(bool showAlert)
 
     if (showAlert) emit logPrepared(true);
 
-    return sendLogToServer(QStringList(filename), showAlert, true);
+    return sendLogToServer(QStringList(filename), showAlert, true, false, true);
 }
 
 void NUVE::System::sendResultsFile(const QString &filepath,
@@ -2369,7 +2402,7 @@ void NUVE::System::generateInstallLog()
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
-        sendLogToServer({filename}, false, false, true);
+        sendLogToServer({filename}, false, false, true, true);
 
     } else {
         auto dirCreatorCallback = [=](QString error) {
@@ -2386,7 +2419,7 @@ void NUVE::System::generateInstallLog()
             SYS_LOG << "Folder created in server successfully";
             mLogSender.setProperty("initialized", true);
 
-            sendLogToServer({filename}, false, false, true);
+            sendLogToServer({filename}, false, false, true, true);
         };
 
         mLogSender.setRole("dirLog", dirCreatorCallback);
@@ -2581,7 +2614,12 @@ bool NUVE::System::sendNetworkLogs() {
     return true;
 }
 
-bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog , bool isInstallLog) {
+bool NUVE::System::sendLogToServer(const QStringList &filenames,
+                                   const bool &showAlert,
+                                   bool isRegularLog,
+                                   bool isInstallLog,
+                                   bool deleteOnFail)
+{
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
         TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
@@ -2599,12 +2637,6 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
 
             if (showAlert) emit logSentSuccessfully();
 
-            // Delete logs that have been sent to the server.
-            foreach (auto file, filenames) {
-                if (!QFile::remove(file))
-                    qWarning() << "Could not remove the file: " << file;
-            }
-
             if (isRegularLog) mFirstLogSent = true;
 
         } else {
@@ -2618,7 +2650,16 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             if (showAlert) emit logAlert(error);
         }
 
-        if (isInstallLog) emit installLogSent(isSuccess);
+        // Delete logs that have been sent to the server or if should be deleted even on Fail.
+        if (isSuccess || deleteOnFail) {
+            foreach (auto file, filenames) {
+                if (!QFile::remove(file))
+                    qWarning() << "Could not remove the file: " << file;
+            }
+        }
+
+        if (isInstallLog)
+            emit installLogSent(isSuccess);
 
         startAutoSendLogTimer(1 * 60 * 1000);
     };

@@ -406,7 +406,11 @@ private:
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
 
-    bool sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog = false, bool isInstallLog = false);
+    bool sendLogToServer(const QStringList &filenames,
+                         const bool &showAlert,
+                         bool isRegularLog = false,
+                         bool isInstallLog = false,
+                         bool deleteOnFail = false);
     bool checkSendLog(bool showAlert);
 
     void startAutoSendLogTimer(int interval = 15 * 60 * 1000);
