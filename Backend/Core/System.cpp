@@ -300,6 +300,74 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
                 emit alert("Sending log failed");
         }
     });
+
+    mStorageMonitor = new StorageMonitor(this);
+    mLastLowStorageElapsed.start();
+    mLastLowSpaceElapsed.start();
+    connect(mStorageMonitor, &StorageMonitor::lowStorageDetected, this, [this]() {
+        static int countStorage = 0; // to detect high usage
+        auto lastElapsed = mLastLowStorageElapsed.restart();
+        SYS_LOG << "low storage detected:" << lastElapsed;
+
+        AppUtilities::removeContentDirectory(mUpdateDirectory);
+        SYS_LOG << "update directory removed to make room.";
+        if (lastElapsed < 60000) {
+            countStorage++;
+            SYS_LOG << "log directory removed to make room." << countStorage;
+            AppUtilities::removeContentDirectory("/mnt/log/log/");
+
+            if (countStorage > 2) {
+                SYS_LOG << "network log directory removed to make room.";
+                AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+            }
+
+            if (countStorage > 5) {
+                SYS_LOG << " log partition removed to make room.";
+                removeLogPartition(false);
+            }
+
+            if (countStorage > 10) {
+                SYS_LOG << "Issue with storage detected.";
+                // emit error("Your device storage is low.");
+            }
+        } else {
+            countStorage = 0;
+        }
+    });
+
+    connect(mStorageMonitor, &StorageMonitor::lowSpaceDetected, this, [this]() {
+        static int countSpace = 0; // to detect high usage
+        auto lastElapsed = mLastLowSpaceElapsed.restart();
+        SYS_LOG << "low space detected:" << lastElapsed;
+
+        SYS_LOG << "old files removed to make some room.";
+        QFile::remove("/test_results.csv");
+        QFile::remove("/usr/local/bin/updateInfo.json");
+
+        if (lastElapsed < 60000) {
+            countSpace++;
+
+            SYS_LOG << "update cache files removed to make some room." << countSpace;
+            QFile::remove("/usr/local/bin/files_info.json");
+
+            if (countSpace > 2) {
+                SYS_LOG << "custom files remove.";
+                QFile::remove("/usr/local/bin/override.ini");
+            }
+
+            if (countSpace > 5) {
+                SYS_LOG << "Live data removed to make room.";
+                QFile::remove("/usr/local/bin/output.bin");
+            }
+
+            if (countSpace > 10) {
+                SYS_LOG << "Issue with space detected.";
+                // emit error("Your device space is low.");
+            }
+        } else {
+            countSpace = 0;
+        }
+    });
 }
 
 NUVE::System::~System()
@@ -311,7 +379,7 @@ bool NUVE::System::areSettingsFetched() const {return mAreSettingsFetched;}
 
 bool NUVE::System::installSystemCtlRestartService()
 {
-    #ifdef __unix__
+#ifdef __unix__
     QFile systemctlRestartSH("/usr/local/bin/systemctlRestart.sh");
     if (systemctlRestartSH.exists())
         systemctlRestartSH.remove("/usr/local/bin/systemctlRestart.sh");
@@ -2044,7 +2112,6 @@ void NUVE::System::sendFirstRunLog()
         return;
     }
 
-
     auto initialized = mLogSender.property("initializedUID");
     if (initialized.isValid() && initialized.toBool()){
         sendFirstRunLogFile();
@@ -2178,7 +2245,7 @@ QString NUVE::System::generateLog()
     }
 
     if (!storageInfo.isValid() || !storageInfo.isReady()) {
-        emit error("The Logging directory is not ready.");
+        emit logAlert("The Logging directory is not ready.");
         return "";
     }
 
@@ -2194,7 +2261,7 @@ QString NUVE::System::generateLog()
         AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
 
         if (!hasFreeBytes()) {
-            emit error("The Logging directory has no space.");
+            emit logAlert("The Logging directory has no space.");
             return "";
         }
     }
@@ -2440,8 +2507,7 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
     if (command == Cmd_PushLogs) {
         if (isBusylogSender()) {
             SYS_LOG << "Log-sender is busy at this momemnt";
-        }
-        else {
+        } else {
             SYS_LOG << "Applying" <<command <<tag;
             if (sendLog(false)) {
                 mLastReceivedCommands[command] = tag;
@@ -2450,8 +2516,7 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
                 SYS_LOG <<"Command failed" <<command <<tag;
             }
         }
-    }
-    else if (command == Cmd_PerfTest) {
+    } else if (command == Cmd_PerfTest) {
         SYS_LOG << "Applying" <<command <<tag;
         if (PerfTestService::me()->checkTestEligibilityManually("Command")) {
             mLastReceivedCommands[command] = tag;
@@ -2459,14 +2524,12 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
         else {
             SYS_LOG <<"Command failed" <<command <<tag;
         }
-    }
-    else if (command == Cmd_Reboot) {
+    } else if (command == Cmd_Reboot) {
         SYS_LOG << "Applying" <<command <<tag;
         mLastReceivedCommands[command] = tag;
         {QSettings settings; settings.setValue(Key_LastRebootAt, tag);}
         rebootDevice();
-    }
-    else if (command == Cmd_PushLiveData) {
+    } else if (command == Cmd_PushLiveData) {
         SYS_LOG << "Applying" <<command <<tag;
         ProtoDataManager::me()->sendDataToServer();
         isApplied = true;
@@ -2706,4 +2769,43 @@ void NUVE::System::saveNetworkRequestRestart()
 QStringList NUVE::System::usedDirectories() const
 {
     return mUsedDirectories;
+}
+
+NUVE::StorageMonitor::StorageMonitor(QObject *parent)
+    : QObject(parent)
+    , minFreeSpaceRequired(100LL * 1024 * 1024)
+{
+    // Set up a timer to check storage periodically
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &StorageMonitor::checkStorageSpace);
+    timer->start(10000); // Check every 10 seconds
+}
+
+void NUVE::StorageMonitor::checkStorageSpace()
+{
+    QStorageInfo storageInfoExpansion("/mnt/log");
+
+    if (storageInfoExpansion.isValid() && storageInfoExpansion.isReady()) {
+        uint64_t freeSpace = storageInfoExpansion.bytesAvailable();
+
+        if (freeSpace < minFreeSpaceRequired) {
+            SYS_LOG << "Low disk space! Taking action.";
+            emit lowStorageDetected();
+        }
+    } else {
+        SYS_LOG << "Failed to query storage information.";
+    }
+
+    QStorageInfo storageInfoMain("/");
+
+    if (storageInfoMain.isValid() && storageInfoMain.isReady()) {
+        uint64_t freeSpace = storageInfoMain.bytesFree();
+
+        if (freeSpace < 50LL * 1024 * 1024) {
+            SYS_LOG << "Low disk space! Taking action.";
+            emit lowSpaceDetected();
+        }
+    } else {
+        SYS_LOG << "Failed to query space information.";
+    }
 }

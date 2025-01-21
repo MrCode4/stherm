@@ -44,6 +44,27 @@ private:
     QString mSubject;
 };
 
+class StorageMonitor : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit StorageMonitor(QObject *parent = nullptr);
+
+    void setMinFreeSpaceRequired(uint64_t space) { minFreeSpaceRequired = space; }
+
+private slots:
+    void checkStorageSpace();
+
+signals:
+    void lowStorageDetected();
+    void lowSpaceDetected();
+
+private:
+    QTimer *timer;
+    uint64_t minFreeSpaceRequired;
+};
+
 class System : public RestApiExecutor
 {
     Q_OBJECT
@@ -501,6 +522,9 @@ private:
     bool    mFirstLogSent;
 
     QStringList mUsedDirectories;
+    StorageMonitor *mStorageMonitor;
+    QElapsedTimer mLastLowStorageElapsed;
+    QElapsedTimer mLastLowSpaceElapsed;
 };
 
 } // namespace NUVE
