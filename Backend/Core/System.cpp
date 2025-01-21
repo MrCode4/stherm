@@ -2250,9 +2250,10 @@ QString NUVE::System::generateLog()
     }
 
     auto hasFreeBytes = [&]() {
-        SYS_LOG << "byte available" << storageInfo.bytesAvailable();
+        auto availableBytes = storageInfo.bytesAvailable() / 1024 / 1024;
+        SYS_LOG << "byte available in MB" << availableBytes;
 
-        return (storageInfo.bytesAvailable() > 100 * 1024 * 1024);
+        return (availableBytes > 100);
     };
 
     // clear some logs folder and try again
@@ -2773,7 +2774,7 @@ QStringList NUVE::System::usedDirectories() const
 
 NUVE::StorageMonitor::StorageMonitor(QObject *parent)
     : QObject(parent)
-    , minFreeSpaceRequired(100LL * 1024 * 1024)
+    , minFreeSpaceRequired(100)
 {
     // Set up a timer to check storage periodically
     timer = new QTimer(this);
@@ -2786,10 +2787,10 @@ void NUVE::StorageMonitor::checkStorageSpace()
     QStorageInfo storageInfoExpansion("/mnt/log");
 
     if (storageInfoExpansion.isValid() && storageInfoExpansion.isReady()) {
-        uint64_t freeSpace = storageInfoExpansion.bytesAvailable();
+        uint64_t freeSpaceMB = storageInfoExpansion.bytesAvailable() / 1024 / 1024;
 
-        if (freeSpace < minFreeSpaceRequired) {
-            SYS_LOG << "Low disk space! Taking action.";
+        if (freeSpaceMB < minFreeSpaceRequired) {
+            SYS_LOG << "Low disk space! Taking action. size in MB: " << freeSpaceMB;
             emit lowStorageDetected();
         }
     } else {
@@ -2799,10 +2800,10 @@ void NUVE::StorageMonitor::checkStorageSpace()
     QStorageInfo storageInfoMain("/");
 
     if (storageInfoMain.isValid() && storageInfoMain.isReady()) {
-        uint64_t freeSpace = storageInfoMain.bytesFree();
+        uint64_t freeSpaceMB = storageInfoMain.bytesFree() / 1024 / 1024;
 
-        if (freeSpace < 50LL * 1024 * 1024) {
-            SYS_LOG << "Low disk space! Taking action.";
+        if (freeSpaceMB < 40) {
+            SYS_LOG << "Low disk space! Taking action. size in MB: " << freeSpaceMB;
             emit lowSpaceDetected();
         }
     } else {
