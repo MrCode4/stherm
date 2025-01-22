@@ -134,6 +134,12 @@ BasePageView {
                 text: "Performance Test",
                 color: Style.hiddenMenuColor,
                 action: () => uiSession.popUps.perfTestCheckPopup.checkPerfTestEligibility()
+            },
+            {
+                icon: FAIcons.memory,
+                text: "Manage Storage",
+                color: Style.hiddenMenuColor,
+                view: "qrc:/Stherm/View/Menu/StorageManagerPage.qml"
             }
         ]
 
