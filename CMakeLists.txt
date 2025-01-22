@@ -229,6 +229,7 @@ qt6_add_qml_module(appStherm
         View/Menu/SystemAlertsPage.qml
         View/Menu/ManageEndpoint.qml
         View/Menu/LimitedModeRemainigTimePage.qml
+        View/Menu/StorageManagerPage.qml
 
         View/BasePageView.qml
         View/ScheduleView.qml

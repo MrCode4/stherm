@@ -44,6 +44,27 @@ private:
     QString mSubject;
 };
 
+class StorageMonitor : public QObject
+{
+    Q_OBJECT
+
+public:
+    explicit StorageMonitor(QObject *parent = nullptr);
+
+    void setMinFreeSpaceRequired(uint64_t space) { minFreeSpaceRequired = space; }
+
+private slots:
+    void checkStorageSpace();
+
+signals:
+    void lowStorageDetected();
+    void lowSpaceDetected();
+
+private:
+    QTimer *timer;
+    uint64_t minFreeSpaceRequired;
+};
+
 class System : public RestApiExecutor
 {
     Q_OBJECT
@@ -248,7 +269,7 @@ public:
     //! - /mnt/log/log/
     //! - /mnt/log/nrf_fw/
     //! - /mnt/log/recovery/
-    Q_INVOKABLE bool removeLogPartition();
+    Q_INVOKABLE bool removeLogPartition(bool removeDirs = true);
 
     //! Manage quiet/night mode in system
     void setNightModeRunning(const bool running);
@@ -275,6 +296,8 @@ public:
     Q_INVOKABLE void saveNetworkRequestRestart();
 
     Q_INVOKABLE void generateInstallLog();
+
+    Q_INVOKABLE QStringList usedDirectories() const;
 
 protected slots:
     void onSerialNumberReady();
@@ -403,9 +426,12 @@ private:
     void sendFirstRunLogFile();
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
-    bool removeDirectory(const QString &path);
 
-    bool sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog = false, bool isInstallLog = false);
+    bool sendLogToServer(const QStringList &filenames,
+                         const bool &showAlert,
+                         bool isRegularLog = false,
+                         bool isInstallLog = false,
+                         bool deleteOnFail = false);
     bool checkSendLog(bool showAlert);
 
     void startAutoSendLogTimer(int interval = 15 * 60 * 1000);
@@ -495,6 +521,11 @@ private:
 
     QTimer *mAutoSendLogtimer{nullptr};
     bool    mFirstLogSent;
+
+    QStringList mUsedDirectories;
+    StorageMonitor *mStorageMonitor;
+    QElapsedTimer mLastLowStorageElapsed;
+    QElapsedTimer mLastLowSpaceElapsed;
 };
 
 } // namespace NUVE

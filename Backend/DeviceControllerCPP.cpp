@@ -4,6 +4,7 @@
 #include "SchemeDataProvider.h"
 #include "ScreenSaverManager.h"
 #include "DeviceInfo.h"
+#include "AppUtilities.h"
 
 /* ************************************************************************************************
  * Log properties
@@ -866,6 +867,11 @@ bool DeviceControllerCPP::checkUpdateMode()
         LOG_DC << "getting settings from server";
         //if (m_system)
         //    m_system->getUpdate();
+
+        TRACE << "removing logs after update";
+        AppUtilities::removeContentDirectory("/mnt/update/latestVersion/");
+        AppUtilities::removeContentDirectory("/mnt/log/log/");
+        AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
     }
 
     return updateMode;
@@ -1046,7 +1052,6 @@ void DeviceControllerCPP::setAutoMaxReqTemp(const double cel_value)
 
 bool DeviceControllerCPP::updateNRFFirmware()
 {
-
     LOG_DC << "NRF Hardware: " << getNRF_HW() <<
         "NRF software:" << getNRF_SW();
     if (m_system->installUpdate_NRF_FW_Service()){

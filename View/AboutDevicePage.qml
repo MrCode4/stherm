@@ -50,8 +50,14 @@ BasePageView {
                 uiSession.popUps.initSendingLogProgress();
             } else {
                 logBusyPop.message = "File generation failed."
+                // should we retry, ignore or ask to rety?
+                logBusyPop.sendLogOnOpen = false;
                 logBusyPop.open()
             }
+        }
+
+        function onLogAlert(error){
+            logBusyPop.close()
         }
     }
 
@@ -146,6 +152,7 @@ BasePageView {
                                 } else {
                                     // Prepare the log
                                     logBusyPop.message = "Preparing log, \nplease wait ..."
+                                    logBusyPop.sendLogOnOpen = true;
                                     logBusyPop.open();
                                 }
                             }
@@ -282,17 +289,19 @@ BasePageView {
     Popup {
         id: logBusyPop
         property string message: ""
+        property bool sendLogOnOpen: true
 
         parent: Template.Overlay.overlay
-        closePolicy: Popup.NoAutoClose
+        closePolicy: sendLogOnOpen ? Popup.NoAutoClose : Popup.CloseOnPressOutside
         width: Math.max(implicitWidth, parent.width * 0.5)
         height: parent.height * 0.5
         anchors.centerIn: parent
         modal: true
 
         onOpened: {
-            //! Call sendLog()
-            system.sendLog();
+            //! Call sendLog() if needed
+            if (sendLogOnOpen)
+                system.sendLog();
         }
 
         contentItem: Label {

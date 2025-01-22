@@ -3,6 +3,7 @@
 #include "PerfTestService.h"
 #include "DeviceInfo.h"
 #include "NetworkInterface.h"
+#include "AppUtilities.h"
 
 #include "ProtoDataManager.h"
 
@@ -214,7 +215,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         if (!version.isEmpty()) {
             // Check with current version
             if (version != qApp->applicationVersion()) {
-                TRACE << "Install firmware version from server " << version;
+                TRACE << "Install firmware version from server " << version <<
+                    "started with manual update" << mStartedWithManualUpdate <<
+                    "started with server update" << mStartedWithFWServerUpdate;
                 // We'll try to install the requested version, but if it's unavailable,
                 // we keep the current version
                 // If a version has been installed manually (manual version),
@@ -297,6 +300,74 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
                 emit alert("Sending log failed");
         }
     });
+
+    mStorageMonitor = new StorageMonitor(this);
+    mLastLowStorageElapsed.start();
+    mLastLowSpaceElapsed.start();
+    connect(mStorageMonitor, &StorageMonitor::lowStorageDetected, this, [this]() {
+        static int countStorage = 0; // to detect high usage
+        auto lastElapsed = mLastLowStorageElapsed.restart();
+        SYS_LOG << "low storage detected:" << lastElapsed;
+
+        AppUtilities::removeContentDirectory(mUpdateDirectory);
+        SYS_LOG << "update directory removed to make room.";
+        if (lastElapsed < 60000) {
+            countStorage++;
+            SYS_LOG << "log directory removed to make room." << countStorage;
+            AppUtilities::removeContentDirectory("/mnt/log/log/");
+
+            if (countStorage > 2) {
+                SYS_LOG << "network log directory removed to make room.";
+                AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+            }
+
+            if (countStorage > 5) {
+                SYS_LOG << " log partition removed to make room.";
+                removeLogPartition(false);
+            }
+
+            if (countStorage > 10) {
+                SYS_LOG << "Issue with storage detected.";
+                // emit error("Your device storage is low.");
+            }
+        } else {
+            countStorage = 0;
+        }
+    });
+
+    connect(mStorageMonitor, &StorageMonitor::lowSpaceDetected, this, [this]() {
+        static int countSpace = 0; // to detect high usage
+        auto lastElapsed = mLastLowSpaceElapsed.restart();
+        SYS_LOG << "low space detected:" << lastElapsed;
+
+        SYS_LOG << "old files removed to make some room.";
+        QFile::remove("/test_results.csv");
+        QFile::remove("/usr/local/bin/updateInfo.json");
+
+        if (lastElapsed < 60000) {
+            countSpace++;
+
+            SYS_LOG << "update cache files removed to make some room." << countSpace;
+            QFile::remove("/usr/local/bin/files_info.json");
+
+            if (countSpace > 2) {
+                SYS_LOG << "custom files remove.";
+                QFile::remove("/usr/local/bin/override.ini");
+            }
+
+            if (countSpace > 5) {
+                SYS_LOG << "Live data removed to make room.";
+                QFile::remove("/usr/local/bin/output.bin");
+            }
+
+            if (countSpace > 10) {
+                SYS_LOG << "Issue with space detected.";
+                // emit error("Your device space is low.");
+            }
+        } else {
+            countSpace = 0;
+        }
+    });
 }
 
 NUVE::System::~System()
@@ -308,7 +379,7 @@ bool NUVE::System::areSettingsFetched() const {return mAreSettingsFetched;}
 
 bool NUVE::System::installSystemCtlRestartService()
 {
-    #ifdef __unix__
+#ifdef __unix__
     QFile systemctlRestartSH("/usr/local/bin/systemctlRestart.sh");
     if (systemctlRestartSH.exists())
         systemctlRestartSH.remove("/usr/local/bin/systemctlRestart.sh");
@@ -589,10 +660,10 @@ bool  NUVE::System::mountRecoveryDirectory()
 bool NUVE::System::mountNRF_FW_Directory()
 {
     if (mountDirectory("/mnt/update", "/mnt/update/nrf_fw")) {
-        TRACE << "nrf fw mounted to /mnt/recovery/recovery";
+        SYS_LOG << "nrf fw mounted to /mnt/update/nrf_fw";
         return true;
     }
-    TRACE << "nrf fw did not mount";
+    SYS_LOG << "nrf fw did not mount";
     return false;
 }
 
@@ -685,19 +756,23 @@ void NUVE::System::systemCtlRestartApp()
 
 bool NUVE::System::mountDirectory(const QString targetDirectory, const QString targetFolder)
 {
+    // add to remove on factory reset and to be used in storage manager
+    if (!mUsedDirectories.contains(targetFolder))
+        mUsedDirectories.append(targetFolder);
+
 #ifdef __unix__
     int exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir "+ targetDirectory + "; mount /dev/mmcblk1p3 " + targetDirectory });
+    SYS_LOG << targetDirectory << exitCode;
     if (exitCode < 0)
         return false;
 
-    TRACE << "Device mounted successfully." << exitCode;
+    SYS_LOG << "Device mounted successfully.";
 
     exitCode = QProcess::execute("/bin/bash", {"-c", "mkdir " + targetFolder});
-    TRACE << exitCode;
+    SYS_LOG << targetFolder << exitCode;
     if (exitCode < 0)
         return false;
 #endif
-
     return true;
 }
 
@@ -1109,16 +1184,15 @@ void NUVE::System::forgetDevice()
     mSync->forgetDevice();
 }
 
-bool NUVE::System::removeLogPartition()
+bool NUVE::System::removeLogPartition(bool removeDirs)
 {
-    QStringList directories = {"/mnt/update/latestVersion/",
-                               "/mnt/data/sensor/",
-                               "/mnt/log/log/",
-                               "/mnt/update/nrf_fw/",
-                               "/mnt/recovery/recovery/"};
     bool ok = true;
-    for (const QString &dirPath : directories) {
-        ok &= removeDirectory(dirPath);
+    for (const QString &dirPath : mUsedDirectories) {
+        if (!removeDirs){
+            ok &= AppUtilities::removeContentDirectory(dirPath);
+            continue;
+        }
+        ok &= AppUtilities::removeDirectory(dirPath);
     }
 
     return ok;
@@ -1139,12 +1213,9 @@ bool NUVE::System::updateSequenceOnStart()
 {
     QSettings settings;
     auto update = settings.value(m_updateOnStartKey);
-    // TODO remove later
-    auto updateOld = settings.value("m_updateOnStartKey");
     settings.setValue(m_updateOnStartKey, false);
-    settings.setValue("m_updateOnStartKey", false);
 
-    return (update.isValid() && update.toBool()) || (updateOld.isValid() && updateOld.toBool());
+    return (update.isValid() && update.toBool());
 }
 
 bool NUVE::System::hasForceUpdate()
@@ -1189,11 +1260,13 @@ void NUVE::System::partialUpdate(const bool isBackdoor) {
     }
 #endif
 
+    SYS_LOG << mLatestVersionKey << isBackdoor;
     checkAndDownloadPartialUpdate(mLatestVersionKey, isBackdoor);
 }
 
 void NUVE::System::partialUpdateByVersion(const QString version)
 {
+    SYS_LOG << version;
     checkAndDownloadPartialUpdate(version, false, true);
 }
 
@@ -1223,8 +1296,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         m_expectedUpdateChecksum = QByteArray::fromHex(versionObj.value(m_CheckSum).toString().toLatin1());
     }
 
-
-    // Check
+    // Checking validation
     QStorageInfo storageInfo (mUpdateDirectory);
 
     if (!storageInfo.isValid()) {
@@ -1246,24 +1318,34 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
         if (verifyDownloadedFiles(downloadedData, false, isBackdoor, isResetVersion))
             return;
         else
-            TRACE << "The file update needs to be redownloaded.";
+            SYS_LOG << "The file update needs to be redownloaded.";
     }
 
-    if (storageInfo.bytesFree() < updateFileSize) {
+    // here we just check for the storage needed for app to be downloaded
+    // once download is completed and verified, it will be checked for extraction in updateAndRestart
+    auto hasFreeBytesDownloading = [&]() {
+        SYS_LOG << "byte available" << storageInfo.bytesAvailable() << "update file size" << updateFileSize << "required memory" << mRequiredMemory;
 
-        QDir dir(mUpdateDirectory);
-        // Removes the directory, including all its contents.
-        dir.removeRecursively();
+        return (storageInfo.bytesAvailable() > updateFileSize);
+    };
 
-// Create the latestVersion directory
-#ifdef __unix__
-        TRACE << "Device mounted successfully." << QProcess::execute("/bin/bash", {"-c", "mkdir /mnt/update/latestVersion"});
-#endif
+    if (!hasFreeBytesDownloading()) {
+        // Removes the update directory, including all its contents to make some room.
+        AppUtilities::removeContentDirectory(mUpdateDirectory);
+        SYS_LOG << "update directory removed to make room for update download.";
 
-        if (storageInfo.bytesFree() < updateFileSize) {
-            emit error(QString("The update directory has no memory. Required memory is %0, and available memory is %1.")
-                           .arg(QString::number(updateFileSize), QString::number(storageInfo.bytesFree())));
-            return;
+        if (!hasFreeBytesDownloading()) {
+            // remove more data to make some room for update
+            AppUtilities::removeContentDirectory("/mnt/log/log/");
+            AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+            SYS_LOG << "logs directory removed to make room for update download.";
+
+            // show error and return if still has no room
+            if (!hasFreeBytesDownloading()) {
+                emit error(QString("The update directory has no memory. Required memory is %0, and available memory is %1.")
+                               .arg(QString::number(updateFileSize), QString::number(storageInfo.bytesAvailable())));
+                return;
+            }
         }
     }
 
@@ -1278,6 +1360,10 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     auto callback = [this, isBackdoor, isResetVersion, isFWServerVersion]
         (QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         mIsBusyDownloader = false;
+
+        SYS_LOG << "Downloading update finished. isBackdoor, isResetVersion, isFWServerVersion, error:" <<
+            isBackdoor << isResetVersion << isFWServerVersion << reply->error();
+
         if (reply->error() == QNetworkReply::NoError) {
             // Check data and prepare to set up.
             if (isBackdoor) {
@@ -1288,6 +1374,7 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
             }
         }
         else {
+            SYS_LOG << "Downloading update error: " << reply->errorString() << isInitialSetup();
             emit error("Download error: " + reply->errorString());
 
             if (isInitialSetup() && !isBackdoor) {
@@ -1311,10 +1398,11 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
     QNetworkReply* reply = downloadFile(m_updateServerUrl + versionAddressInServer, callback, false);
     if (!reply) {
         // another call in progress, so ignore
-        TRACE << "Downloading file " << (m_updateServerUrl + versionAddressInServer) << " got called more than once";
+        SYS_LOG << "Downloading file " << (m_updateServerUrl + versionAddressInServer) << " got called more than once";
         return;
     }
 
+    SYS_LOG << "downloading update started" << m_updateServerUrl + versionAddressInServer;
     setPartialUpdateProgress(0);
 
     if (mElapsedTimer.isValid())
@@ -1420,31 +1508,58 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     // Use to unzip the downloaded files.
     QStorageInfo updateStorageInfo (mUpdateDirectory);
 
+    auto requiredMemory = isBackdoor ? mBackdoorRequiredMemory : mRequiredMemory;
     auto updateFileSize = isBackdoor ? mBackdoorUpdateFileSize : mUpdateFileSize;
-    if (updateStorageInfo.bytesFree() < updateFileSize) {
+    // we are checking spece needed here for extraction
+    auto hasFreeBytesExtraction = [&]() {
+        SYS_LOG << updateStorageInfo.bytesAvailable() <<  updateFileSize << requiredMemory;
+        return (updateStorageInfo.bytesAvailable() > requiredMemory);
+    };
 
-        QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
-                          .arg(QString::number(updateFileSize), QString::number(updateStorageInfo.bytesFree()));
-        emit error(err);
-        TRACE << err;
+    if (!hasFreeBytesExtraction()) {
+        // remove some logs to make some room for extraction
+        AppUtilities::removeContentDirectory("/mnt/log/log/");
+        AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+        SYS_LOG << "logs directory removed to make room for update extraction.";
 
-        return;
+        if (!hasFreeBytesExtraction()) {
+            QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
+                              .arg(QString::number(requiredMemory), QString::number(updateStorageInfo.bytesAvailable()));
+            emit error(err);
+            SYS_LOG << err;
+
+            return;
+        }
     }
 
     QStorageInfo installStorageInfo (qApp->applicationDirPath());
     QFileInfo appInfo(qApp->applicationFilePath());
 
-    auto requiredMemory = isBackdoor ? mBackdoorRequiredMemory : mRequiredMemory;;
-    if ((installStorageInfo.bytesFree() + appInfo.size()) < requiredMemory) {
-        QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and available memory is %1 bytes.")
-                          .arg(QString::number(requiredMemory), QString::number(installStorageInfo.bytesFree()));
-        emit error(err);
-        TRACE << err;
+    // we check space needed for deployment
+    // in this partition byteFree allows us to do copy operation
+    auto hasFreeBytesInstallation = [&]() {
+        SYS_LOG << installStorageInfo.bytesFree() << installStorageInfo.bytesAvailable() << appInfo.size() <<  requiredMemory;
+        return ((installStorageInfo.bytesFree() + appInfo.size()) > requiredMemory);
+    };
 
-        return;
+    if (!hasFreeBytesInstallation()) {
+
+        QFile::remove("/test_results.csv");
+        QFile::remove("/usr/local/bin/files_info.json");
+        QFile::remove("/usr/local/bin/updateInfo.json");
+        SYS_LOG << "Temporary files removed to make room for update installation.";
+
+        if (!hasFreeBytesInstallation()) {
+            QString err = QString("The update directory has no memory for intallation.\nRequired memory is %0 bytes, and Free memory is %1 bytes.")
+                              .arg(QString::number(requiredMemory), QString::number(installStorageInfo.bytesFree()));
+            emit error(err);
+            SYS_LOG << err;
+
+            return;
+        }
     }
 
-    TRACE << "starting update" ;
+    SYS_LOG << "starting update" ;
 
 #ifdef __unix__
     // It's incorrect if the update process failed,
@@ -1470,13 +1585,10 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
     installUpdateService();
 
     QTimer::singleShot(200, this, [=]() {
-        TRACE << updateServiceState("appStherm-update", true);
+        SYS_LOG << updateServiceState("appStherm-update", true);
     });
 #endif
-
-
 }
-
 
 // Checksum verification after download
 bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWrite, bool isBackdoor,
@@ -1485,17 +1597,54 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
 
     auto expectedBA = isBackdoor ? mExpectedBackdoorChecksum : m_expectedUpdateChecksum;
     if (downloadedChecksum == expectedBA) {
-
         // Checksums match - downloaded app is valid
         // Save the downloaded data
         if (withWrite) {
             QFile file(mUpdateDirectory + "/update.zip");
             if (!file.open(QIODevice::WriteOnly)) {
+                SYS_LOG << "can not open, update directory path:" << mUpdateDirectory << file.errorString();
                 emit error("Unable to open file for writing in " + mUpdateDirectory);
                 return false;
             }
-            file.write(downloadedData);
+
+            auto wroteSize = file.write(downloadedData);
             file.close();
+            if (wroteSize == -1) {
+                SYS_LOG << "can not write, update directory path:" << mUpdateDirectory << file.errorString();
+                emit error("Unable to write in " + mUpdateDirectory);
+
+                AppUtilities::removeContentDirectory("/mnt/log/log/");
+                AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+
+                return false;
+
+            } else if (wroteSize != downloadedData.size()) {
+                SYS_LOG << "Write corrupted, update directory path:" << mUpdateDirectory << file.errorString();
+                emit error("Write corrupted in " + mUpdateDirectory);
+
+                AppUtilities::removeContentDirectory("/mnt/log/log/");
+                AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+                return false;
+            }
+
+            // Check update file for validation
+            QFile fileRead(mUpdateDirectory + "/update.zip");
+            if (fileRead.exists() && fileRead.open(QIODevice::ReadOnly)) {
+
+                auto downloadedData = fileRead.readAll();
+                fileRead.close();
+
+                auto verified = verifyDownloadedFiles(downloadedData, false, isBackdoor, isResetVersion, isFWServerVersion);
+                if (!verified){
+                    SYS_LOG << "Write corrupted after reading, update directory path:" << mUpdateDirectory << fileRead.errorString();
+                    emit error("Write corrupted after reading " + mUpdateDirectory);
+                }
+                return verified;
+            }
+
+            SYS_LOG << "Write lost after reading, update directory path:" << mUpdateDirectory << fileRead.errorString();
+            emit error("Write lost in " + mUpdateDirectory);
+            return false;
         }
 
         emit partialUpdateReady(isBackdoor, isResetVersion, isFWServerVersion);
@@ -1503,11 +1652,11 @@ bool NUVE::System:: verifyDownloadedFiles(QByteArray downloadedData, bool withWr
         return true;
 
     } else if (withWrite) {
-        // Checksums don't match - downloaded app might be corrupted
-        TRACE << "Checksums don't match - downloaded app might be corrupted";
-
+        // Checksums don't match - downloaded app might be corrupted, we show the error to user only on downloading option.
         emit error("Checksums don't match - downloaded app might be corrupted");
     }
+
+    SYS_LOG << "Checksums don't match - downloaded app might be corrupted" << withWrite << downloadedChecksum << expectedBA;
 
     return false;
 }
@@ -1693,9 +1842,10 @@ void NUVE::System::checkPartialUpdate(bool notifyUser, bool installLatestVersion
 
     // Manual update must be exit for force update
     if (installLatestVersion || (mHasForceUpdate && !manualUpdateInstalled)) {
+        SYS_LOG << installLatestVersion << mHasForceUpdate;
         partialUpdate();
     } else {
-        TRACE << "update not started" << installLatestVersion << mHasForceUpdate << manualUpdateInstalled;
+        SYS_LOG << "update not started" << installLatestVersion << mHasForceUpdate << manualUpdateInstalled;
     }
 }
 
@@ -1895,7 +2045,7 @@ bool NUVE::System::checkDirectorySpaces(const QString directory, const uint32_t 
 #ifdef __unix__
     QStorageInfo storageInfo (directory);
 
-    return (storageInfo.isValid() && storageInfo.bytesFree() >= minimumSizeBytes);
+    return (storageInfo.isValid() && storageInfo.bytesAvailable() >= minimumSizeBytes);
 #endif
 
     return true;
@@ -1962,7 +2112,6 @@ void NUVE::System::sendFirstRunLog()
         emit logAlert(error);
         return;
     }
-
 
     auto initialized = mLogSender.property("initializedUID");
     if (initialized.isValid() && initialized.toBool()){
@@ -2089,17 +2238,51 @@ void NUVE::System::prepareResultsDirectory(const QString &remoteIP,
 
 QString NUVE::System::generateLog()
 {
-    QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss") + ".log";
+    // Validating the storage
+    QStorageInfo storageInfo("/mnt/log/log/");
 
-    TRACE << "generating log file in " << filename;
+    if (!storageInfo.isValid()) {
+        mountDirectory("/mnt/log", "/mnt/log/log");
+    }
+
+    if (!storageInfo.isValid() || !storageInfo.isReady()) {
+        emit logAlert("The Logging directory is not ready.");
+        return "";
+    }
+
+    auto hasFreeBytes = [&]() {
+        auto availableBytes = storageInfo.bytesAvailable() / 1024 / 1024;
+        SYS_LOG << "byte available in MB" << availableBytes;
+
+        return (availableBytes > 100);
+    };
+
+    // clear some logs folder and try again
+    if (!hasFreeBytes()) {
+        AppUtilities::removeContentDirectory("/mnt/log/log/");
+        AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
+
+        if (!hasFreeBytes()) {
+            emit logAlert("The Logging directory has no space.");
+            return "";
+        }
+    }
+
+    QString filename = "/mnt/log/log/" + QDateTime::currentDateTimeUtc().toString("yyyyMMddhhmmss")
+                       + ".log";
+
+    SYS_LOG << "generating log file in " << filename;
 
     // Create log
     auto exitCode = QProcess::execute("/bin/bash", {"-c", "journalctl -u appStherm > " + filename});
-    if (exitCode < 0)
+    if (exitCode != 0)
     {
+        bool removed = QFile::remove(filename); // to ensure no residue is remained
+
         QString error("Unable to create log file.");
-        qWarning() << error << exitCode;
+        SYS_LOG << error << exitCode << removed;
         emit logAlert(error);
+
         return "";
     }
 
@@ -2152,7 +2335,7 @@ bool NUVE::System::sendLogFile(bool showAlert)
 
     if (showAlert) emit logPrepared(true);
 
-    return sendLogToServer(QStringList(filename), showAlert, true);
+    return sendLogToServer(QStringList(filename), showAlert, true, false, true);
 }
 
 void NUVE::System::sendResultsFile(const QString &filepath,
@@ -2186,24 +2369,6 @@ void NUVE::System::sendResultsFile(const QString &filepath,
                                "\"StrictHostKeyChecking=no\" \"%2\" %3@%4:%5")
                            .arg(remotePassword, filepath, remoteUser, remoteIP, destination);
     mFileSender.start("/bin/bash", {"-c", copyFile});
-}
-
-bool NUVE::System::removeDirectory(const QString &path)
-{
-    QDir dir(path);
-
-    if (dir.exists()) {
-        if (dir.removeRecursively()) {
-            TRACE << "Successfully removed:" << path;
-        } else {
-            TRACE << "Failed to remove:" << path;
-            return false;
-        }
-    } else {
-        TRACE << "Directory does not exist:" << path;
-    }
-
-    return true;
 }
 
 void NUVE::System::startAutoSendLogTimer(int interval)
@@ -2305,7 +2470,7 @@ void NUVE::System::generateInstallLog()
 
     auto initialized = mLogSender.property("initialized");
     if (initialized.isValid() && initialized.toBool()) {
-        sendLogToServer({filename}, false, false, true);
+        sendLogToServer({filename}, false, false, true, true);
 
     } else {
         auto dirCreatorCallback = [=](QString error) {
@@ -2322,7 +2487,7 @@ void NUVE::System::generateInstallLog()
             SYS_LOG << "Folder created in server successfully";
             mLogSender.setProperty("initialized", true);
 
-            sendLogToServer({filename}, false, false, true);
+            sendLogToServer({filename}, false, false, true, true);
         };
 
         mLogSender.setRole("dirLog", dirCreatorCallback);
@@ -2354,8 +2519,7 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
                 SYS_LOG <<"Command failed" <<command <<tag;
             }
         }
-    }
-    else if (command == Cmd_PerfTest) {
+    } else if (command == Cmd_PerfTest) {
         SYS_LOG << "Applying" <<command <<tag;
         if (PerfTestService::me()->checkTestEligibilityManually("Command")) {
             mLastReceivedCommands[command] = tag;
@@ -2363,14 +2527,12 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
         else {
             SYS_LOG <<"Command failed" <<command <<tag;
         }
-    }
-    else if (command == Cmd_Reboot) {
+    } else if (command == Cmd_Reboot) {
         SYS_LOG << "Applying" <<command <<tag;
         mLastReceivedCommands[command] = tag;
         {QSettings settings; settings.setValue(Key_LastRebootAt, tag);}
         rebootDevice();
-    }
-    else if (command == Cmd_PushLiveData) {
+    } else if (command == Cmd_PushLiveData) {
         SYS_LOG << "Applying" <<command <<tag;
         ProtoDataManager::me()->sendDataToServer();
         isApplied = true;
@@ -2533,7 +2695,12 @@ bool NUVE::System::sendNetworkLogs() {
     return true;
 }
 
-bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &showAlert, bool isRegularLog , bool isInstallLog) {
+bool NUVE::System::sendLogToServer(const QStringList &filenames,
+                                   const bool &showAlert,
+                                   bool isRegularLog,
+                                   bool isInstallLog,
+                                   bool deleteOnFail)
+{
     auto sendCallback = [=](QString error) {
         auto role = mLogSender.property("role").toString();
         TRACE_CHECK(role != "sendLog") << "role seems invalid" << role;
@@ -2551,12 +2718,6 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
 
             if (showAlert) emit logSentSuccessfully();
 
-            // Delete logs that have been sent to the server.
-            foreach (auto file, filenames) {
-                if (!QFile::remove(file))
-                    qWarning() << "Could not remove the file: " << file;
-            }
-
             if (isRegularLog) mFirstLogSent = true;
 
         } else {
@@ -2570,7 +2731,16 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
             if (showAlert) emit logAlert(error);
         }
 
-        if (isInstallLog) emit installLogSent(isSuccess);
+        // Delete logs that have been sent to the server or if should be deleted even on Fail.
+        if (isSuccess || deleteOnFail) {
+            foreach (auto file, filenames) {
+                if (!QFile::remove(file))
+                    qWarning() << "Could not remove the file: " << file;
+            }
+        }
+
+        if (isInstallLog)
+            emit installLogSent(isSuccess);
 
         startAutoSendLogTimer(1 * 60 * 1000);
     };
@@ -2580,7 +2750,7 @@ bool NUVE::System::sendLogToServer(const QStringList &filenames, const bool &sho
     // Copy file to remote path, should be execute detached but we should prevent a new one before current one finishes
     QString copyFile = QString("sshpass -p '%1' scp  -o \"UserKnownHostsFile=/dev/null\" -o \"StrictHostKeyChecking=no\" %2 %3@%4:%5").
                        arg(m_logPassword, filenames.join(" "), m_logUsername, m_logServerAddress, mLogRemoteFolder);
-    TRACE << "sending log to server " << mLogRemoteFolder;
+    SYS_LOG << "sending log to server " << mLogRemoteFolder;
     mLogSender.start("/bin/bash", {"-c", copyFile});
 
     return true;
@@ -2612,4 +2782,48 @@ void NUVE::System::saveNetworkRequestRestart()
     int networkRequestRestartTimes = settings.value(m_NetworkRequestRestartSetting, 0).toInt() + 1;
 
     settings.setValue(m_NetworkRequestRestartSetting, networkRequestRestartTimes);
+}
+
+QStringList NUVE::System::usedDirectories() const
+{
+    return mUsedDirectories;
+}
+
+NUVE::StorageMonitor::StorageMonitor(QObject *parent)
+    : QObject(parent)
+    , minFreeSpaceRequired(100)
+{
+    // Set up a timer to check storage periodically
+    timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &StorageMonitor::checkStorageSpace);
+    timer->start(10000); // Check every 10 seconds
+}
+
+void NUVE::StorageMonitor::checkStorageSpace()
+{
+    QStorageInfo storageInfoExpansion("/mnt/log");
+
+    if (storageInfoExpansion.isValid() && storageInfoExpansion.isReady()) {
+        uint64_t freeSpaceMB = storageInfoExpansion.bytesAvailable() / 1024 / 1024;
+
+        if (freeSpaceMB < minFreeSpaceRequired) {
+            SYS_LOG << "Low disk space! Taking action. size in MB: " << freeSpaceMB;
+            emit lowStorageDetected();
+        }
+    } else {
+        SYS_LOG << "Failed to query storage information.";
+    }
+
+    QStorageInfo storageInfoMain("/");
+
+    if (storageInfoMain.isValid() && storageInfoMain.isReady()) {
+        uint64_t freeSpaceMB = storageInfoMain.bytesFree() / 1024 / 1024;
+
+        if (freeSpaceMB < 40) {
+            SYS_LOG << "Low disk space! Taking action. size in MB: " << freeSpaceMB;
+            emit lowSpaceDetected();
+        }
+    } else {
+        SYS_LOG << "Failed to query space information.";
+    }
 }
