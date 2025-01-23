@@ -1,6 +1,74 @@
 
 Release Note
 -------------
+## Release R 1.4.13
+ 22th January 2025
+ Branch- r1_4_13, commit- 5e62874433
+ 
+### Release Articles
+update-V.1.4.13.zip
+
+### Reason
+Add new feature and fix some issues.
+
+### What’s Brand New
+- Added a hidden page to setting menu to manage the storage and files.
+- Storage monitor added to check every 10 seconds.
+
+### What Been Updated
+- Managing log files better.
+
+### What’s Been Fixed
+- Fixed update validation issue when storage is full.
+- Fixed updateAndRestart flow.
+- Removed logs after update.
+
+### Known Issues
+- CPU usage in some cases should be check.
+
+## Release R 1.4.12
+ 16th January 2025
+ Branch- r1_4_12, commit- d270e3aa5
+ 
+### Release Articles
+update-V.1.4.12.zip
+
+### Reason
+Fix some issues.
+
+### What’s Brand New
+
+### What Been Updated
+- Moving log partition removing to forget device.
+
+### What’s Been Fixed
+- Automatic logging disabled.
+
+### Known Issues
+- CPU usage in some cases should be check.
+- Memory issue in update.
+
+## Release R 1.4.11
+ 16th January 2025
+ Branch- r1_4_11, commit- 4cf4866b7e2
+ 
+### Release Articles
+update-V.1.4.11.zip
+
+### Reason
+Fix some issues.
+
+### What’s Brand New
+
+### What Been Updated
+
+### What’s Been Fixed
+- Automatic logging reduced to balance traffic loads.
+
+### Known Issues
+- CPU usage in some cases should be check.
+- Memory issue in update.
+
 ## Release R 1.4.10
  13th January 2025
  Branch- r1_4_10, commit- b161627c
