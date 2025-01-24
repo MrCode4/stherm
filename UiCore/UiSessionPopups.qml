@@ -291,7 +291,7 @@ Item {
         ManualDateTimeWarningPopup {
 
             onAccepted: {
-                _root.mainStackView.push("qrc:/Stherm/View/DateTime/DateTimePage.qml", {})
+                uiSession.openPageFromHome("qrc:/Stherm/View/DateTime/DateTimePage.qml");
                 close()
             }
 
