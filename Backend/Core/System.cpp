@@ -28,7 +28,7 @@ const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.
 const QString m_restartAppService   = QString("/etc/systemd/system/appStherm-restart.service");
 
 //! Path of update file in the server
-const QString m_updateInfoFile  = QString("updateInfoV1.json");
+const QString m_updateInfoFile  = QString("updateInfoV11.json");
 const int m_timeout = 100000; // 100 seconds
 
 /* ************************************************************************************************
@@ -1186,6 +1186,7 @@ void NUVE::System::forgetDevice()
 
     QFile::remove(qApp->applicationDirPath() + "/files_info.json");
     QFile::remove(mUpdateFilePath);
+    removeLogPartition();
 
     mSync->forgetDevice();
 }
@@ -2422,7 +2423,6 @@ void NUVE::System::stopAutoSendLogTimer()
 
 void NUVE::System::generateInstallLog()
 {
-
     if (mLogSender.busy()){
         QString error("Previous session is in progress.");
         SYS_LOG << error << "State is :" << mLogSender.state() << mLogSender.keys();
@@ -2511,6 +2511,8 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
     SYS_LOG << "Attempting command" << command << tag;
 
     if (command == Cmd_PushLogs) {
+        mNetworkLogShouldSend = true;
+
         if (isBusylogSender()) {
             SYS_LOG << "Log-sender is busy at this momemnt";
         } else {
@@ -2627,6 +2629,10 @@ void NUVE::System::saveNetworkLogs() {
     networkLogCounter += 1;
     SYS_LOG << "Save network log called for " << networkLogCounter;
 
+    // disabled for now to prevent filling up the disc
+    // TODO: add file management to remove excessive files for enabling this
+    return;
+
     auto generatedFilename = generateLog();
     if (generatedFilename.isEmpty())
         return;
@@ -2638,7 +2644,13 @@ void NUVE::System::saveNetworkLogs() {
 }
 
 bool NUVE::System::sendNetworkLogs() {
-    if (mLogSender.busy()){
+    if (!mNetworkLogShouldSend) {
+        SYS_LOG << "Network logs are disabled for scaling the cloud. will be able to send if "
+                   "receive send log command.";
+        return false;
+    }
+
+    if (mLogSender.busy()) {
         QString error("Previous session is in progress.");
         SYS_LOG << error << "State is :" << mLogSender.state() << mLogSender.keys();
         return true;
@@ -2667,6 +2679,11 @@ bool NUVE::System::sendNetworkLogs() {
     for (const QString& fileName : fileList) {
         QString absoluteFilePath = dir.absoluteFilePath(fileName);
         absFileList.append(absoluteFilePath);
+    }
+
+    if (absFileList.isEmpty()) {
+        TRACE << "network log sending set to false as there is no log.";
+        mNetworkLogShouldSend = false;
     }
 
     auto initialized = mLogSender.property("initialized");

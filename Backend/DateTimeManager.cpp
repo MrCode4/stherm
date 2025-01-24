@@ -1,8 +1,8 @@
 #include "DateTimeManager.h"
 
-#include <QTimeZone>
 #include <QCoreApplication>
 #include <QSettings>
+#include <QTimeZone>
 
 #include "LogHelper.h"
 

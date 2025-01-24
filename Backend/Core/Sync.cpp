@@ -843,12 +843,20 @@ void Sync::resetFactory()
         if (reply->error() == QNetworkReply::NoError) {
             emit resetFactoryFinished(true);
         } else {
-            TRACE << "resetFactory" << reply->errorString() << ", hasClient: " << mHasClient << ", rawData:" << rawData;
-            bool success = false; // we may change this according to the hasClient or other parameters like error string
-            emit resetFactoryFinished(success, reply->errorString());
+            TRACE << "resetFactory" << reply->errorString() << ", hasClient: " << mHasClient
+                  << ", rawData:" << rawData;
+            // we may change this according to the hasClient or other parameters like error string
+            bool success = false;
+            auto error = reply->errorString();
+            if (reply->error() == QNetworkReply::OperationCanceledError) {
+                success = true;
+                error = "The server took too long to respond. Please try again later.";
+            }
+            emit resetFactoryFinished(success, error);
         }
     };
 
+    TRACE << "factory reset called forget api" << reqData;
     auto reply = callPostApi(baseUrl() + QString("api/sync/forget?sn=%1").arg(mSerialNumber),
                              QJsonDocument(reqData).toJson(),
                              callback);

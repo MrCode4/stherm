@@ -21,7 +21,7 @@ QNetworkRequest RestApiExecutor::prepareApiRequest(const QString &endpoint, bool
     QNetworkRequest request(endpoint);
     request.setHeader(QNetworkRequest::ContentTypeHeader, contentTypeHeader);
     request.setRawHeader("accept", "application/json");
-    request.setTransferTimeout(8000);
+    request.setTransferTimeout(20000);
     if (setAuth) setApiAuth(request);
     return request;
 }
