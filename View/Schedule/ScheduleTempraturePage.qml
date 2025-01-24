@@ -117,11 +117,14 @@ BasePageView {
                 from: minTemperature
                 to: maxTemperature
 
+                leftColor: AppSpec.heatingColor
+                rightColor: AppSpec.coolingColor
+
                 difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
 
                 labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))
-                leftLabelPrefix:  "<p style='color:#ea0600; font-size:12px;'>Heat to</p>"
-                rightLabelPrefix: "<p style='color:#0097cd; font-size:12px;'>Cool to</p>"
+                leftLabelPrefix:  `<p style='color:${AppSpec.heatingColor}; font-size:12px;'>Heat to</p>`
+                rightLabelPrefix: `<p style='color:${AppSpec.coolingColor}; font-size:12px;'>Cool to</p>`
                 fromValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
                 toValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
             }
@@ -135,7 +138,7 @@ BasePageView {
             Label {
                 Layout.preferredWidth: parent.width / 2 - 5
 
-                text: "<span style='color:#ea0600;'>Heat to</span> - Heating will be turned off when the indoor temperature is above this value"
+                text: `<span style='color:${AppSpec.heatingColor};'>Heat to</span> - Heating will be turned off when the indoor temperature is above this value`
                 wrapMode: Text.WordWrap
                 textFormat: Text.RichText
                 horizontalAlignment: Qt.AlignLeft
@@ -145,7 +148,7 @@ BasePageView {
             Label {
                 Layout.preferredWidth: parent.width / 2 - 5
 
-                text: "<span style='color:#0097cd;'>Cool to</span> - Cooling will be turned off when the indoor temperature is below this value"
+                text: `<span style='color:${AppSpec.coolingColor};'>Cool to</span> - Cooling will be turned off when the indoor temperature is below this value`
                 wrapMode: Text.WordWrap
                 textFormat: Text.RichText
                 horizontalAlignment: Qt.AlignLeft
@@ -178,8 +181,22 @@ BasePageView {
             Layout.fillWidth: true
 
             icon: FAIcons.temperatureThreeQuarters
-            leftSideColor:  "#ea0600"
-            rightSideColor: "#0097cd"
+            leftSideColor:  {
+                if (schedule && schedule.systemMode === AppSpec.Cooling) {
+                        return AppSpec.coolingColor;
+                }
+
+                return AppSpec.heatingColor;
+            }
+
+            rightSideColor: {
+                if (schedule && (schedule.systemMode === AppSpec.Heating || schedule.systemMode === AppSpec.EmergencyHeat)) {
+                    return AppSpec.heatingColor;
+                }
+
+                return AppSpec.coolingColor;
+            }
+
             labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(deviceController.temperatureUnit))
             from: minTemperature;
             to: maxTemperature;

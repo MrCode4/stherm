@@ -14,6 +14,8 @@ BasePageView {
     /* Property declaration
      * ****************************************************************************************/
 
+    signal logPartitionCleared();
+
     /* Object properties
      * ****************************************************************************************/
     title: "Manage Storage"
@@ -44,11 +46,11 @@ BasePageView {
             spacing: 8 * scaleFactor
 
             Label {
-                text: qsTr("Drives:")
+                text: qsTr("Partitions:")
             }
 
             Label {
-                text: qsTr("Main drive:")
+                text: qsTr("Main:")
                 font.pointSize: Application.font.pointSize * 0.85
             }
 
@@ -91,7 +93,7 @@ BasePageView {
                 Layout.preferredWidth: parent.width
 
                 Label {
-                    text: qsTr("Extras:")
+                    text: qsTr("Log:")
 
                     font.pointSize: Application.font.pointSize * 0.85
                 }
@@ -99,28 +101,29 @@ BasePageView {
                 ButtonInverted {
                     Layout.alignment: Qt.AlignRight
 
-                    visible: false
+                    visible: true
                     text: qsTr("Clear")
                     font.pointSize: Application.font.pointSize * 0.8
 
                     onClicked: {
-                        confirmPopup.message = "Clear directory"
-                        confirmPopup.detailMessage = `Are you sure you want to clear extras drive?`
+                        confirmPopup.message = "Clear partition"
+                        confirmPopup.detailMessage = `Are you sure you want to clear Log partition content?`
 
-                        confirmPopup.accepted.connect(this, update);
-                        confirmPopup.hid.connect(this, disconect);
+                        confirmPopup.accepted.connect(this, removeAction);
+                        confirmPopup.hid.connect(this, disconnectAction);
 
                         confirmPopup.open();
                     }
 
-                    function update() {
-                        AppUtilities.removeContentDirectory("/mnt/log");
+                    function removeAction() {
+                        deviceController.system.removeLogPartition(false);
+                        logPartitionCleared();
                         updateTimer.start();
                     }
 
-                    function disconect() {
-                        confirmPopup.accepted.disconnect(this, update);
-                        confirmPopup.hid.disconnect(this, disconect);
+                    function disconnectAction() {
+                        confirmPopup.accepted.disconnect(this, removeAction);
+                        confirmPopup.hid.disconnect(this, disconnectAction);
                     }
                 }
             }
@@ -252,6 +255,13 @@ BasePageView {
 
                         text: update();
                         font.pointSize: Application.font.pointSize * 0.8
+
+                        Connections {
+                            target: root
+                            function onLogPartitionCleared() {
+                                modelDataSizeLabel.update();
+                            }
+                        }
 
                         function  update() {
                             let size = AppUtilities.getFolderUsedBytes(modelData.value);

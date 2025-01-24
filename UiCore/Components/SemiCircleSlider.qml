@@ -27,6 +27,9 @@ Control {
     //! Holds whether slider is being dragged
     readonly property alias pressed: _handleDh.dragging
 
+    property color leftColor: "#ea0600"
+    property color rightColor: "#0097cd"
+
     /* Object properties
      * ****************************************************************************************/
     implicitWidth: 400
@@ -48,7 +51,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+            color: _control.enabled ? leftColor : Qt.darker(leftColor, _control.darkerShade)
         }
 
         Rectangle {
@@ -57,7 +60,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+            color: _control.enabled ? rightColor : Qt.darker(rightColor, _control.darkerShade)
         }
 
         Shape {
@@ -78,11 +81,11 @@ Control {
 
                     GradientStop {
                         position: 1
-                        color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+                        color: _control.enabled ? rightColor : Qt.darker(rightColor, _control.darkerShade)
                     }
                     GradientStop {
                         position: 0
-                        color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+                        color: _control.enabled ? leftColor : Qt.darker(leftColor, _control.darkerShade)
                     }
                 }
 

@@ -204,13 +204,6 @@ BasePageView {
                         }
                     },
                     {
-                        text: qsTr("No Wi-Fi Config"), visible: system.testMode, action: () => {
-                            if (root.StackView.view) {
-                                root.StackView.view.push("qrc:/Stherm/View/Menu/LimitedModeRemainigTimePage.qml", {"uiSession": uiSession});
-                            }
-                        }
-                    },
-                    {
                         text: qsTr("Contractor Info Test"), visible: deviceController.initialSetup, action: () => {
                             if (root.StackView.view) {
                                 root.StackView.view.push("qrc:/Stherm/View/SystemUpdatePage.qml", {

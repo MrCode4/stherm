@@ -5,8 +5,11 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * LimitedModeRemainigTimePage
+ * LimitedModeRemainigTimePage to change the time for test purpose                                *
+ *                                                                                                *
+ * is not used anymore, we can add it in any UI or menu if needed again                           *
  * ***********************************************************************************************/
+
 BasePageView {
     id: root
 

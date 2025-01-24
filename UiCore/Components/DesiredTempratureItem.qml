@@ -72,6 +72,32 @@ Control {
             from: minTemprature
             to: maxTemprature
 
+            rightColor: {
+                if (currentSchedule && (currentSchedule.systemMode === AppSpec.Heating || currentSchedule.systemMode === AppSpec.EmergencyHeat)) {
+                        return AppSpec.heatingColor;
+                }
+
+                if (device?.systemSetup?.systemMode === AppSpec.Heating || device?.systemSetup?.systemMode === AppSpec.EmergencyHeat) {
+                    return AppSpec.heatingColor;
+                }
+
+                // Default: Off mode
+                return AppSpec.coolingColor;
+            }
+
+            leftColor: {
+                if (currentSchedule && currentSchedule.systemMode === AppSpec.Cooling) {
+                        return AppSpec.coolingColor;
+                }
+
+                if (device?.systemSetup?.systemMode === AppSpec.Cooling) {
+                    return AppSpec.coolingColor;
+                }
+
+                // Default: Off mode
+                return AppSpec.heatingColor;
+            }
+
             //! Note: Can not bind the value as will be broken so we use Connections instead
             //! Also binding will be called before broken too many times as the values are loading one by one and
             //! can be faulty
@@ -101,6 +127,9 @@ Control {
 
             firstValueCeil: Utils.convertedTemperature(AppSpec.maxAutoMinTemp, temperatureUnit)
             secondValueFloor: Utils.convertedTemperature(AppSpec.minAutoMaxTemp, temperatureUnit)
+
+            firstColor: AppSpec.heatingColor
+            secondColor: AppSpec.coolingColor
 
             from: minTemprature
             to: maxTemprature

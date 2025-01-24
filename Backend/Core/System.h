@@ -263,7 +263,7 @@ public:
     //! Forget device settings and sync settings
     Q_INVOKABLE void forgetDevice();
 
-    //! Remove folders/files like
+    //! Remove all files in the log partition including below dirs and others as well
     //! - /mnt/log/latestVersion/
     //! - /mnt/log/sensor/
     //! - /mnt/log/log/
@@ -330,6 +330,9 @@ signals:
     void alert(QString msg);
 
     void testPublishFinished(QString msg = QString());
+
+    //! Emit when command received
+    void forgetDeviceRequested();
 
     //! Emit when need the system move to updating/restarting mode
     void systemUpdating();
