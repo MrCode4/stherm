@@ -9,6 +9,11 @@ import Ronia.impl
 RangeSliderLabeled {
     id: control
 
+    /* Property declaration
+     * ****************************************************************************************/
+    property color leftColor: "#ea0600"
+    property color rightColor: "#0097cd"
+
     /* Object properties
      * ****************************************************************************************/
     showMinMax: true
@@ -27,12 +32,12 @@ RangeSliderLabeled {
             orientation: Gradient.Horizontal
             GradientStop {
                 position: 1.0
-                color: enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+                color: enabled ? rightColor : Qt.darker(rightColor, _control.darkerShade)
             }
 
             GradientStop {
                 position: 0.0
-                color: enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+                color: enabled ? leftColor : Qt.darker(leftColor, _control.darkerShade)
             }
         }
 

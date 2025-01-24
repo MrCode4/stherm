@@ -117,6 +117,9 @@ BasePageView {
                 from: minTemperature
                 to: maxTemperature
 
+                leftColor: AppSpec.heatingColor
+                rightColor: AppSpec.coolingColor
+
                 difference: temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
 
                 labelSuffix: "\u00b0" + (AppSpec.temperatureUnitString(temperatureUnit))

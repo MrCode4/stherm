@@ -75,22 +75,26 @@ Control {
             rightColor: {
                 if (currentSchedule && (currentSchedule.systemMode === AppSpec.Heating || currentSchedule.systemMode === AppSpec.EmergencyHeat)) {
                         return AppSpec.heatingColor;
+                }
 
-                } else if (device?.systemSetup?.systemMode === AppSpec.Heating || device?.systemSetup?.systemMode === AppSpec.EmergencyHeat) {
+                if (device?.systemSetup?.systemMode === AppSpec.Heating || device?.systemSetup?.systemMode === AppSpec.EmergencyHeat) {
                     return AppSpec.heatingColor;
                 }
 
+                // Default: Off mode
                 return AppSpec.coolingColor;
             }
 
             leftColor: {
                 if (currentSchedule && currentSchedule.systemMode === AppSpec.Cooling) {
                         return AppSpec.coolingColor;
+                }
 
-                } else if (device?.systemSetup?.systemMode === AppSpec.Cooling) {
+                if (device?.systemSetup?.systemMode === AppSpec.Cooling) {
                     return AppSpec.coolingColor;
                 }
 
+                // Default: Off mode
                 return AppSpec.heatingColor;
             }
 
