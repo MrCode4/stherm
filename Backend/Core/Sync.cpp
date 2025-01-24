@@ -899,15 +899,15 @@ void Sync::reportCommandResponse(ReportCommandCallback callback, const QString& 
                 reportCommandResponse(callback, command, response, retryCount - 1);
             });
         }
-        else if (callback != nullptr) {
-            SYNC_LOG << "Reporting command" <<command <<"success";
+        else if (callback != nullptr) { // either success or end of retry
+            SYNC_LOG << "Reporting command" << command << "success" << (reply->error() == QNetworkReply::NoError);
             callback(reply->error() == QNetworkReply::NoError, data);
         }
     };
 
     QJsonObject body;
     body["data"] = response;
-    SYNC_LOG <<"Reporting command" <<command << "with data" <<response;
+    SYNC_LOG << "Reporting command" << command << "with data" << response;
     callPostApi(baseUrl() + QString("api/monitor/report?sn=%0").arg(mSerialNumber), QJsonDocument(body).toJson(), apiCallback);
 }
 

@@ -568,6 +568,24 @@ I_DeviceController {
             settingsPush.isPushing = false;
         }
 
+        function onForgetDeviceRequested() {
+            // Forget the device
+            uiSession.popUps.showCountDownPopUp(
+                        qsTr("  Forget Device  "),
+                        qsTr("Forgetting device due to request."),
+                        false,
+                        function () {
+                            if (system) {
+                                console.log("Forgetting device due to request.")
+                                root.forgetDevice();
+
+                                // reboot after forget is done
+                                console.log("rebootDevice due to Forgetting request.")
+                                system.rebootDevice();
+                            }
+                        });
+        }
+
         function onServiceTitanInformationReady(hasError: bool, isActive : bool,
                                                 email : string, zipCode : string) {
             console.log("ServiceTitanInformationReady", hasError, isActive, email, zipCode);
