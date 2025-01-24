@@ -28,7 +28,7 @@ const QString m_updateService   = QString("/etc/systemd/system/appStherm-update.
 const QString m_restartAppService   = QString("/etc/systemd/system/appStherm-restart.service");
 
 //! Path of update file in the server
-const QString m_updateInfoFile  = QString("updateInfoV1.json");
+const QString m_updateInfoFile  = QString("updateInfoV11.json");
 const int m_timeout = 100000; // 100 seconds
 
 /* ************************************************************************************************
