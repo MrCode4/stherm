@@ -63,6 +63,12 @@ AppSpecCPP {
     //! Percent
     property int defaultVolume:     50
 
+    //! Heating color
+    property color heatingColor: "#ea0600"
+
+    //! Cooling color
+    property color coolingColor: "#0097cd"
+
     //! To improve efficiency, we should delete any messages that exceed
     //! the maximum limit of messagesLimit messages.
     property int messagesLimits: 50

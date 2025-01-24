@@ -38,6 +38,9 @@ Control {
     onFirstValueCeilChanged: first.setMaxValue(firstValueCeil);
     onSecondValueFloorChanged: second.setMinValue(secondValueFloor);
 
+    property color firstColor: "#ea0600"
+    property color secondColor: "#0097cd"
+
     //! When both the first and second values reach their minimum/maximum limits,
     //! UI disruptions and slider malfunctions (slider overlapping) can potentially arise.
     //! To prevent these issues, careful data clamping should be
@@ -100,7 +103,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+            color: _control.enabled ? firstColor : Qt.darker(firstColor, _control.darkerShade)
         }
 
         Rectangle {
@@ -109,7 +112,7 @@ Control {
             width: parent.pathWidth
             height: width
             radius: width / 2
-            color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+            color: _control.enabled ? secondColor : Qt.darker(secondColor, _control.darkerShade)
         }
 
         Shape {
@@ -129,12 +132,12 @@ Control {
 
                     GradientStop {
                         position: 0.55
-                        color: _control.enabled ? "#ea0600" : Qt.darker("#ea0600", _control.darkerShade)
+                        color: _control.enabled ? firstColor : Qt.darker(firstColor, _control.darkerShade)
                     }
 
                     GradientStop {
                         position: 0
-                        color: _control.enabled ? "#0097cd" : Qt.darker("#0097cd", _control.darkerShade)
+                        color: _control.enabled ? secondColor : Qt.darker(secondColor, _control.darkerShade)
                     }
                 }
 
