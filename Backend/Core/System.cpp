@@ -322,13 +322,17 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             }
 
             if (countStorage > 5) {
-                SYS_LOG << " log partition removed to make room.";
-                removeLogPartition(false);
+                bool ok = true;
+                for (const QString &dirPath : mUsedDirectories) {
+                    ok &= AppUtilities::removeContentDirectory(dirPath);
+                }
+                SYS_LOG << " log partition removed to make room." << ok;
             }
 
             if (countStorage > 10) {
                 SYS_LOG << "Issue with storage detected.";
                 // emit error("Your device storage is low.");
+                // removeLogPartition() can be called automatically, but it is not advised!
             }
         } else {
             countStorage = 0;
@@ -363,6 +367,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             if (countSpace > 10) {
                 SYS_LOG << "Issue with space detected.";
                 // emit error("Your device space is low.");
+                // or trigger hard factory reset! not advised!
             }
         } else {
             countSpace = 0;
@@ -1186,12 +1191,10 @@ void NUVE::System::forgetDevice()
 bool NUVE::System::removeLogPartition(bool removeDirs)
 {
     bool ok = true;
-    for (const QString &dirPath : mUsedDirectories) {
-        if (!removeDirs){
-            ok &= AppUtilities::removeContentDirectory(dirPath);
-            continue;
-        }
-        ok &= AppUtilities::removeDirectory(dirPath);
+    if (removeDirs){
+        ok &= AppUtilities::removeDirectory("/mnt/log");
+    } else {
+        ok &= AppUtilities::removeContentDirectory("/mnt/log");
     }
 
     return ok;

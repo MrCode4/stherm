@@ -263,7 +263,7 @@ public:
     //! Forget device settings and sync settings
     Q_INVOKABLE void forgetDevice();
 
-    //! Remove folders/files like
+    //! Remove all files in the log partition including below dirs and others as well
     //! - /mnt/log/latestVersion/
     //! - /mnt/log/sensor/
     //! - /mnt/log/log/
