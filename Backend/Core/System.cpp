@@ -61,6 +61,8 @@ const QString Cmd_PushLogs = "push_logs";
 const QString Cmd_PerfTest = "perf_test";
 const QString Cmd_Reboot = "reboot";
 const QString Cmd_PushLiveData = "push_live_data";
+const QString Cmd_ForgetDevice = "forget_device";
+const QString Cmd_ForgetDeviceResponse = "forgotten";
 
 //! Function to calculate checksum (Md5)
 inline QByteArray calculateChecksum(const QByteArray &data) {
@@ -1752,10 +1754,10 @@ void NUVE::System::setSerialNumber(const QString &sn)
     // if device started from reboot, let's inform server that the device is booted
     if (mLastReceivedCommands.contains(Cmd_Reboot)) {
         auto callback = [this] (bool success, const QJsonObject& data) {
-            mLastReceivedCommands.remove(Cmd_PushLogs);
+            mLastReceivedCommands.remove(Cmd_PushLogs); // why not removing Cmd_Reboot
             QSettings settings;
             settings.remove(Key_LastRebootAt);
-            SYS_LOG <<"Reporting reboot success. Command cleared" <<Cmd_Reboot;
+            SYS_LOG <<"Reporting reboot success. Command cleared" << Cmd_Reboot;
         };
         mSync->reportCommandResponse(callback, Cmd_Reboot, "booted");
     }
@@ -2506,38 +2508,54 @@ bool NUVE::System::attemptToRunCommand(const QString& command, const QString& ta
     }
 
     bool isApplied = false;
-    SYS_LOG <<"Attempting command" << command <<tag;
+    SYS_LOG << "Attempting command" << command << tag;
 
     if (command == Cmd_PushLogs) {
         if (isBusylogSender()) {
             SYS_LOG << "Log-sender is busy at this momemnt";
         } else {
-            SYS_LOG << "Applying" <<command <<tag;
+            SYS_LOG << "Applying" << command << tag;
             if (sendLog(false)) {
                 mLastReceivedCommands[command] = tag;
             }
             else {
-                SYS_LOG <<"Command failed" <<command <<tag;
+                SYS_LOG << "Command failed" <<command << tag;
             }
         }
     } else if (command == Cmd_PerfTest) {
-        SYS_LOG << "Applying" <<command <<tag;
+        SYS_LOG << "Applying" << command << tag;
         if (PerfTestService::me()->checkTestEligibilityManually("Command")) {
             mLastReceivedCommands[command] = tag;
         }
         else {
-            SYS_LOG <<"Command failed" <<command <<tag;
+            SYS_LOG <<"Command failed" << command << tag;
         }
     } else if (command == Cmd_Reboot) {
-        SYS_LOG << "Applying" <<command <<tag;
+        SYS_LOG << "Applying" << command << tag;
         mLastReceivedCommands[command] = tag;
         {QSettings settings; settings.setValue(Key_LastRebootAt, tag);}
         rebootDevice();
     } else if (command == Cmd_PushLiveData) {
-        SYS_LOG << "Applying" <<command <<tag;
+        SYS_LOG << "Applying" << command << tag;
         ProtoDataManager::me()->sendDataToServer();
         isApplied = true;
+    } else if (command == Cmd_ForgetDevice) {
+        SYS_LOG << "Applying" << command << tag;
+        mLastReceivedCommands[command] = tag;
+
+        auto callback = [this] (bool success, const QJsonObject& data) {
+            SYS_LOG << "forget ended with success:" << success << "Data: " << data;
+
+            // will reboot at the end of process with a timer popup
+            emit forgetDeviceRequested();
+
+            mLastReceivedCommands.remove(Cmd_ForgetDevice);
+            SYS_LOG << "Reporting Forget success. Command cleared" << Cmd_ForgetDevice;
+        };
+
+        mSync->reportCommandResponse(callback, Cmd_ForgetDevice, Cmd_ForgetDeviceResponse, 5);
     }
+
 
     return isApplied || (mLastReceivedCommands.contains(command) && mLastReceivedCommands[command] == tag);
 }

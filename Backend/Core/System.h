@@ -331,6 +331,9 @@ signals:
 
     void testPublishFinished(QString msg = QString());
 
+    //! Emit when command received
+    void forgetDeviceRequested();
+
     //! Emit when need the system move to updating/restarting mode
     void systemUpdating();
 
