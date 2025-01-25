@@ -305,6 +305,13 @@ I_DeviceController {
         }
     }
 
+    property Connections controllerConnections: Connections {
+        target: root
+        function onTemperatureUnitChanged() {
+            deviceControllerCPP?.setCelsius(temperatureUnit === AppSpec.TempratureUnit.Cel)
+        }
+    }
+
     property Connections  deviceControllerConnection: Connections {
         target: deviceControllerCPP
 
@@ -1319,7 +1326,6 @@ I_DeviceController {
 
         if (device.setting.tempratureUnit !== temperatureUnit) {
             device.setting.tempratureUnit = temperatureUnit;
-            deviceControllerCPP.setCelsius(temperatureUnit === AppSpec.TempratureUnit.Cel)
         }
 
         return true;
@@ -1914,10 +1920,12 @@ I_DeviceController {
         // it needs to be sent to the server.
         var isVisualTempChangedF = Math.abs(Math.round(root.displayCurrentTemp * 1.8 ) - Math.round((result?.roundTemperature ?? root.displayCurrentTemp) * 1.8)) > 0
         var isVisualTempChangedC = Math.abs(Math.round(root.displayCurrentTemp * 1.0 ) - Math.round((result?.roundTemperature ?? root.displayCurrentTemp) * 1.0)) > 0
+        // as we are rounding the temperature in user preference, we allow pushing it when user notices change on device in this way because we only push the round value
+        var isRoundedTempChanged = Math.abs(root.displayCurrentTemp - (result?.roundTemperature ?? root.displayCurrentTemp)) > 0.01
         var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
         var isCo2IdChanged = device._co2_id !== co2Id;
         var isNeedToPushToServer = isVisualHumChanged ||
-                isVisualTempChangedC || isVisualTempChangedF ||
+                isRoundedTempChanged || // isVisualTempChangedC || isVisualTempChangedF ||
                 isCo2IdChanged;
 
         // should be catched later here

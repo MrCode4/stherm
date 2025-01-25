@@ -31,7 +31,7 @@ static  const QString m_RestartAfetrSNTestMode  = "RestartAfetrSNTestMode";
 
 static  const char* m_GetOutdoorTemperatureReceived  = "GetOutdoorTemperatureRecieved";
 
-static const double m_IncrementPerStep = 1.0; // Increment temperature smoothly by 1°F per update
+static const double m_IncrementPerStep = 1.0; // Increment temperature smoothly by 1F per update
 
 static const QByteArray m_default_backdoor_backlight = R"({
     "red": 255,
@@ -555,7 +555,6 @@ void DeviceControllerCPP::forgetDevice()
 void DeviceControllerCPP::resetToFactorySetting()
 {
     forgetDevice();
-    m_system->removeLogPartition();
 
     // Completely remove all settings, maybe forget device save some settings that should be remove.
     QSettings settings;
@@ -578,6 +577,7 @@ bool DeviceControllerCPP::setSettings(QVariantList data)
 
 void DeviceControllerCPP::setCelsius(bool isCelsius)
 {
+    TRACE << "Unit changed, isCelsius: " << isCelsius << mIsCelsius;
     mIsCelsius = isCelsius;
 }
 
