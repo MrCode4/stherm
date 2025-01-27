@@ -1,9 +1,10 @@
 #include "AppUtilities.h"
 
+#include <QDir>
+#include <QRegularExpression>
+#include <QStorageInfo>
 #include <random>
 #include <sstream>
-#include <QDir>
-#include <QStorageInfo>
 
 #include "LogHelper.h"
 
@@ -180,4 +181,15 @@ QString AppUtilities::bytesToNearestBigUnit(int bytes) {
     } else {
         return QString::number(static_cast<double>(bytes) / qPow(1024, 5), 'f', 2) + " PB";
     }
+}
+
+QString AppUtilities::userVersion(const QString &fullVersion)
+{
+    static QRegularExpression regex(R"((\d+\.\d+\.\d+)\.\w+)");
+    QRegularExpressionMatch match = regex.match(fullVersion);
+
+    if (match.hasMatch())
+        return match.captured(1);
+    else
+        return fullVersion;
 }

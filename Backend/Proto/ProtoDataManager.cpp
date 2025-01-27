@@ -1,15 +1,14 @@
 #include "ProtoDataManager.h"
 
-#include <ctime>
-#include <fstream>
 #include "Config.h"
+#include "LogHelper.h"
 
 #ifdef PROTOBUF_ENABLED
+#include "DeviceInfo.h"
+#include <ctime>
+#include <fstream>
 #include <google/protobuf/util/time_util.h>
 #endif
-
-#include "DeviceInfo.h"
-#include "LogHelper.h"
 
 const QString BINARYFILEPATH         = PROTOBUFF_FILE_PATH;
 const int     MEMORYLIMITAIONRECORDS = 3000;

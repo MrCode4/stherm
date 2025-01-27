@@ -215,8 +215,11 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         }
 
         if (!version.isEmpty()) {
+            auto currentVersion = qApp->applicationVersion();
+            currentVersion = AppUtilities::userVersion(currentVersion);
+
             // Check with current version
-            if (version != qApp->applicationVersion()) {
+            if (version != currentVersion) {
                 TRACE << "Install firmware version from server " << version <<
                     "started with manual update" << mStartedWithManualUpdate <<
                     "started with server update" << mStartedWithFWServerUpdate;
@@ -230,9 +233,12 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             }
 
         } else if (mStartedWithFWServerUpdate) {
-            // Install the latest version, and exit from fw server update
-            TRACE << "Install latest version";
-            checkPartialUpdate(false, true);
+            // Install the latest force version back to normal update, and exit from fw server update
+            TRACE << "Install latest version if forced";
+            mStartedWithFWServerUpdate = false;
+            QSettings settings;
+            settings.setValue(m_IsFWServerUpdateSetting, false);
+            checkPartialUpdate(false, false);
         }
     });
 

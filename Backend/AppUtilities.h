@@ -32,4 +32,6 @@ public:
 
     //! Convert bytes to the nearest big unit.
     Q_INVOKABLE  static QString bytesToNearestBigUnit(int bytes);
+
+    Q_INVOKABLE static QString userVersion(const QString &fullVersion);
 };
