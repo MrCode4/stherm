@@ -233,9 +233,11 @@ public:
 
     Q_INVOKABLE bool findBackdoorVersion(const QString fileName);
 
+    //! Send log
+    //! Note: send log will be ignored if serial number is empty before trying to check related directory.
     Q_INVOKABLE bool sendLog(bool showAlert = true);
 
-    Q_INVOKABLE void sendFirstRunLog();
+    Q_INVOKABLE void sendFirstRunLog(bool showAlert = true);
 
     bool sendResults(const QString &filepath, const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination,
                      bool createDirectory = false);
@@ -285,6 +287,8 @@ public:
 
     Q_INVOKABLE void setAlternativeNoWiFiFlow(const bool &alternativeNoWiFiFlow);
     Q_INVOKABLE bool alternativeNoWiFiFlow();
+
+    void setFactoryTestMode(bool newFactoryTestMode);
 
     Q_INVOKABLE bool isBusylogSender() const;
     Q_INVOKABLE void setIsForgottenDevice(const bool &isDeviceForgotten);
@@ -425,8 +429,8 @@ private:
     void prepareResultsDirectory(const QString &remoteIP, const QString &remoteUser, const QString &remotePassword, const QString &destination);
     void prepareLogDirectory(fileSenderCallback callback = nullptr);
     void prepareFirstRunLogDirectory();
-    QString generateLog();
-    void sendFirstRunLogFile();
+    QString generateLog(bool showAlert = true);
+    void sendFirstRunLogFile(bool showAlert = true);
     bool sendLogFile(bool showAlert = true);
     void sendResultsFile(const QString &filepath, const QString &remoteIP,  const QString &remoteUser, const QString &remotePassword, const QString &destination);
 
@@ -483,6 +487,7 @@ private:
 
     //! System on test mode or not
     bool mTestMode;
+    bool mFactoryTestMode;
 
     bool mIsNightModeRunning;
 

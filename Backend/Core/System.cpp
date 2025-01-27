@@ -197,7 +197,12 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         emit autoModeSettingsReady(settings, isValid);
     });
     connect(mSync, &NUVE::Sync::pushFailed, this, &NUVE::System::pushFailed);
-    connect(mSync, &NUVE::Sync::testModeStarted, this, &NUVE::System::testModeStarted);
+    connect(mSync, &NUVE::Sync::testModeStarted, this, [this] () {
+        //! Start the factory test mode due to serial number issue.
+        setFactoryTestMode(true);
+        emit testModeStarted();
+    });
+
     connect(mSync, &NUVE::Sync::pushSuccess, this, [this]() {
         emit pushSuccess();
     });
@@ -215,8 +220,11 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
         }
 
         if (!version.isEmpty()) {
+            auto currentVersion = qApp->applicationVersion();
+            currentVersion = AppUtilities::userVersion(currentVersion);
+
             // Check with current version
-            if (version != qApp->applicationVersion()) {
+            if (version != currentVersion) {
                 TRACE << "Install firmware version from server " << version <<
                     "started with manual update" << mStartedWithManualUpdate <<
                     "started with server update" << mStartedWithFWServerUpdate;
@@ -230,9 +238,12 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
             }
 
         } else if (mStartedWithFWServerUpdate) {
-            // Install the latest version, and exit from fw server update
-            TRACE << "Install latest version";
-            checkPartialUpdate(false, true);
+            // Install the latest force version back to normal update, and exit from fw server update
+            TRACE << "Install latest version if forced";
+            mStartedWithFWServerUpdate = false;
+            QSettings settings;
+            settings.setValue(m_IsFWServerUpdateSetting, false);
+            checkPartialUpdate(false, false);
         }
     });
 
@@ -1917,7 +1928,7 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
 
             if (isForce) {
                 // Update the earlier force update that is greater than the current version
-                if (mTestMode || !obj.value(m_Staging).toBool()) {
+                if ((mTestMode && !mFactoryTestMode) || !obj.value(m_Staging).toBool()) {
                     mHasForceUpdate = true;
                     emit forceUpdateChanged();
                     latestVersionKey = keyVersion;
@@ -1983,7 +1994,7 @@ QString NUVE::System::findLatestVersion(QJsonObject updateJson) {
 
     foreach (auto ver, versions) {
         auto latestVersionObj = updateJson.value(ver).toObject();
-        if (mTestMode || !latestVersionObj.value(m_Staging).toBool()) {
+        if ((mTestMode && !mFactoryTestMode) || !latestVersionObj.value(m_Staging).toBool()) {
             latestVersionKey = ver;
             break;
         }
@@ -2102,25 +2113,25 @@ bool NUVE::System::sendLog(bool showAlert)
     return true;
 }
 
-void NUVE::System::sendFirstRunLog()
+void NUVE::System::sendFirstRunLog(bool showAlert)
 {
     if (!installSSHPass()) {
         QString error("Device is not ready to send log on First run!");
         qWarning() << error;
-        emit logAlert(error);
+        if (showAlert) emit logAlert(error);
         return;
     }
 
     if (isBusylogSender()){
         QString error("Sending log on first run is in progress!");
         qWarning() << error << "State is :" << mLogSender.state() << mLogSender.keys();
-        emit logAlert(error);
+        if (showAlert) emit logAlert(error);
         return;
     }
 
     auto initialized = mLogSender.property("initializedUID");
     if (initialized.isValid() && initialized.toBool()){
-        sendFirstRunLogFile();
+        sendFirstRunLogFile(showAlert);
 
     } else {
         auto dirCreatorCallback = [=](QString error) {
@@ -2130,13 +2141,13 @@ void NUVE::System::sendFirstRunLog()
             if (!error.isEmpty()) {
                 error = "error while creating first run log directory on remote: " + error;
                 qWarning() << error;
-                emit logAlert(error);
+                if (showAlert) emit logAlert(error);
                 return;
             }
 
             mLogSender.setProperty("initializedUID", true);
 
-            sendFirstRunLogFile();
+            sendFirstRunLogFile(showAlert);
         };
 
         mLogSender.setRole("dirFirstRun", dirCreatorCallback);
@@ -2241,7 +2252,7 @@ void NUVE::System::prepareResultsDirectory(const QString &remoteIP,
     mFileSender.start("/bin/bash", {"-c", createPath});
 }
 
-QString NUVE::System::generateLog()
+QString NUVE::System::generateLog(bool showAlert)
 {
     // Validating the storage
     QStorageInfo storageInfo("/mnt/log/log/");
@@ -2251,7 +2262,7 @@ QString NUVE::System::generateLog()
     }
 
     if (!storageInfo.isValid() || !storageInfo.isReady()) {
-        emit logAlert("The Logging directory is not ready.");
+        if (showAlert) emit logAlert("The Logging directory is not ready.");
         return "";
     }
 
@@ -2268,7 +2279,7 @@ QString NUVE::System::generateLog()
         AppUtilities::removeContentDirectory("/mnt/log/networkLogs/");
 
         if (!hasFreeBytes()) {
-            emit logAlert("The Logging directory has no space.");
+            if (showAlert) emit logAlert("The Logging directory has no space.");
             return "";
         }
     }
@@ -2286,7 +2297,7 @@ QString NUVE::System::generateLog()
 
         QString error("Unable to create log file.");
         SYS_LOG << error << exitCode << removed;
-        emit logAlert(error);
+        if (showAlert) emit logAlert(error);
 
         return "";
     }
@@ -2294,9 +2305,21 @@ QString NUVE::System::generateLog()
     return filename;
 }
 
-void NUVE::System::sendFirstRunLogFile()
+void NUVE::System::sendFirstRunLogFile(bool showAlert)
 {
-    auto filename = generateLog();
+    static int tryWithoutSN = 0;
+    tryWithoutSN++;
+
+    if (tryWithoutSN < 3) {
+        qWarning() << "Preventing to send too much logs";
+        return;
+
+    } else {
+        tryWithoutSN = 0;
+        TRACE << "Sending first run log file...";
+    }
+
+    auto filename = generateLog(showAlert);
     if (filename.isEmpty())
         return;
 
@@ -2307,11 +2330,11 @@ void NUVE::System::sendFirstRunLogFile()
         if (!error.isEmpty()) {
             error = "error while sending first run log directory on remote: " + error;
             qWarning() << error;
-            emit logAlert(error);
+            if (showAlert) emit logAlert(error);
             return;
         }
 
-        emit logAlert("Log is sent for first run error!");
+        if (showAlert) emit logAlert("Log is sent for first run error!");
     };
 
     mLogSender.setRole("sendFirstRunLog", sendCallback);
@@ -2327,7 +2350,7 @@ void NUVE::System::sendFirstRunLogFile()
 
 bool NUVE::System::sendLogFile(bool showAlert)
 {
-    auto filename = generateLog();
+    auto filename = generateLog(showAlert);
     if (filename.isEmpty()) {
         if (mLastReceivedCommands.contains(Cmd_PushLogs)) {
             SYS_LOG << "Log file generation failed. Command cleared" << Cmd_PushLogs;
@@ -2622,6 +2645,11 @@ void NUVE::senderProcess::initialize(std::function<void (QString)> errorHandler,
             mErrorHandler(error);
         }
     });
+}
+
+void NUVE::System::setFactoryTestMode(bool newFactoryTestMode)
+{
+    mFactoryTestMode = newFactoryTestMode;
 }
 
 void NUVE::System::saveNetworkLogs() {

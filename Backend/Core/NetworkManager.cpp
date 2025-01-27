@@ -33,12 +33,17 @@ void NetworkManager::clearCache()
 
     mNetManager->clearAccessCache();
     mNetManager->clearConnectionCache();
+
+    emit cacheCleared();
 }
 
 QNetworkReply *NetworkManager::get(const QNetworkRequest &request, bool noCheckError)
 {
     auto reply = mNetManager->get(request);
-    if (reply) reply->setProperty("noCheckError", noCheckError);
+    if (reply) {
+        reply->setProperty("noCheckError", noCheckError);
+        connect(this, &NetworkManager::cacheCleared, reply, &QNetworkReply::close);
+    }
     return reply;
 }
 
@@ -47,7 +52,10 @@ QNetworkReply *NetworkManager::post(const QNetworkRequest &request,
                                     bool noCheckError)
 {
     auto reply = mNetManager->post(request, data);
-    if (reply) reply->setProperty("noCheckError", noCheckError);
+    if (reply) {
+        reply->setProperty("noCheckError", noCheckError);
+        connect(this, &NetworkManager::cacheCleared, reply, &QNetworkReply::close);
+    }
     return reply;
 }
 
@@ -56,7 +64,10 @@ QNetworkReply *NetworkManager::put(const QNetworkRequest &request,
                                    bool noCheckError)
 {
     auto reply = mNetManager->put(request, data);
-    reply->setProperty("noCheckError", noCheckError);
+    if (reply) {
+        reply->setProperty("noCheckError", noCheckError);
+        connect(this, &NetworkManager::cacheCleared, reply, &QNetworkReply::close);
+    }
     return reply;
 }
 

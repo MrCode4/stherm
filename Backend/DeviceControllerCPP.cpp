@@ -659,6 +659,7 @@ void DeviceControllerCPP::startDevice()
 
     mIsDeviceStarted = true;
 
+    // means board not attached and test mode should be started
     if (startMode == 0) {
         startTestMode();
 
@@ -854,8 +855,10 @@ void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
 void DeviceControllerCPP::startTestMode()
 {
     // Update test mode in system
-    if (m_system)
+    if (m_system) {
         m_system->setTestMode(true);
+        m_system->setFactoryTestMode(true);
+    }
 }
 
 bool DeviceControllerCPP::checkUpdateMode()

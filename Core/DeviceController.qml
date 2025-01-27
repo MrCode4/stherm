@@ -290,7 +290,7 @@ I_DeviceController {
 
                 // sending log automatically if fails to get SN on first RUN
                 if (tryCount > 0 && initialSetup && NetworkInterface.connectedWifi) {
-                    deviceControllerCPP.system.sendFirstRunLog();
+                    deviceControllerCPP.system.sendFirstRunLog(false);
                 }
 
                 _retrycheckSNTimerInterval += 10000;

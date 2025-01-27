@@ -90,6 +90,7 @@ QNetworkReply* RestApiExecutor::downloadFile(const QString &url, ResponseCallbac
     else {
         mCallbacks.insert(key, callback);
         QNetworkRequest request(url);
+        request.setTransferTimeout(10000);
         if (setAuth) setApiAuth(request);
         QNetworkReply *reply = get(request);
         if (reply) {

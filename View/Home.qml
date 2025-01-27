@@ -515,10 +515,11 @@ Control {
             uiSession.settingsReady = true;
         }
 
+        //! Start test mode due to serial number response.
         function onTestModeStarted() {
             if (uiSession.uiTestMode)
                 return;
-            console.log("Test mode started due to serial number issues.")
+            console.log("Test mode started due to serial number response.")
             uiSession.uiTestMode = true;
             // we need this to differentiate between first run flow and testing flow
             deviceController.startMode = 0;

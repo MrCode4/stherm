@@ -20,7 +20,7 @@ BasePageView {
 
     property int testCounter: 0
 
-    property string appVesion: ""
+    property string appVersion: ""
     property bool showTestMode: false
 
     //! true: Restart device after all wifis forgotten in this page.
@@ -31,9 +31,7 @@ BasePageView {
     title: "Device Info"
 
     Component.onCompleted: {
-        const versionArray = Application.version.split('.')
-        const versionArrayMain = versionArray.splice(0, 3)
-        appVesion = versionArrayMain.join('.')
+        appVersion = AppUtilities.userVersion(Application.version);
     }
 
     /* Children
@@ -82,7 +80,7 @@ BasePageView {
             { "key": "Contians FCC ID",     "value": "VPYLB1DX" },
             { "key": "IC",                  "value": "LBWA1KL1FX-875" },
             { "key": "Serial No",           "value": system.serialNumber },
-            { "key": "Software version",    "value": appVesion },
+            { "key": "Software version",    "value": appVersion },
             { "key": "Hardware version",    "value": "01" },
             { "key": "Custom Name",         "value": "Living Room" },
             { "key": "URL",                 "value": '<a href="nuvehome.com" style="text-decoration:none;color:#44A0FF;">nuvehome.com</a>' },
