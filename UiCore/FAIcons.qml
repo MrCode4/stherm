@@ -65,5 +65,6 @@ QtObject {
     readonly property string temperatureThreeQuarters:          "\uf2c8"
     readonly property string shield:                            "\uf132"
     readonly property string memory:                            "\uf538"
+    readonly property string locationDot:                       "\uf3c5"
 
 }
