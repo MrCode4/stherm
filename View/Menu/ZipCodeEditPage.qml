@@ -49,6 +49,9 @@ BasePageView {
         onClicked: {
             //! TODO: Push the new data and show errors to user
 
+            // serviceTitan.zipCode= zipCodeTf.text.toUpperCase();
+            // serviceTitan.country = countryCombobox.currentText;
+
             goBack();
         }
     }
@@ -67,7 +70,8 @@ BasePageView {
             Layout.columnSpan: 2
             Layout.fillWidth: true
 
-            text: "The zip code provided for your address is used to display accurate outdoor temperature information.\nPlease enter the correct information.\n\n"
+            font.pointSize: root.font.pointSize * 0.95
+            text: "The zip code provided for your address is used to display accurate outdoor temperature information.\nPlease enter the correct information.\n"
             horizontalAlignment: Text.AlignHCenter
             wrapMode: Text.WordWrap
         }
