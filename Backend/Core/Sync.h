@@ -146,6 +146,7 @@ signals:
     void customerInfoReady(bool success, QVariantMap data,  QString error, bool needToRetry = false);
 
     void outdoorTemperatureReady(bool success = false, double temp = -1.0);
+    void zipCodeIsInvalid();
 
     void scheduleCleared(int id, bool success);
     void scheduleEdited(int id, bool success);

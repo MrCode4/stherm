@@ -884,6 +884,12 @@ void Sync::getOutdoorTemperature() {
         }
         else {
             emit  outdoorTemperatureReady();
+
+            // Wrong zip code:
+            if (reply->error() == QNetworkReply::ContentNotFoundError) {
+                SYNC_LOG << "Zip code is not valid: " << rawData;
+                emit zipCodeIsInvalid();
+            }
         }
     };
 

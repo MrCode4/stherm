@@ -12,9 +12,24 @@ I_PopUp {
     /* Property declaration
      * ****************************************************************************************/
     property DeviceController deviceController
-    property string           detailMessage: "The thermostat is currently offline, and or no response from weather server, " +
-                                             (deviceController.dfhSystemType === AppSpec.HeatPump ? "your heat pump is managing the heating.\n\nWould you like to switch to heating through the auxiliary instead?" :
-                                                                                                    "your auxiliary is managing the heating.\n\nWould you like to switch to heating through the heat pump instead?")
+
+    property string           detailMessage: {
+        // Default: Zip code is invalid
+        var userInfo = "The thermostat can not fetch the outdoor temperature due to incorrect Zip Code provided, ";
+
+        if (!deviceController.deviceControllerCPP.isEligibleOutdoorTemperature) {
+            userInfo = "The thermostat is currently offline, and or no response from weather server, ";
+        }
+
+        // System type
+        if (deviceController.dfhSystemType === AppSpec.HeatPump) {
+            userInfo += "your heat pump is managing the heating.\n\nWould you like to switch to heating through the auxiliary instead?";
+
+        } else {
+            userInfo += "your auxiliary is managing the heating.\n\nWould you like to switch to heating through the heat pump instead?";
+        }
+        return userInfo;
+    }
 
     /* signals
      * ****************************************************************************************/

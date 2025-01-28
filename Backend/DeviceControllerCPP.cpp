@@ -150,6 +150,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , mDeviceHasInternet(false)
     , mIsNeedOutdoorTemperature(false)
     , mIsEligibleOutdoorTemperature(false)
+    , mIsZipCodeValid(true)
 {
 
     m_system = _deviceAPI->system();
@@ -347,6 +348,10 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         m_sync->getOutdoorTemperature();
     });
 
+    connect(m_sync, &NUVE::Sync::zipCodeIsInvalid, this, [this]() {
+        updateZipCodeValidation(false);
+    });
+
     // Get the outdoor temperature when serial number is ready.
     connect(m_sync, &NUVE::Sync::serialNumberReady, this, [this]() {
         checkForOutdoorTemperature();
@@ -355,6 +360,8 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     connect(m_sync, &NUVE::Sync::outdoorTemperatureReady, this, [this](bool success, double temp) {
         LOG_DC << "Outdoor temperature:" << success << temp;
         if (success) {
+            updateZipCodeValidation(true);
+
             mSchemeDataProvider->setOutdoorTemperature(temp);
 
             mGetOutdoorTemperatureTimer.setProperty(m_GetOutdoorTemperatureReceived, true);
@@ -1802,6 +1809,20 @@ void DeviceControllerCPP::updateIsEligibleOutdoorTemperature()
 bool DeviceControllerCPP::isEligibleOutdoorTemperature()
 {
     return mIsEligibleOutdoorTemperature;
+}
+
+void DeviceControllerCPP::updateZipCodeValidation(const bool &isValid)
+{
+    if (mIsZipCodeValid == isValid)
+        return;
+
+    mIsZipCodeValid = isValid;
+    isZipCodeValidChanged();
+}
+
+bool DeviceControllerCPP::isZipCodeValid()
+{
+    return mIsZipCodeValid;
 }
 
 void DeviceControllerCPP::publishTestResults(const QString &resultsPath)
