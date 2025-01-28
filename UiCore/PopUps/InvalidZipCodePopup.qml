@@ -14,7 +14,7 @@ I_PopUp {
      * ****************************************************************************************/
     property var uiSession
 
-    property DeviceControllerCPP deviceControllerCPP: uiSession.deviceController
+    property DeviceControllerCPP deviceControllerCPP: uiSession.deviceController.deviceControllerCPP
 
     property ServiceTitan serviceTitan: uiSession.appModel.serviceTitan
 
