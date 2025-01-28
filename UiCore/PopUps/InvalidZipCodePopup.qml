@@ -14,7 +14,19 @@ I_PopUp {
      * ****************************************************************************************/
     property var uiSession
 
+    property DeviceControllerCPP deviceControllerCPP: uiSession.deviceController
+
     property ServiceTitan serviceTitan: uiSession.appModel.serviceTitan
+
+    property bool isValidToKeepOpen: deviceControllerCPP.isNeedOutdoorTemperature &&
+                                     deviceControllerCPP.isEligibleOutdoorTemperature &&
+                                     !deviceControllerCPP.isZipCodeValid
+
+    //! Close the popup when the popup is not valid to keep it open due to condition changes
+    onIsValidToKeepOpenChanged: {
+        if (!isValidToKeepOpen)
+            close();
+    }
 
     /* Object properties
      * ****************************************************************************************/
@@ -41,7 +53,7 @@ I_PopUp {
                     userInfo += `To ensure accurate outdoor temperature readings, please verify the following zip code: ${serviceTitan.zipCode}`;
 
                 } else {
-                   userInfo += "The zip code is currently missing. To get accurate outdoor temperature readings, please update the zip code."
+                    userInfo += "The zip code is currently missing. To get accurate outdoor temperature readings, please update the zip code."
                 }
 
                 return userInfo;

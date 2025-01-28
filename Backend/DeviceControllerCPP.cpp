@@ -1817,7 +1817,7 @@ void DeviceControllerCPP::updateZipCodeValidation(const bool &isValid)
         return;
 
     mIsZipCodeValid = isValid;
-    isZipCodeValidChanged();
+    emit isZipCodeValidChanged();
 }
 
 bool DeviceControllerCPP::isZipCodeValid()

@@ -129,6 +129,17 @@ QtObject {
         }
     }
 
+    //! To show the incorrect zip code popup
+    property Timer invalidZipCodePopupTimer: Timer {
+        interval: 12 * 60 * 60 * 1000
+        repeat: false
+        running: false
+
+        onTriggered: {
+            uiSession.popUps.showInvalidZipCodePopup();
+        }
+    }
+
     Component.onCompleted: {
         // Filter out null/undefined messages from file data.
         device.messages = device.messages.filter(message => message !== null && message !== undefined);
@@ -559,6 +570,18 @@ QtObject {
             addNewMessageFromData(messageType, alertMessage, DateTimeManager.nowUTC());
 
         }
+
+        function onIsNeedOutdoorTemperatureChanged() {
+            checkToShowInvalidZipCodePopup();
+        }
+
+        function onIsEligibleOutdoorTemperatureChanged() {
+            checkToShowInvalidZipCodePopup();
+        }
+
+        function onIsZipCodeValidChanged() {
+          checkToShowInvalidZipCodePopup();
+        }
     }
 
     property Connections  messagesDevice: Connections {
@@ -728,5 +751,39 @@ QtObject {
         };
 
         deviceController.sync.pushAlertToServer(fisrtAlert._qsUuid , sendData);
+    }
+
+    function checkToShowInvalidZipCodePopup() {
+        console.log("checkToShowInvalidZipCodePopup: ", deviceController.deviceControllerCPP.isNeedOutdoorTemperature,
+                    deviceController.deviceControllerCPP.isEligibleOutdoorTemperature,
+                    deviceController.deviceControllerCPP.isZipCodeValid,
+                    invalidZipCodePopupTimer.running);
+
+        if (!deviceController.deviceControllerCPP.isNeedOutdoorTemperature ||
+                !deviceController.deviceControllerCPP.isEligibleOutdoorTemperature) {
+            invalidZipCodePopupTimer.stop();
+            return;
+        }
+
+        if (deviceController.deviceControllerCPP.isZipCodeValid) {
+            invalidZipCodePopupTimer.stop();
+
+        } else if (!invalidZipCodePopupTimer.running) {
+            var popup = uiSession.popUps.showInvalidZipCodePopup();
+            popup.hid.connect(this, checkStartInvalidZipCodePopupTimer);
+            popup.destructed.disconnect(this, checkStartInvalidZipCodePopupTimer);
+        }
+    }
+
+    //! Check the invalidZipCodePopupTimer based on the condition to start/stop it.
+    function checkStartInvalidZipCodePopupTimer() {
+        if (deviceController.deviceControllerCPP.isNeedOutdoorTemperature &&
+                deviceController.deviceControllerCPP.isEligibleOutdoorTemperature &&
+                !deviceController.deviceControllerCPP.isZipCodeValid) {
+            invalidZipCodePopupTimer.start();
+
+        } else {
+            invalidZipCodePopupTimer.stop();
+        }
     }
 }

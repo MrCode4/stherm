@@ -302,13 +302,13 @@ Item {
     }
 
     Component {
-        id: incorrectZipCodePopupComponent
+        id: invalidZipCodePopupComponent
 
-        IncorrectZipCodePopup {
+        InvalidZipCodePopup {
             uiSession: root.uiSession
 
             onClosed: {
-                destroy(this)
+                destroy(this);
             }
         }
     }
@@ -490,9 +490,11 @@ Item {
         mdtPopup.open()
     }
 
-    function showIncorrectZipCodePopup() {
-        var popup = incorrectZipCodePopupComponent.createObject(root)
+    function showInvalidZipCodePopup() : I_PopUp {
+        var popup = invalidZipCodePopupComponent.createObject(root)
 
         uiSession.popupLayout.displayPopUp(popup);
+
+        return popup;
     }
 }
