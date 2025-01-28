@@ -96,6 +96,8 @@ I_DeviceController {
         property string syncReturnedZip: ""
     }
 
+    property int connectedWiFiStrength: AppSpec.wiFiStrength(NetworkInterface.connectedWifi?.strength ?? 0)
+
     //! Active the Network Connection Watchdog when device has not internet for 1 hour.
     property Timer networkWatchdogTimer: Timer {
         repeat: false
@@ -310,6 +312,10 @@ I_DeviceController {
         function onTemperatureUnitChanged() {
             deviceControllerCPP?.setCelsius(temperatureUnit === AppSpec.TempratureUnit.Cel)
         }
+
+        function onConnectedWiFiStrengthChanged() {
+            updateEditMode(AppSpec.EMWiFi);
+        }
     }
 
     property Connections  deviceControllerConnection: Connections {
@@ -463,6 +469,10 @@ I_DeviceController {
 
         function onForgettingAllWifisChanged() {
             console.log("Forgetting Wifis ", (NetworkInterface.forgettingAllWifis ? "started." : "finished."))
+        }
+
+        function onConnectedWifiChanged() {
+            updateEditMode(AppSpec.EMWiFi);
         }
     }
 
@@ -1462,7 +1472,10 @@ I_DeviceController {
                     "wire": AppSpec.accessoriesWireTypeString(device.systemSetup.systemAccessories.accessoriesWireType),
                     "mode": device.systemSetup.systemAccessories.accessoriesWireType === AppSpec.None ?
                                 AppSpec.ATNone : device.systemSetup.systemAccessories.accessoriesType,
-                }
+                },
+
+                "wifiName": getConnectedWiFiName(),
+                "wifiStrength": `${NetworkInterface.connectedWifi?.strength ?? 0}`
             },
 
             // Report the app version
@@ -2283,5 +2296,21 @@ I_DeviceController {
             limitedModeTimer.start();
         else 
             limitedModeTimer.stop();
+    }
+
+    function getConnectedWiFiName() : string {
+        if (NetworkInterface.connectedWifi) {
+            if (NetworkInterface.connectedWifi.ssid.length > 0) {
+                return NetworkInterface.connectedWifi.ssid;
+            }
+
+            if (NetworkInterface.connectedWifi.bssid.length > 0) {
+                return NetworkInterface.connectedWifi.bssid;
+            }
+
+            return "N/A";
+        }
+
+        return "None"
     }
 }
