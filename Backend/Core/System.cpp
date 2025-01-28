@@ -69,6 +69,11 @@ inline QByteArray calculateChecksum(const QByteArray &data) {
     return QCryptographicHash::hash(data, QCryptographicHash::Md5);
 }
 
+//! Function to calculate Hex MD5 of QStrings
+inline QString toHexMd5(const QString &data) {
+    return QCryptographicHash::hash(data.toUtf8(), QCryptographicHash::Md5).toHex();
+}
+
 inline int parseProgress(const QString &in) {
     QRegularExpression regex(R"((\d+)%\s+\d+)");
     QRegularExpressionMatch match = regex.match(in);
@@ -1411,7 +1416,12 @@ void NUVE::System::checkAndDownloadPartialUpdate(const QString installingVersion
 
     // Fetch the file from web location
     if (!versionAddressInServer.startsWith("/")) versionAddressInServer = "/" + versionAddressInServer;
-    QNetworkReply* reply = downloadFile(m_updateServerUrl + versionAddressInServer, callback, false);
+
+    QString versionUrlInServer = QString("%0%1?id=%2")
+                              .arg(m_updateServerUrl,
+                                  versionAddressInServer,
+                                  toHexMd5(QString::fromStdString(DeviceInfo::me()->uid())));
+    QNetworkReply* reply = downloadFile(versionUrlInServer, callback, false);
     if (!reply) {
         // another call in progress, so ignore
         SYS_LOG << "Downloading file " << (m_updateServerUrl + versionAddressInServer) << " got called more than once";
