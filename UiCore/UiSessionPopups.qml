@@ -301,6 +301,18 @@ Item {
         }
     }
 
+    Component {
+        id: incorrectZipCodePopupComponent
+
+        IncorrectZipCodePopup {
+            uiSession: root.uiSession
+
+            onClosed: {
+                destroy(this)
+            }
+        }
+    }
+
     //! Connections to show installConfirmation popup
     Connections {
         target: system
@@ -476,5 +488,11 @@ Item {
     function showManualDateTimeWarningPopup() {
         var mdtPopup = manualDateTimeWarningPopup.createObject(root)
         mdtPopup.open()
+    }
+
+    function showIncorrectZipCodePopup() {
+        var popup = incorrectZipCodePopupComponent.createObject(root)
+
+        uiSession.popupLayout.displayPopUp(popup);
     }
 }
