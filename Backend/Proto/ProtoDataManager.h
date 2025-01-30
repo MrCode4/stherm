@@ -4,6 +4,8 @@
 #include <QQmlEngine>
 
 #include "DevApiExecutor.h"
+#include "AppSpecCPP.h"
+
 #ifdef PROTOBUF_ENABLED
 #include "streamdata.pb.h"
 #endif
@@ -37,9 +39,13 @@ private:
         CMCurrentHeatingStage = 1 << 8,
         CMCurrentFanStatus    = 1 << 9,
         CMLedStatus           = 1 << 10,
+        CMSystemType          = 1 << 11,
+        CMRunningMode         = 1 << 12,
+        CMOnlineStatus        = 1 << 13,
         CMAll                 = CMSetTemperature | CMSetHumidity | CMCurrentTemperature | CMCurrentHumidity |
                                 CMMCUTemperature | CMAirPressure | CMCurrentAirQuality | CMCurrentCoolingStage |
-                                CMCurrentHeatingStage | CMCurrentFanStatus | CMLedStatus
+                                CMCurrentHeatingStage | CMCurrentFanStatus | CMLedStatus | CMSystemType |
+                                CMRunningMode | CMOnlineStatus
     };
 
 public:
@@ -55,6 +61,9 @@ public:
     Q_INVOKABLE void setCurrentCoolingStage(const int &coolingStage);
     Q_INVOKABLE void setCurrentHeatingStage(const int &heatingStage);
     Q_INVOKABLE void setCurrentFanStatus(const bool &fanStatus);
+    Q_INVOKABLE void setSystemType(const AppSpecCPP::SystemType &systemSetup);
+    Q_INVOKABLE void setRunningMode(const AppSpecCPP::SystemMode &runningMode);
+    Q_INVOKABLE void setOnlineStatus(const bool &onlineStatus);
     Q_INVOKABLE void setLedStatus(const bool &ledStatus);
     //! Send the binary data to server
     Q_INVOKABLE void sendDataToServer();

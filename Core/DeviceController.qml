@@ -495,6 +495,8 @@ I_DeviceController {
         target: NetworkInterface
 
         function onHasInternetChanged() {
+            ProtoDataManager.setOnlineStatus(NetworkInterface.hasInternet);
+
             deviceControllerCPP.wifiConnected(NetworkInterface.hasInternet);
 
             if (NetworkInterface.hasInternet) {
@@ -1060,6 +1062,10 @@ I_DeviceController {
         //! TODO
         //! Set default 101325 kPa
         ProtoDataManager.setAirPressure(101325);
+
+        ProtoDataManager.setSystemType(device.systemSetup.systemType);
+        setSystemModeToProto();
+        ProtoDataManager.setOnlineStatus(false);
     }
 
     onStopDeviceRequested: {
@@ -1082,6 +1088,7 @@ I_DeviceController {
         deviceControllerCPP.setAutoMinReqTemp(device.autoMinReqTemp);
 
         checkLimitedModeRemainigTimer();
+
     }
 
     /* Children
@@ -1271,12 +1278,14 @@ I_DeviceController {
                 device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
 
             setVacationOn(true);
+            setSystemModeToProto();
 
         } else if (systemMode >= AppSpec.Cooling && systemMode < AppSpec.SMUnknown) {
             //! TODo required actions if any
 
             if (checkToUpdateSystemMode(systemMode, force)) {
                 device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
+                setSystemModeToProto();
 
                 if (save) {
                     updateEditMode(AppSpec.EMSystemMode);
@@ -1720,6 +1729,8 @@ I_DeviceController {
 
         device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
         device.systemSetup.systemType = systemType;
+
+        ProtoDataManager.setSystemType(systemType);
 
         if (device.systemSetup.systemMode === AppSpecCPP.EmergencyHeat &&
                 systemType !== AppSpecCPP.HeatPump) {
@@ -2336,6 +2347,16 @@ I_DeviceController {
             limitedModeTimer.start();
         else 
             limitedModeTimer.stop();
+    }
+
+    function setSystemModeToProto() {
+        var sysMode = device.systemSetup.systemMode;
+
+        if (device.systemSetup.isVacation) {
+            sysMode = AppSpec.Vacation;
+        }
+
+        ProtoDataManager.setRunningMode(sysMode);
     }
 
     function getConnectedWiFiName() : string {
