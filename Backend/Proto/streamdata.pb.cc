@@ -28,6 +28,12 @@ namespace _fl = ::google::protobuf::internal::field_layout;
 inline constexpr LiveDataPoint::Impl_::Impl_(
     ::_pbi::ConstantInitialized) noexcept
       : _cached_size_{0},
+        system_type_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
+        running_mode_(
+            &::google::protobuf::internal::fixed_address_empty_string,
+            ::_pbi::ConstantInitialized()),
         time_{nullptr},
         set_temperature_{0},
         set_humidity_{0},
@@ -40,6 +46,7 @@ inline constexpr LiveDataPoint::Impl_::Impl_(
         current_heating_stage_{static_cast< ::HeatingStage >(0)},
         current_fan_status_{static_cast< ::FanStatus >(0)},
         led_status_{static_cast< ::LedStatus >(0)},
+        online_status_{false},
         is_sync_{false} {}
 
 template <typename>
@@ -112,9 +119,10 @@ const ::uint32_t
         PROTOBUF_FIELD_OFFSET(::LiveDataPoint, _impl_.current_heating_stage_),
         PROTOBUF_FIELD_OFFSET(::LiveDataPoint, _impl_.current_fan_status_),
         PROTOBUF_FIELD_OFFSET(::LiveDataPoint, _impl_.led_status_),
+        PROTOBUF_FIELD_OFFSET(::LiveDataPoint, _impl_.system_type_),
+        PROTOBUF_FIELD_OFFSET(::LiveDataPoint, _impl_.running_mode_),
+        PROTOBUF_FIELD_OFFSET(::LiveDataPoint, _impl_.online_status_),
         PROTOBUF_FIELD_OFFSET(::LiveDataPoint, _impl_.is_sync_),
-        0,
-        1,
         2,
         3,
         4,
@@ -126,6 +134,11 @@ const ::uint32_t
         10,
         11,
         12,
+        13,
+        0,
+        1,
+        14,
+        15,
         ~0u,  // no _has_bits_
         PROTOBUF_FIELD_OFFSET(::LiveDataPointList, _internal_metadata_),
         ~0u,  // no _extensions_
@@ -139,8 +152,8 @@ const ::uint32_t
 
 static const ::_pbi::MigrationSchema
     schemas[] ABSL_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-        {0, 21, -1, sizeof(::LiveDataPoint)},
-        {34, -1, -1, sizeof(::LiveDataPointList)},
+        {0, 24, -1, sizeof(::LiveDataPoint)},
+        {40, -1, -1, sizeof(::LiveDataPointList)},
 };
 static const ::_pb::Message* const file_default_instances[] = {
     &::_LiveDataPoint_default_instance_._instance,
@@ -149,7 +162,7 @@ static const ::_pb::Message* const file_default_instances[] = {
 const char descriptor_table_protodef_streamdata_2eproto[] ABSL_ATTRIBUTE_SECTION_VARIABLE(
     protodesc_cold) = {
     "\n\020streamdata.proto\032\037google/protobuf/time"
-    "stamp.proto\"\223\006\n\rLiveDataPoint\022(\n\004time\030\001 "
+    "stamp.proto\"\227\007\n\rLiveDataPoint\022(\n\004time\030\001 "
     "\001(\0132\032.google.protobuf.Timestamp\022\034\n\017set_t"
     "emperature\030\002 \001(\002H\000\210\001\001\022\031\n\014set_humidity\030\003 "
     "\001(\002H\001\210\001\001\022)\n\034current_temperature_embedded"
@@ -161,29 +174,32 @@ const char descriptor_table_protodef_streamdata_2eproto[] ABSL_ATTRIBUTE_SECTION
     "\001(\0162\r.CoolingStageH\007\210\001\001\0221\n\025current_heati"
     "ng_stage\030\n \001(\0162\r.HeatingStageH\010\210\001\001\022+\n\022cu"
     "rrent_fan_status\030\013 \001(\0162\n.FanStatusH\t\210\001\001\022"
-    "#\n\nled_status\030\014 \001(\0162\n.LedStatusH\n\210\001\001\022\017\n\007"
-    "is_sync\030\r \001(\010B\022\n\020_set_temperatureB\017\n\r_se"
-    "t_humidityB\037\n\035_current_temperature_embed"
-    "dedB\034\n\032_current_humidity_embeddedB\032\n\030_cu"
-    "rrent_temperature_MCUB\030\n\026_air_pressure_e"
-    "mbeddedB\026\n\024_current_air_qualityB\030\n\026_curr"
-    "ent_cooling_stageB\030\n\026_current_heating_st"
-    "ageB\025\n\023_current_fan_statusB\r\n\013_led_statu"
-    "s\"8\n\021LiveDataPointList\022#\n\013data_points\030\001 "
-    "\003(\0132\016.LiveDataPoint*s\n\nAirQuality\022\032\n\026AIR"
-    "_QUALITY_VALUE_NONE\020\000\022\027\n\023AIR_QUALITY_VAL"
-    "UE_0\020\001\022\027\n\023AIR_QUALITY_VALUE_1\020\002\022\027\n\023AIR_Q"
-    "UALITY_VALUE_2\020\003*_\n\014CoolingStage\022\031\n\025COOL"
-    "ING_STAGE_VALUE_0\020\000\022\031\n\025COOLING_STAGE_VAL"
-    "UE_1\020\001\022\031\n\025COOLING_STAGE_VALUE_2\020\002*z\n\014Hea"
-    "tingStage\022\031\n\025HEATING_STAGE_VALUE_0\020\000\022\031\n\025"
-    "HEATING_STAGE_VALUE_1\020\001\022\031\n\025HEATING_STAGE"
-    "_VALUE_2\020\002\022\031\n\025HEATING_STAGE_VALUE_3\020\003*;\n"
-    "\tFanStatus\022\026\n\022FAN_STATUS_VALUE_0\020\000\022\026\n\022FA"
-    "N_STATUS_VALUE_1\020\001*;\n\tLedStatus\022\026\n\022LED_S"
-    "TATUS_VALUE_0\020\000\022\026\n\022LED_STATUS_VALUE_1\020\001B"
-    "7\n!com.nuvehvac.device.rest.protobufB\022Li"
-    "veDataPointProtob\006proto3"
+    "#\n\nled_status\030\014 \001(\0162\n.LedStatusH\n\210\001\001\022\030\n\013"
+    "system_type\030\r \001(\tH\013\210\001\001\022\031\n\014running_mode\030\016"
+    " \001(\tH\014\210\001\001\022\032\n\ronline_status\030\017 \001(\010H\r\210\001\001\022\017\n"
+    "\007is_sync\030\020 \001(\010B\022\n\020_set_temperatureB\017\n\r_s"
+    "et_humidityB\037\n\035_current_temperature_embe"
+    "ddedB\034\n\032_current_humidity_embeddedB\032\n\030_c"
+    "urrent_temperature_MCUB\030\n\026_air_pressure_"
+    "embeddedB\026\n\024_current_air_qualityB\030\n\026_cur"
+    "rent_cooling_stageB\030\n\026_current_heating_s"
+    "tageB\025\n\023_current_fan_statusB\r\n\013_led_stat"
+    "usB\016\n\014_system_typeB\017\n\r_running_modeB\020\n\016_"
+    "online_status\"8\n\021LiveDataPointList\022#\n\013da"
+    "ta_points\030\001 \003(\0132\016.LiveDataPoint*s\n\nAirQu"
+    "ality\022\032\n\026AIR_QUALITY_VALUE_NONE\020\000\022\027\n\023AIR"
+    "_QUALITY_VALUE_0\020\001\022\027\n\023AIR_QUALITY_VALUE_"
+    "1\020\002\022\027\n\023AIR_QUALITY_VALUE_2\020\003*_\n\014CoolingS"
+    "tage\022\031\n\025COOLING_STAGE_VALUE_0\020\000\022\031\n\025COOLI"
+    "NG_STAGE_VALUE_1\020\001\022\031\n\025COOLING_STAGE_VALU"
+    "E_2\020\002*z\n\014HeatingStage\022\031\n\025HEATING_STAGE_V"
+    "ALUE_0\020\000\022\031\n\025HEATING_STAGE_VALUE_1\020\001\022\031\n\025H"
+    "EATING_STAGE_VALUE_2\020\002\022\031\n\025HEATING_STAGE_"
+    "VALUE_3\020\003*;\n\tFanStatus\022\026\n\022FAN_STATUS_VAL"
+    "UE_0\020\000\022\026\n\022FAN_STATUS_VALUE_1\020\001*;\n\tLedSta"
+    "tus\022\026\n\022LED_STATUS_VALUE_0\020\000\022\026\n\022LED_STATU"
+    "S_VALUE_1\020\001B7\n!com.nuvehvac.device.rest."
+    "protobufB\022LiveDataPointProtob\006proto3"
 };
 static const ::_pbi::DescriptorTable* const descriptor_table_streamdata_2eproto_deps[1] =
     {
@@ -193,7 +209,7 @@ static ::absl::once_flag descriptor_table_streamdata_2eproto_once;
 PROTOBUF_CONSTINIT const ::_pbi::DescriptorTable descriptor_table_streamdata_2eproto = {
     false,
     false,
-    1424,
+    1556,
     descriptor_table_protodef_streamdata_2eproto,
     "streamdata.proto",
     &descriptor_table_streamdata_2eproto_once,
@@ -264,7 +280,7 @@ class LiveDataPoint::_Internal {
 void LiveDataPoint::clear_time() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   if (_impl_.time_ != nullptr) _impl_.time_->Clear();
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
 }
 LiveDataPoint::LiveDataPoint(::google::protobuf::Arena* arena)
 #if defined(PROTOBUF_CUSTOM_VTABLE)
@@ -279,7 +295,9 @@ inline PROTOBUF_NDEBUG_INLINE LiveDataPoint::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility, ::google::protobuf::Arena* arena,
     const Impl_& from, const ::LiveDataPoint& from_msg)
       : _has_bits_{from._has_bits_},
-        _cached_size_{0} {}
+        _cached_size_{0},
+        system_type_(arena, from.system_type_),
+        running_mode_(arena, from.running_mode_) {}
 
 LiveDataPoint::LiveDataPoint(
     ::google::protobuf::Arena* arena,
@@ -295,7 +313,7 @@ LiveDataPoint::LiveDataPoint(
       from._internal_metadata_);
   new (&_impl_) Impl_(internal_visibility(), arena, from._impl_, from);
   ::uint32_t cached_has_bits = _impl_._has_bits_[0];
-  _impl_.time_ = (cached_has_bits & 0x00000001u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::Timestamp>(
+  _impl_.time_ = (cached_has_bits & 0x00000004u) ? ::google::protobuf::Message::CopyConstruct<::google::protobuf::Timestamp>(
                               arena, *from._impl_.time_)
                         : nullptr;
   ::memcpy(reinterpret_cast<char *>(&_impl_) +
@@ -311,7 +329,9 @@ LiveDataPoint::LiveDataPoint(
 inline PROTOBUF_NDEBUG_INLINE LiveDataPoint::Impl_::Impl_(
     ::google::protobuf::internal::InternalVisibility visibility,
     ::google::protobuf::Arena* arena)
-      : _cached_size_{0} {}
+      : _cached_size_{0},
+        system_type_(arena),
+        running_mode_(arena) {}
 
 inline void LiveDataPoint::SharedCtor(::_pb::Arena* arena) {
   new (&_impl_) Impl_(internal_visibility(), arena);
@@ -330,6 +350,8 @@ inline void LiveDataPoint::SharedDtor(MessageLite& self) {
   LiveDataPoint& this_ = static_cast<LiveDataPoint&>(self);
   this_._internal_metadata_.Delete<::google::protobuf::UnknownFieldSet>();
   ABSL_DCHECK(this_.GetArena() == nullptr);
+  this_._impl_.system_type_.Destroy();
+  this_._impl_.running_mode_.Destroy();
   delete this_._impl_.time_;
   this_._impl_.~Impl_();
 }
@@ -339,7 +361,7 @@ inline void* LiveDataPoint::PlacementNew_(const void*, void* mem,
   return ::new (mem) LiveDataPoint(arena);
 }
 constexpr auto LiveDataPoint::InternalNewImpl_() {
-  return ::google::protobuf::internal::MessageCreator::ZeroInit(sizeof(LiveDataPoint),
+  return ::google::protobuf::internal::MessageCreator::CopyInit(sizeof(LiveDataPoint),
                                             alignof(LiveDataPoint));
 }
 constexpr auto LiveDataPoint::InternalGenerateClassData_() {
@@ -376,15 +398,15 @@ const ::google::protobuf::internal::ClassData* LiveDataPoint::GetClassData() con
   return LiveDataPoint_class_data_.base();
 }
 PROTOBUF_CONSTINIT PROTOBUF_ATTRIBUTE_INIT_PRIORITY1
-const ::_pbi::TcParseTable<4, 13, 1, 0, 2> LiveDataPoint::_table_ = {
+const ::_pbi::TcParseTable<4, 16, 1, 61, 2> LiveDataPoint::_table_ = {
   {
     PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_._has_bits_),
     0, // no _extensions_
-    13, 120,  // max_field_number, fast_idx_mask
+    16, 120,  // max_field_number, fast_idx_mask
     offsetof(decltype(_table_), field_lookup_table),
-    4294959104,  // skipmap
+    4294901760,  // skipmap
     offsetof(decltype(_table_), field_entries),
-    13,  // num_field_entries
+    16,  // num_field_entries
     1,  // num_aux_entries
     offsetof(decltype(_table_), aux_entries),
     LiveDataPoint_class_data_.base(),
@@ -394,93 +416,112 @@ const ::_pbi::TcParseTable<4, 13, 1, 0, 2> LiveDataPoint::_table_ = {
     ::_pbi::TcParser::GetTable<::LiveDataPoint>(),  // to_prefetch
     #endif  // PROTOBUF_PREFETCH_PARSE_TABLE
   }, {{
-    {::_pbi::TcParser::MiniParse, {}},
+    // bool is_sync = 16;
+    {::_pbi::TcParser::FastV8S2,
+     {384, 15, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.is_sync_)}},
     // .google.protobuf.Timestamp time = 1;
     {::_pbi::TcParser::FastMtS1,
-     {10, 0, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.time_)}},
+     {10, 2, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.time_)}},
     // optional float set_temperature = 2;
     {::_pbi::TcParser::FastF32S1,
-     {21, 1, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.set_temperature_)}},
+     {21, 3, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.set_temperature_)}},
     // optional float set_humidity = 3;
     {::_pbi::TcParser::FastF32S1,
-     {29, 2, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.set_humidity_)}},
+     {29, 4, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.set_humidity_)}},
     // optional float current_temperature_embedded = 4;
     {::_pbi::TcParser::FastF32S1,
-     {37, 3, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_temperature_embedded_)}},
+     {37, 5, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_temperature_embedded_)}},
     // optional float current_humidity_embedded = 5;
     {::_pbi::TcParser::FastF32S1,
-     {45, 4, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_humidity_embedded_)}},
+     {45, 6, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_humidity_embedded_)}},
     // optional float current_temperature_MCU = 6;
     {::_pbi::TcParser::FastF32S1,
-     {53, 5, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_temperature_mcu_)}},
+     {53, 7, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_temperature_mcu_)}},
     // optional float air_pressure_embedded = 7;
     {::_pbi::TcParser::FastF32S1,
-     {61, 6, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.air_pressure_embedded_)}},
+     {61, 8, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.air_pressure_embedded_)}},
     // optional .AirQuality current_air_quality = 8;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.current_air_quality_), 7>(),
-     {64, 7, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_air_quality_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.current_air_quality_), 9>(),
+     {64, 9, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_air_quality_)}},
     // optional .CoolingStage current_cooling_stage = 9;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.current_cooling_stage_), 8>(),
-     {72, 8, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_cooling_stage_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.current_cooling_stage_), 10>(),
+     {72, 10, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_cooling_stage_)}},
     // optional .HeatingStage current_heating_stage = 10;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.current_heating_stage_), 9>(),
-     {80, 9, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_heating_stage_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.current_heating_stage_), 11>(),
+     {80, 11, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_heating_stage_)}},
     // optional .FanStatus current_fan_status = 11;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.current_fan_status_), 10>(),
-     {88, 10, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_fan_status_)}},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.current_fan_status_), 12>(),
+     {88, 12, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_fan_status_)}},
     // optional .LedStatus led_status = 12;
-    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.led_status_), 11>(),
-     {96, 11, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.led_status_)}},
-    // bool is_sync = 13;
-    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(LiveDataPoint, _impl_.is_sync_), 12>(),
-     {104, 12, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.is_sync_)}},
-    {::_pbi::TcParser::MiniParse, {}},
-    {::_pbi::TcParser::MiniParse, {}},
+    {::_pbi::TcParser::SingularVarintNoZag1<::uint32_t, offsetof(LiveDataPoint, _impl_.led_status_), 13>(),
+     {96, 13, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.led_status_)}},
+    // optional string system_type = 13;
+    {::_pbi::TcParser::FastUS1,
+     {106, 0, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.system_type_)}},
+    // optional string running_mode = 14;
+    {::_pbi::TcParser::FastUS1,
+     {114, 1, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.running_mode_)}},
+    // optional bool online_status = 15;
+    {::_pbi::TcParser::SingularVarintNoZag1<bool, offsetof(LiveDataPoint, _impl_.online_status_), 14>(),
+     {120, 14, 0, PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.online_status_)}},
   }}, {{
     65535, 65535
   }}, {{
     // .google.protobuf.Timestamp time = 1;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.time_), _Internal::kHasBitsOffset + 0, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.time_), _Internal::kHasBitsOffset + 2, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kMessage | ::_fl::kTvTable)},
     // optional float set_temperature = 2;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.set_temperature_), _Internal::kHasBitsOffset + 1, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.set_temperature_), _Internal::kHasBitsOffset + 3, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
     // optional float set_humidity = 3;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.set_humidity_), _Internal::kHasBitsOffset + 2, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.set_humidity_), _Internal::kHasBitsOffset + 4, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
     // optional float current_temperature_embedded = 4;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_temperature_embedded_), _Internal::kHasBitsOffset + 3, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_temperature_embedded_), _Internal::kHasBitsOffset + 5, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
     // optional float current_humidity_embedded = 5;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_humidity_embedded_), _Internal::kHasBitsOffset + 4, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_humidity_embedded_), _Internal::kHasBitsOffset + 6, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
     // optional float current_temperature_MCU = 6;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_temperature_mcu_), _Internal::kHasBitsOffset + 5, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_temperature_mcu_), _Internal::kHasBitsOffset + 7, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
     // optional float air_pressure_embedded = 7;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.air_pressure_embedded_), _Internal::kHasBitsOffset + 6, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.air_pressure_embedded_), _Internal::kHasBitsOffset + 8, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kFloat)},
     // optional .AirQuality current_air_quality = 8;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_air_quality_), _Internal::kHasBitsOffset + 7, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_air_quality_), _Internal::kHasBitsOffset + 9, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
     // optional .CoolingStage current_cooling_stage = 9;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_cooling_stage_), _Internal::kHasBitsOffset + 8, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_cooling_stage_), _Internal::kHasBitsOffset + 10, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
     // optional .HeatingStage current_heating_stage = 10;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_heating_stage_), _Internal::kHasBitsOffset + 9, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_heating_stage_), _Internal::kHasBitsOffset + 11, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
     // optional .FanStatus current_fan_status = 11;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_fan_status_), _Internal::kHasBitsOffset + 10, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.current_fan_status_), _Internal::kHasBitsOffset + 12, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
     // optional .LedStatus led_status = 12;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.led_status_), _Internal::kHasBitsOffset + 11, 0,
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.led_status_), _Internal::kHasBitsOffset + 13, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kOpenEnum)},
-    // bool is_sync = 13;
-    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.is_sync_), _Internal::kHasBitsOffset + 12, 0,
+    // optional string system_type = 13;
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.system_type_), _Internal::kHasBitsOffset + 0, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // optional string running_mode = 14;
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.running_mode_), _Internal::kHasBitsOffset + 1, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kUtf8String | ::_fl::kRepAString)},
+    // optional bool online_status = 15;
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.online_status_), _Internal::kHasBitsOffset + 14, 0,
+    (0 | ::_fl::kFcOptional | ::_fl::kBool)},
+    // bool is_sync = 16;
+    {PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.is_sync_), _Internal::kHasBitsOffset + 15, 0,
     (0 | ::_fl::kFcOptional | ::_fl::kBool)},
   }}, {{
     {::_pbi::TcParser::GetTable<::google::protobuf::Timestamp>()},
   }}, {{
+    "\15\0\0\0\0\0\0\0\0\0\0\0\0\13\14\0\0\0\0\0\0\0\0\0"
+    "LiveDataPoint"
+    "system_type"
+    "running_mode"
   }},
 };
 
@@ -492,19 +533,27 @@ PROTOBUF_NOINLINE void LiveDataPoint::Clear() {
   (void) cached_has_bits;
 
   cached_has_bits = _impl_._has_bits_[0];
-  if (cached_has_bits & 0x00000001u) {
-    ABSL_DCHECK(_impl_.time_ != nullptr);
-    _impl_.time_->Clear();
+  if (cached_has_bits & 0x00000007u) {
+    if (cached_has_bits & 0x00000001u) {
+      _impl_.system_type_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _impl_.running_mode_.ClearNonDefaultToEmpty();
+    }
+    if (cached_has_bits & 0x00000004u) {
+      ABSL_DCHECK(_impl_.time_ != nullptr);
+      _impl_.time_->Clear();
+    }
   }
-  if (cached_has_bits & 0x000000feu) {
+  if (cached_has_bits & 0x000000f8u) {
     ::memset(&_impl_.set_temperature_, 0, static_cast<::size_t>(
-        reinterpret_cast<char*>(&_impl_.current_air_quality_) -
-        reinterpret_cast<char*>(&_impl_.set_temperature_)) + sizeof(_impl_.current_air_quality_));
+        reinterpret_cast<char*>(&_impl_.current_temperature_mcu_) -
+        reinterpret_cast<char*>(&_impl_.set_temperature_)) + sizeof(_impl_.current_temperature_mcu_));
   }
-  if (cached_has_bits & 0x00001f00u) {
-    ::memset(&_impl_.current_cooling_stage_, 0, static_cast<::size_t>(
+  if (cached_has_bits & 0x0000ff00u) {
+    ::memset(&_impl_.air_pressure_embedded_, 0, static_cast<::size_t>(
         reinterpret_cast<char*>(&_impl_.is_sync_) -
-        reinterpret_cast<char*>(&_impl_.current_cooling_stage_)) + sizeof(_impl_.is_sync_));
+        reinterpret_cast<char*>(&_impl_.air_pressure_embedded_)) + sizeof(_impl_.is_sync_));
   }
   _impl_._has_bits_.Clear();
   _internal_metadata_.Clear<::google::protobuf::UnknownFieldSet>();
@@ -527,95 +576,118 @@ PROTOBUF_NOINLINE void LiveDataPoint::Clear() {
 
           cached_has_bits = this_._impl_._has_bits_[0];
           // .google.protobuf.Timestamp time = 1;
-          if (cached_has_bits & 0x00000001u) {
+          if (cached_has_bits & 0x00000004u) {
             target = ::google::protobuf::internal::WireFormatLite::InternalWriteMessage(
                 1, *this_._impl_.time_, this_._impl_.time_->GetCachedSize(), target,
                 stream);
           }
 
           // optional float set_temperature = 2;
-          if (cached_has_bits & 0x00000002u) {
+          if (cached_has_bits & 0x00000008u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteFloatToArray(
                 2, this_._internal_set_temperature(), target);
           }
 
           // optional float set_humidity = 3;
-          if (cached_has_bits & 0x00000004u) {
+          if (cached_has_bits & 0x00000010u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteFloatToArray(
                 3, this_._internal_set_humidity(), target);
           }
 
           // optional float current_temperature_embedded = 4;
-          if (cached_has_bits & 0x00000008u) {
+          if (cached_has_bits & 0x00000020u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteFloatToArray(
                 4, this_._internal_current_temperature_embedded(), target);
           }
 
           // optional float current_humidity_embedded = 5;
-          if (cached_has_bits & 0x00000010u) {
+          if (cached_has_bits & 0x00000040u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteFloatToArray(
                 5, this_._internal_current_humidity_embedded(), target);
           }
 
           // optional float current_temperature_MCU = 6;
-          if (cached_has_bits & 0x00000020u) {
+          if (cached_has_bits & 0x00000080u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteFloatToArray(
                 6, this_._internal_current_temperature_mcu(), target);
           }
 
           // optional float air_pressure_embedded = 7;
-          if (cached_has_bits & 0x00000040u) {
+          if (cached_has_bits & 0x00000100u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteFloatToArray(
                 7, this_._internal_air_pressure_embedded(), target);
           }
 
           // optional .AirQuality current_air_quality = 8;
-          if (cached_has_bits & 0x00000080u) {
+          if (cached_has_bits & 0x00000200u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteEnumToArray(
                 8, this_._internal_current_air_quality(), target);
           }
 
           // optional .CoolingStage current_cooling_stage = 9;
-          if (cached_has_bits & 0x00000100u) {
+          if (cached_has_bits & 0x00000400u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteEnumToArray(
                 9, this_._internal_current_cooling_stage(), target);
           }
 
           // optional .HeatingStage current_heating_stage = 10;
-          if (cached_has_bits & 0x00000200u) {
+          if (cached_has_bits & 0x00000800u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteEnumToArray(
                 10, this_._internal_current_heating_stage(), target);
           }
 
           // optional .FanStatus current_fan_status = 11;
-          if (cached_has_bits & 0x00000400u) {
+          if (cached_has_bits & 0x00001000u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteEnumToArray(
                 11, this_._internal_current_fan_status(), target);
           }
 
           // optional .LedStatus led_status = 12;
-          if (cached_has_bits & 0x00000800u) {
+          if (cached_has_bits & 0x00002000u) {
             target = stream->EnsureSpace(target);
             target = ::_pbi::WireFormatLite::WriteEnumToArray(
                 12, this_._internal_led_status(), target);
           }
 
-          // bool is_sync = 13;
-          if (cached_has_bits & 0x00001000u) {
+          // optional string system_type = 13;
+          if (cached_has_bits & 0x00000001u) {
+            const std::string& _s = this_._internal_system_type();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "LiveDataPoint.system_type");
+            target = stream->WriteStringMaybeAliased(13, _s, target);
+          }
+
+          // optional string running_mode = 14;
+          if (cached_has_bits & 0x00000002u) {
+            const std::string& _s = this_._internal_running_mode();
+            ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
+                _s.data(), static_cast<int>(_s.length()), ::google::protobuf::internal::WireFormatLite::SERIALIZE, "LiveDataPoint.running_mode");
+            target = stream->WriteStringMaybeAliased(14, _s, target);
+          }
+
+          // optional bool online_status = 15;
+          if (cached_has_bits & 0x00004000u) {
+            target = stream->EnsureSpace(target);
+            target = ::_pbi::WireFormatLite::WriteBoolToArray(
+                15, this_._internal_online_status(), target);
+          }
+
+          // bool is_sync = 16;
+          if (cached_has_bits & 0x00008000u) {
             if (this_._internal_is_sync() != 0) {
               target = stream->EnsureSpace(target);
               target = ::_pbi::WireFormatLite::WriteBoolToArray(
-                  13, this_._internal_is_sync(), target);
+                  16, this_._internal_is_sync(), target);
             }
           }
 
@@ -645,66 +717,80 @@ PROTOBUF_NOINLINE void LiveDataPoint::Clear() {
           ::_pbi::Prefetch5LinesFrom7Lines(&this_);
           cached_has_bits = this_._impl_._has_bits_[0];
           if (cached_has_bits & 0x000000ffu) {
-            // .google.protobuf.Timestamp time = 1;
+            // optional string system_type = 13;
             if (cached_has_bits & 0x00000001u) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_system_type());
+            }
+            // optional string running_mode = 14;
+            if (cached_has_bits & 0x00000002u) {
+              total_size += 1 + ::google::protobuf::internal::WireFormatLite::StringSize(
+                                              this_._internal_running_mode());
+            }
+            // .google.protobuf.Timestamp time = 1;
+            if (cached_has_bits & 0x00000004u) {
               total_size += 1 +
                             ::google::protobuf::internal::WireFormatLite::MessageSize(*this_._impl_.time_);
             }
             // optional float set_temperature = 2;
-            if (cached_has_bits & 0x00000002u) {
-              total_size += 5;
-            }
-            // optional float set_humidity = 3;
-            if (cached_has_bits & 0x00000004u) {
-              total_size += 5;
-            }
-            // optional float current_temperature_embedded = 4;
             if (cached_has_bits & 0x00000008u) {
               total_size += 5;
             }
-            // optional float current_humidity_embedded = 5;
+            // optional float set_humidity = 3;
             if (cached_has_bits & 0x00000010u) {
               total_size += 5;
             }
-            // optional float current_temperature_MCU = 6;
+            // optional float current_temperature_embedded = 4;
             if (cached_has_bits & 0x00000020u) {
               total_size += 5;
             }
-            // optional float air_pressure_embedded = 7;
+            // optional float current_humidity_embedded = 5;
             if (cached_has_bits & 0x00000040u) {
               total_size += 5;
             }
-            // optional .AirQuality current_air_quality = 8;
+            // optional float current_temperature_MCU = 6;
             if (cached_has_bits & 0x00000080u) {
+              total_size += 5;
+            }
+          }
+          if (cached_has_bits & 0x0000ff00u) {
+            // optional float air_pressure_embedded = 7;
+            if (cached_has_bits & 0x00000100u) {
+              total_size += 5;
+            }
+            // optional .AirQuality current_air_quality = 8;
+            if (cached_has_bits & 0x00000200u) {
               total_size += 1 +
                             ::_pbi::WireFormatLite::EnumSize(this_._internal_current_air_quality());
             }
-          }
-          if (cached_has_bits & 0x00001f00u) {
             // optional .CoolingStage current_cooling_stage = 9;
-            if (cached_has_bits & 0x00000100u) {
+            if (cached_has_bits & 0x00000400u) {
               total_size += 1 +
                             ::_pbi::WireFormatLite::EnumSize(this_._internal_current_cooling_stage());
             }
             // optional .HeatingStage current_heating_stage = 10;
-            if (cached_has_bits & 0x00000200u) {
+            if (cached_has_bits & 0x00000800u) {
               total_size += 1 +
                             ::_pbi::WireFormatLite::EnumSize(this_._internal_current_heating_stage());
             }
             // optional .FanStatus current_fan_status = 11;
-            if (cached_has_bits & 0x00000400u) {
+            if (cached_has_bits & 0x00001000u) {
               total_size += 1 +
                             ::_pbi::WireFormatLite::EnumSize(this_._internal_current_fan_status());
             }
             // optional .LedStatus led_status = 12;
-            if (cached_has_bits & 0x00000800u) {
+            if (cached_has_bits & 0x00002000u) {
               total_size += 1 +
                             ::_pbi::WireFormatLite::EnumSize(this_._internal_led_status());
             }
-            // bool is_sync = 13;
-            if (cached_has_bits & 0x00001000u) {
+            // optional bool online_status = 15;
+            if (cached_has_bits & 0x00004000u) {
+              total_size += 2;
+            }
+            // bool is_sync = 16;
+            if (cached_has_bits & 0x00008000u) {
               if (this_._internal_is_sync() != 0) {
-                total_size += 2;
+                total_size += 3;
               }
             }
           }
@@ -724,6 +810,12 @@ void LiveDataPoint::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
   cached_has_bits = from._impl_._has_bits_[0];
   if (cached_has_bits & 0x000000ffu) {
     if (cached_has_bits & 0x00000001u) {
+      _this->_internal_set_system_type(from._internal_system_type());
+    }
+    if (cached_has_bits & 0x00000002u) {
+      _this->_internal_set_running_mode(from._internal_running_mode());
+    }
+    if (cached_has_bits & 0x00000004u) {
       ABSL_DCHECK(from._impl_.time_ != nullptr);
       if (_this->_impl_.time_ == nullptr) {
         _this->_impl_.time_ =
@@ -732,42 +824,45 @@ void LiveDataPoint::MergeImpl(::google::protobuf::MessageLite& to_msg, const ::g
         _this->_impl_.time_->MergeFrom(*from._impl_.time_);
       }
     }
-    if (cached_has_bits & 0x00000002u) {
+    if (cached_has_bits & 0x00000008u) {
       _this->_impl_.set_temperature_ = from._impl_.set_temperature_;
     }
-    if (cached_has_bits & 0x00000004u) {
+    if (cached_has_bits & 0x00000010u) {
       _this->_impl_.set_humidity_ = from._impl_.set_humidity_;
     }
-    if (cached_has_bits & 0x00000008u) {
+    if (cached_has_bits & 0x00000020u) {
       _this->_impl_.current_temperature_embedded_ = from._impl_.current_temperature_embedded_;
     }
-    if (cached_has_bits & 0x00000010u) {
+    if (cached_has_bits & 0x00000040u) {
       _this->_impl_.current_humidity_embedded_ = from._impl_.current_humidity_embedded_;
     }
-    if (cached_has_bits & 0x00000020u) {
+    if (cached_has_bits & 0x00000080u) {
       _this->_impl_.current_temperature_mcu_ = from._impl_.current_temperature_mcu_;
     }
-    if (cached_has_bits & 0x00000040u) {
+  }
+  if (cached_has_bits & 0x0000ff00u) {
+    if (cached_has_bits & 0x00000100u) {
       _this->_impl_.air_pressure_embedded_ = from._impl_.air_pressure_embedded_;
     }
-    if (cached_has_bits & 0x00000080u) {
+    if (cached_has_bits & 0x00000200u) {
       _this->_impl_.current_air_quality_ = from._impl_.current_air_quality_;
     }
-  }
-  if (cached_has_bits & 0x00001f00u) {
-    if (cached_has_bits & 0x00000100u) {
+    if (cached_has_bits & 0x00000400u) {
       _this->_impl_.current_cooling_stage_ = from._impl_.current_cooling_stage_;
     }
-    if (cached_has_bits & 0x00000200u) {
+    if (cached_has_bits & 0x00000800u) {
       _this->_impl_.current_heating_stage_ = from._impl_.current_heating_stage_;
     }
-    if (cached_has_bits & 0x00000400u) {
+    if (cached_has_bits & 0x00001000u) {
       _this->_impl_.current_fan_status_ = from._impl_.current_fan_status_;
     }
-    if (cached_has_bits & 0x00000800u) {
+    if (cached_has_bits & 0x00002000u) {
       _this->_impl_.led_status_ = from._impl_.led_status_;
     }
-    if (cached_has_bits & 0x00001000u) {
+    if (cached_has_bits & 0x00004000u) {
+      _this->_impl_.online_status_ = from._impl_.online_status_;
+    }
+    if (cached_has_bits & 0x00008000u) {
       if (from._internal_is_sync() != 0) {
         _this->_impl_.is_sync_ = from._impl_.is_sync_;
       }
@@ -787,8 +882,12 @@ void LiveDataPoint::CopyFrom(const LiveDataPoint& from) {
 
 void LiveDataPoint::InternalSwap(LiveDataPoint* PROTOBUF_RESTRICT other) {
   using std::swap;
+  auto* arena = GetArena();
+  ABSL_DCHECK_EQ(arena, other->GetArena());
   _internal_metadata_.InternalSwap(&other->_internal_metadata_);
   swap(_impl_._has_bits_[0], other->_impl_._has_bits_[0]);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.system_type_, &other->_impl_.system_type_, arena);
+  ::_pbi::ArenaStringPtr::InternalSwap(&_impl_.running_mode_, &other->_impl_.running_mode_, arena);
   ::google::protobuf::internal::memswap<
       PROTOBUF_FIELD_OFFSET(LiveDataPoint, _impl_.is_sync_)
       + sizeof(LiveDataPoint::_impl_.is_sync_)

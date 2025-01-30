@@ -430,6 +430,8 @@ class LiveDataPoint final
 
   // accessors -------------------------------------------------------
   enum : int {
+    kSystemTypeFieldNumber = 13,
+    kRunningModeFieldNumber = 14,
     kTimeFieldNumber = 1,
     kSetTemperatureFieldNumber = 2,
     kSetHumidityFieldNumber = 3,
@@ -442,8 +444,43 @@ class LiveDataPoint final
     kCurrentHeatingStageFieldNumber = 10,
     kCurrentFanStatusFieldNumber = 11,
     kLedStatusFieldNumber = 12,
-    kIsSyncFieldNumber = 13,
+    kOnlineStatusFieldNumber = 15,
+    kIsSyncFieldNumber = 16,
   };
+  // optional string system_type = 13;
+  bool has_system_type() const;
+  void clear_system_type() ;
+  const std::string& system_type() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_system_type(Arg_&& arg, Args_... args);
+  std::string* mutable_system_type();
+  PROTOBUF_NODISCARD std::string* release_system_type();
+  void set_allocated_system_type(std::string* value);
+
+  private:
+  const std::string& _internal_system_type() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_system_type(
+      const std::string& value);
+  std::string* _internal_mutable_system_type();
+
+  public:
+  // optional string running_mode = 14;
+  bool has_running_mode() const;
+  void clear_running_mode() ;
+  const std::string& running_mode() const;
+  template <typename Arg_ = const std::string&, typename... Args_>
+  void set_running_mode(Arg_&& arg, Args_... args);
+  std::string* mutable_running_mode();
+  PROTOBUF_NODISCARD std::string* release_running_mode();
+  void set_allocated_running_mode(std::string* value);
+
+  private:
+  const std::string& _internal_running_mode() const;
+  inline PROTOBUF_ALWAYS_INLINE void _internal_set_running_mode(
+      const std::string& value);
+  std::string* _internal_mutable_running_mode();
+
+  public:
   // .google.protobuf.Timestamp time = 1;
   bool has_time() const;
   void clear_time() ;
@@ -580,7 +617,18 @@ class LiveDataPoint final
   void _internal_set_led_status(::LedStatus value);
 
   public:
-  // bool is_sync = 13;
+  // optional bool online_status = 15;
+  bool has_online_status() const;
+  void clear_online_status() ;
+  bool online_status() const;
+  void set_online_status(bool value);
+
+  private:
+  bool _internal_online_status() const;
+  void _internal_set_online_status(bool value);
+
+  public:
+  // bool is_sync = 16;
   void clear_is_sync() ;
   bool is_sync() const;
   void set_is_sync(bool value);
@@ -595,8 +643,8 @@ class LiveDataPoint final
   class _Internal;
   friend class ::google::protobuf::internal::TcParser;
   static const ::google::protobuf::internal::TcParseTable<
-      4, 13, 1,
-      0, 2>
+      4, 16, 1,
+      61, 2>
       _table_;
 
   friend class ::google::protobuf::MessageLite;
@@ -615,6 +663,8 @@ class LiveDataPoint final
                           const LiveDataPoint& from_msg);
     ::google::protobuf::internal::HasBits<1> _has_bits_;
     ::google::protobuf::internal::CachedSize _cached_size_;
+    ::google::protobuf::internal::ArenaStringPtr system_type_;
+    ::google::protobuf::internal::ArenaStringPtr running_mode_;
     ::google::protobuf::Timestamp* time_;
     float set_temperature_;
     float set_humidity_;
@@ -627,6 +677,7 @@ class LiveDataPoint final
     int current_heating_stage_;
     int current_fan_status_;
     int led_status_;
+    bool online_status_;
     bool is_sync_;
     PROTOBUF_TSAN_DECLARE_MEMBER
   };
@@ -855,7 +906,7 @@ extern const ::google::protobuf::internal::ClassDataFull LiveDataPointList_class
 
 // .google.protobuf.Timestamp time = 1;
 inline bool LiveDataPoint::has_time() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
   PROTOBUF_ASSUME(!value || _impl_.time_ != nullptr);
   return value;
 }
@@ -875,16 +926,16 @@ inline void LiveDataPoint::unsafe_arena_set_allocated_time(::google::protobuf::T
   }
   _impl_.time_ = reinterpret_cast<::google::protobuf::Timestamp*>(value);
   if (value != nullptr) {
-    _impl_._has_bits_[0] |= 0x00000001u;
+    _impl_._has_bits_[0] |= 0x00000004u;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
+    _impl_._has_bits_[0] &= ~0x00000004u;
   }
   // @@protoc_insertion_point(field_unsafe_arena_set_allocated:LiveDataPoint.time)
 }
 inline ::google::protobuf::Timestamp* LiveDataPoint::release_time() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
 
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
   ::google::protobuf::Timestamp* released = _impl_.time_;
   _impl_.time_ = nullptr;
   if (::google::protobuf::internal::DebugHardenForceCopyInRelease()) {
@@ -904,7 +955,7 @@ inline ::google::protobuf::Timestamp* LiveDataPoint::unsafe_arena_release_time()
   ::google::protobuf::internal::TSanWrite(&_impl_);
   // @@protoc_insertion_point(field_release:LiveDataPoint.time)
 
-  _impl_._has_bits_[0] &= ~0x00000001u;
+  _impl_._has_bits_[0] &= ~0x00000004u;
   ::google::protobuf::Timestamp* temp = _impl_.time_;
   _impl_.time_ = nullptr;
   return temp;
@@ -918,7 +969,7 @@ inline ::google::protobuf::Timestamp* LiveDataPoint::_internal_mutable_time() {
   return _impl_.time_;
 }
 inline ::google::protobuf::Timestamp* LiveDataPoint::mutable_time() ABSL_ATTRIBUTE_LIFETIME_BOUND {
-  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_._has_bits_[0] |= 0x00000004u;
   ::google::protobuf::Timestamp* _msg = _internal_mutable_time();
   // @@protoc_insertion_point(field_mutable:LiveDataPoint.time)
   return _msg;
@@ -935,9 +986,9 @@ inline void LiveDataPoint::set_allocated_time(::google::protobuf::Timestamp* val
     if (message_arena != submessage_arena) {
       value = ::google::protobuf::internal::GetOwnedMessage(message_arena, value, submessage_arena);
     }
-    _impl_._has_bits_[0] |= 0x00000001u;
+    _impl_._has_bits_[0] |= 0x00000004u;
   } else {
-    _impl_._has_bits_[0] &= ~0x00000001u;
+    _impl_._has_bits_[0] &= ~0x00000004u;
   }
 
   _impl_.time_ = reinterpret_cast<::google::protobuf::Timestamp*>(value);
@@ -946,13 +997,13 @@ inline void LiveDataPoint::set_allocated_time(::google::protobuf::Timestamp* val
 
 // optional float set_temperature = 2;
 inline bool LiveDataPoint::has_set_temperature() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_set_temperature() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.set_temperature_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000002u;
+  _impl_._has_bits_[0] &= ~0x00000008u;
 }
 inline float LiveDataPoint::set_temperature() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.set_temperature)
@@ -960,7 +1011,7 @@ inline float LiveDataPoint::set_temperature() const {
 }
 inline void LiveDataPoint::set_set_temperature(float value) {
   _internal_set_set_temperature(value);
-  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_._has_bits_[0] |= 0x00000008u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.set_temperature)
 }
 inline float LiveDataPoint::_internal_set_temperature() const {
@@ -974,13 +1025,13 @@ inline void LiveDataPoint::_internal_set_set_temperature(float value) {
 
 // optional float set_humidity = 3;
 inline bool LiveDataPoint::has_set_humidity() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000004u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_set_humidity() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.set_humidity_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000004u;
+  _impl_._has_bits_[0] &= ~0x00000010u;
 }
 inline float LiveDataPoint::set_humidity() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.set_humidity)
@@ -988,7 +1039,7 @@ inline float LiveDataPoint::set_humidity() const {
 }
 inline void LiveDataPoint::set_set_humidity(float value) {
   _internal_set_set_humidity(value);
-  _impl_._has_bits_[0] |= 0x00000004u;
+  _impl_._has_bits_[0] |= 0x00000010u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.set_humidity)
 }
 inline float LiveDataPoint::_internal_set_humidity() const {
@@ -1002,13 +1053,13 @@ inline void LiveDataPoint::_internal_set_set_humidity(float value) {
 
 // optional float current_temperature_embedded = 4;
 inline bool LiveDataPoint::has_current_temperature_embedded() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000008u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_current_temperature_embedded() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.current_temperature_embedded_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000008u;
+  _impl_._has_bits_[0] &= ~0x00000020u;
 }
 inline float LiveDataPoint::current_temperature_embedded() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.current_temperature_embedded)
@@ -1016,7 +1067,7 @@ inline float LiveDataPoint::current_temperature_embedded() const {
 }
 inline void LiveDataPoint::set_current_temperature_embedded(float value) {
   _internal_set_current_temperature_embedded(value);
-  _impl_._has_bits_[0] |= 0x00000008u;
+  _impl_._has_bits_[0] |= 0x00000020u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.current_temperature_embedded)
 }
 inline float LiveDataPoint::_internal_current_temperature_embedded() const {
@@ -1030,13 +1081,13 @@ inline void LiveDataPoint::_internal_set_current_temperature_embedded(float valu
 
 // optional float current_humidity_embedded = 5;
 inline bool LiveDataPoint::has_current_humidity_embedded() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000010u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_current_humidity_embedded() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.current_humidity_embedded_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000010u;
+  _impl_._has_bits_[0] &= ~0x00000040u;
 }
 inline float LiveDataPoint::current_humidity_embedded() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.current_humidity_embedded)
@@ -1044,7 +1095,7 @@ inline float LiveDataPoint::current_humidity_embedded() const {
 }
 inline void LiveDataPoint::set_current_humidity_embedded(float value) {
   _internal_set_current_humidity_embedded(value);
-  _impl_._has_bits_[0] |= 0x00000010u;
+  _impl_._has_bits_[0] |= 0x00000040u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.current_humidity_embedded)
 }
 inline float LiveDataPoint::_internal_current_humidity_embedded() const {
@@ -1058,13 +1109,13 @@ inline void LiveDataPoint::_internal_set_current_humidity_embedded(float value) 
 
 // optional float current_temperature_MCU = 6;
 inline bool LiveDataPoint::has_current_temperature_mcu() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000020u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000080u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_current_temperature_mcu() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.current_temperature_mcu_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000020u;
+  _impl_._has_bits_[0] &= ~0x00000080u;
 }
 inline float LiveDataPoint::current_temperature_mcu() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.current_temperature_MCU)
@@ -1072,7 +1123,7 @@ inline float LiveDataPoint::current_temperature_mcu() const {
 }
 inline void LiveDataPoint::set_current_temperature_mcu(float value) {
   _internal_set_current_temperature_mcu(value);
-  _impl_._has_bits_[0] |= 0x00000020u;
+  _impl_._has_bits_[0] |= 0x00000080u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.current_temperature_MCU)
 }
 inline float LiveDataPoint::_internal_current_temperature_mcu() const {
@@ -1086,13 +1137,13 @@ inline void LiveDataPoint::_internal_set_current_temperature_mcu(float value) {
 
 // optional float air_pressure_embedded = 7;
 inline bool LiveDataPoint::has_air_pressure_embedded() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000040u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000100u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_air_pressure_embedded() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.air_pressure_embedded_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000040u;
+  _impl_._has_bits_[0] &= ~0x00000100u;
 }
 inline float LiveDataPoint::air_pressure_embedded() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.air_pressure_embedded)
@@ -1100,7 +1151,7 @@ inline float LiveDataPoint::air_pressure_embedded() const {
 }
 inline void LiveDataPoint::set_air_pressure_embedded(float value) {
   _internal_set_air_pressure_embedded(value);
-  _impl_._has_bits_[0] |= 0x00000040u;
+  _impl_._has_bits_[0] |= 0x00000100u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.air_pressure_embedded)
 }
 inline float LiveDataPoint::_internal_air_pressure_embedded() const {
@@ -1114,13 +1165,13 @@ inline void LiveDataPoint::_internal_set_air_pressure_embedded(float value) {
 
 // optional .AirQuality current_air_quality = 8;
 inline bool LiveDataPoint::has_current_air_quality() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000080u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000200u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_current_air_quality() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.current_air_quality_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000080u;
+  _impl_._has_bits_[0] &= ~0x00000200u;
 }
 inline ::AirQuality LiveDataPoint::current_air_quality() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.current_air_quality)
@@ -1128,7 +1179,7 @@ inline ::AirQuality LiveDataPoint::current_air_quality() const {
 }
 inline void LiveDataPoint::set_current_air_quality(::AirQuality value) {
   _internal_set_current_air_quality(value);
-  _impl_._has_bits_[0] |= 0x00000080u;
+  _impl_._has_bits_[0] |= 0x00000200u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.current_air_quality)
 }
 inline ::AirQuality LiveDataPoint::_internal_current_air_quality() const {
@@ -1142,13 +1193,13 @@ inline void LiveDataPoint::_internal_set_current_air_quality(::AirQuality value)
 
 // optional .CoolingStage current_cooling_stage = 9;
 inline bool LiveDataPoint::has_current_cooling_stage() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000100u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000400u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_current_cooling_stage() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.current_cooling_stage_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000100u;
+  _impl_._has_bits_[0] &= ~0x00000400u;
 }
 inline ::CoolingStage LiveDataPoint::current_cooling_stage() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.current_cooling_stage)
@@ -1156,7 +1207,7 @@ inline ::CoolingStage LiveDataPoint::current_cooling_stage() const {
 }
 inline void LiveDataPoint::set_current_cooling_stage(::CoolingStage value) {
   _internal_set_current_cooling_stage(value);
-  _impl_._has_bits_[0] |= 0x00000100u;
+  _impl_._has_bits_[0] |= 0x00000400u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.current_cooling_stage)
 }
 inline ::CoolingStage LiveDataPoint::_internal_current_cooling_stage() const {
@@ -1170,13 +1221,13 @@ inline void LiveDataPoint::_internal_set_current_cooling_stage(::CoolingStage va
 
 // optional .HeatingStage current_heating_stage = 10;
 inline bool LiveDataPoint::has_current_heating_stage() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000200u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00000800u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_current_heating_stage() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.current_heating_stage_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000200u;
+  _impl_._has_bits_[0] &= ~0x00000800u;
 }
 inline ::HeatingStage LiveDataPoint::current_heating_stage() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.current_heating_stage)
@@ -1184,7 +1235,7 @@ inline ::HeatingStage LiveDataPoint::current_heating_stage() const {
 }
 inline void LiveDataPoint::set_current_heating_stage(::HeatingStage value) {
   _internal_set_current_heating_stage(value);
-  _impl_._has_bits_[0] |= 0x00000200u;
+  _impl_._has_bits_[0] |= 0x00000800u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.current_heating_stage)
 }
 inline ::HeatingStage LiveDataPoint::_internal_current_heating_stage() const {
@@ -1198,13 +1249,13 @@ inline void LiveDataPoint::_internal_set_current_heating_stage(::HeatingStage va
 
 // optional .FanStatus current_fan_status = 11;
 inline bool LiveDataPoint::has_current_fan_status() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000400u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00001000u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_current_fan_status() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.current_fan_status_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000400u;
+  _impl_._has_bits_[0] &= ~0x00001000u;
 }
 inline ::FanStatus LiveDataPoint::current_fan_status() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.current_fan_status)
@@ -1212,7 +1263,7 @@ inline ::FanStatus LiveDataPoint::current_fan_status() const {
 }
 inline void LiveDataPoint::set_current_fan_status(::FanStatus value) {
   _internal_set_current_fan_status(value);
-  _impl_._has_bits_[0] |= 0x00000400u;
+  _impl_._has_bits_[0] |= 0x00001000u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.current_fan_status)
 }
 inline ::FanStatus LiveDataPoint::_internal_current_fan_status() const {
@@ -1226,13 +1277,13 @@ inline void LiveDataPoint::_internal_set_current_fan_status(::FanStatus value) {
 
 // optional .LedStatus led_status = 12;
 inline bool LiveDataPoint::has_led_status() const {
-  bool value = (_impl_._has_bits_[0] & 0x00000800u) != 0;
+  bool value = (_impl_._has_bits_[0] & 0x00002000u) != 0;
   return value;
 }
 inline void LiveDataPoint::clear_led_status() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.led_status_ = 0;
-  _impl_._has_bits_[0] &= ~0x00000800u;
+  _impl_._has_bits_[0] &= ~0x00002000u;
 }
 inline ::LedStatus LiveDataPoint::led_status() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.led_status)
@@ -1240,7 +1291,7 @@ inline ::LedStatus LiveDataPoint::led_status() const {
 }
 inline void LiveDataPoint::set_led_status(::LedStatus value) {
   _internal_set_led_status(value);
-  _impl_._has_bits_[0] |= 0x00000800u;
+  _impl_._has_bits_[0] |= 0x00002000u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.led_status)
 }
 inline ::LedStatus LiveDataPoint::_internal_led_status() const {
@@ -1252,11 +1303,177 @@ inline void LiveDataPoint::_internal_set_led_status(::LedStatus value) {
   _impl_.led_status_ = value;
 }
 
-// bool is_sync = 13;
+// optional string system_type = 13;
+inline bool LiveDataPoint::has_system_type() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000001u) != 0;
+  return value;
+}
+inline void LiveDataPoint::clear_system_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.system_type_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000001u;
+}
+inline const std::string& LiveDataPoint::system_type() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:LiveDataPoint.system_type)
+  return _internal_system_type();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void LiveDataPoint::set_system_type(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.system_type_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:LiveDataPoint.system_type)
+}
+inline std::string* LiveDataPoint::mutable_system_type() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_system_type();
+  // @@protoc_insertion_point(field_mutable:LiveDataPoint.system_type)
+  return _s;
+}
+inline const std::string& LiveDataPoint::_internal_system_type() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.system_type_.Get();
+}
+inline void LiveDataPoint::_internal_set_system_type(const std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
+  _impl_.system_type_.Set(value, GetArena());
+}
+inline std::string* LiveDataPoint::_internal_mutable_system_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000001u;
+  return _impl_.system_type_.Mutable( GetArena());
+}
+inline std::string* LiveDataPoint::release_system_type() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:LiveDataPoint.system_type)
+  if ((_impl_._has_bits_[0] & 0x00000001u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000001u;
+  auto* released = _impl_.system_type_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.system_type_.Set("", GetArena());
+  }
+  return released;
+}
+inline void LiveDataPoint::set_allocated_system_type(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000001u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000001u;
+  }
+  _impl_.system_type_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.system_type_.IsDefault()) {
+    _impl_.system_type_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:LiveDataPoint.system_type)
+}
+
+// optional string running_mode = 14;
+inline bool LiveDataPoint::has_running_mode() const {
+  bool value = (_impl_._has_bits_[0] & 0x00000002u) != 0;
+  return value;
+}
+inline void LiveDataPoint::clear_running_mode() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.running_mode_.ClearToEmpty();
+  _impl_._has_bits_[0] &= ~0x00000002u;
+}
+inline const std::string& LiveDataPoint::running_mode() const
+    ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  // @@protoc_insertion_point(field_get:LiveDataPoint.running_mode)
+  return _internal_running_mode();
+}
+template <typename Arg_, typename... Args_>
+inline PROTOBUF_ALWAYS_INLINE void LiveDataPoint::set_running_mode(Arg_&& arg,
+                                                     Args_... args) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_.running_mode_.Set(static_cast<Arg_&&>(arg), args..., GetArena());
+  // @@protoc_insertion_point(field_set:LiveDataPoint.running_mode)
+}
+inline std::string* LiveDataPoint::mutable_running_mode() ABSL_ATTRIBUTE_LIFETIME_BOUND {
+  std::string* _s = _internal_mutable_running_mode();
+  // @@protoc_insertion_point(field_mutable:LiveDataPoint.running_mode)
+  return _s;
+}
+inline const std::string& LiveDataPoint::_internal_running_mode() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.running_mode_.Get();
+}
+inline void LiveDataPoint::_internal_set_running_mode(const std::string& value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  _impl_.running_mode_.Set(value, GetArena());
+}
+inline std::string* LiveDataPoint::_internal_mutable_running_mode() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_._has_bits_[0] |= 0x00000002u;
+  return _impl_.running_mode_.Mutable( GetArena());
+}
+inline std::string* LiveDataPoint::release_running_mode() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  // @@protoc_insertion_point(field_release:LiveDataPoint.running_mode)
+  if ((_impl_._has_bits_[0] & 0x00000002u) == 0) {
+    return nullptr;
+  }
+  _impl_._has_bits_[0] &= ~0x00000002u;
+  auto* released = _impl_.running_mode_.Release();
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString()) {
+    _impl_.running_mode_.Set("", GetArena());
+  }
+  return released;
+}
+inline void LiveDataPoint::set_allocated_running_mode(std::string* value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  if (value != nullptr) {
+    _impl_._has_bits_[0] |= 0x00000002u;
+  } else {
+    _impl_._has_bits_[0] &= ~0x00000002u;
+  }
+  _impl_.running_mode_.SetAllocated(value, GetArena());
+  if (::google::protobuf::internal::DebugHardenForceCopyDefaultString() && _impl_.running_mode_.IsDefault()) {
+    _impl_.running_mode_.Set("", GetArena());
+  }
+  // @@protoc_insertion_point(field_set_allocated:LiveDataPoint.running_mode)
+}
+
+// optional bool online_status = 15;
+inline bool LiveDataPoint::has_online_status() const {
+  bool value = (_impl_._has_bits_[0] & 0x00004000u) != 0;
+  return value;
+}
+inline void LiveDataPoint::clear_online_status() {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.online_status_ = false;
+  _impl_._has_bits_[0] &= ~0x00004000u;
+}
+inline bool LiveDataPoint::online_status() const {
+  // @@protoc_insertion_point(field_get:LiveDataPoint.online_status)
+  return _internal_online_status();
+}
+inline void LiveDataPoint::set_online_status(bool value) {
+  _internal_set_online_status(value);
+  _impl_._has_bits_[0] |= 0x00004000u;
+  // @@protoc_insertion_point(field_set:LiveDataPoint.online_status)
+}
+inline bool LiveDataPoint::_internal_online_status() const {
+  ::google::protobuf::internal::TSanRead(&_impl_);
+  return _impl_.online_status_;
+}
+inline void LiveDataPoint::_internal_set_online_status(bool value) {
+  ::google::protobuf::internal::TSanWrite(&_impl_);
+  _impl_.online_status_ = value;
+}
+
+// bool is_sync = 16;
 inline void LiveDataPoint::clear_is_sync() {
   ::google::protobuf::internal::TSanWrite(&_impl_);
   _impl_.is_sync_ = false;
-  _impl_._has_bits_[0] &= ~0x00001000u;
+  _impl_._has_bits_[0] &= ~0x00008000u;
 }
 inline bool LiveDataPoint::is_sync() const {
   // @@protoc_insertion_point(field_get:LiveDataPoint.is_sync)
@@ -1264,7 +1481,7 @@ inline bool LiveDataPoint::is_sync() const {
 }
 inline void LiveDataPoint::set_is_sync(bool value) {
   _internal_set_is_sync(value);
-  _impl_._has_bits_[0] |= 0x00001000u;
+  _impl_._has_bits_[0] |= 0x00008000u;
   // @@protoc_insertion_point(field_set:LiveDataPoint.is_sync)
 }
 inline bool LiveDataPoint::_internal_is_sync() const {
