@@ -1609,6 +1609,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
 
     emit lastInstalledUpdateDateChanged();
 
+    setRestartFlag();
     mRestarting = true;
     emit systemUpdating();
 
