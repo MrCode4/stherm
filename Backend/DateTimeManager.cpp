@@ -2,9 +2,11 @@
 
 #include <QCoreApplication>
 #include <QSettings>
+#include <QSharedPointer>
 #include <QTimeZone>
 
 #include "LogHelper.h"
+#include "RestApiExecutor.h"
 
 DateTimeManager* DateTimeManager::mMe = nullptr;
 
@@ -185,6 +187,10 @@ void DateTimeManager::setDateTime(const QDateTime& datetime)
         return;
     }
 
+    if (mAutoUpdateTime == false) {
+        saveDiffTimeFromUTC(datetime);
+    }
+
     connect(&mProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus) {
             //! Call onfinished callback
             callProcessFinished({ exitCode });
@@ -342,6 +348,62 @@ void DateTimeManager::setTimezoneTo(const QTimeZone& timezone)
                                     TDC_SET_TIMEZONE,
                                     timezone.id(),
                                 });
+}
+
+void DateTimeManager::saveDiffTimeFromUTC(const QDateTime &datetime)
+{
+    QSharedPointer<RestApiExecutor> rest(new RestApiExecutor);
+
+    auto callback =
+        [this, rest, datetime](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+            QDateTime utcDateTime = QDateTime::fromString(data.value("currentDateTime").toString(),
+                                                          Qt::ISODate);
+            QDateTime localTime(utcDateTime.toLocalTime());
+
+            if (!utcDateTime.isValid()) {
+                qWarning() << "Invalid datetime format in response";
+                return;
+            }
+
+            qint64 diffInSeconds = localTime.secsTo(datetime);
+
+            QSettings setting;
+            setting.setValue("DiffTimeFromUTC", diffInSeconds);
+        };
+
+    QNetworkReply *netReply = rest.data()
+                                  ->callGetApi(QString("http://worldclockapi.com/api/json/utc/now"),
+                                               callback,
+                                               false);
+}
+
+void DateTimeManager::correctTimeBaseOnDiff()
+{
+    QSharedPointer<RestApiExecutor> rest(new RestApiExecutor);
+
+    auto callback = [this,
+                     rest](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        QDateTime utcDateTime = QDateTime::fromString(data.value("currentDateTime").toString(),
+                                                      Qt::ISODate);
+        QDateTime localTime(utcDateTime.toLocalTime());
+
+        if (!utcDateTime.isValid()) {
+            qWarning() << "Invalid datetime format in response";
+            return;
+        }
+
+        QSettings settings;
+        qint64 secondsToAdd = settings.value("DiffTimeFromUTC", 0).toInt();
+
+        QDateTime newDateTime = localTime.addSecs(secondsToAdd);
+
+        setDateTime(newDateTime);
+    };
+
+    QNetworkReply *netReply = rest.data()
+                                  ->callGetApi(QString("http://worldclockapi.com/api/json/utc/now"),
+                                               callback,
+                                               false);
 }
 
 bool operator!=(const QJSValue& left, const QJSValue& right)

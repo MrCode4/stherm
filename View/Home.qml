@@ -44,6 +44,7 @@ Control {
         let rebootFlag = deviceController.deviceControllerCPP.system.getRestartFlag()
 
         if (DateTimeManager.autoUpdateTime === false && rebootFlag === false) {
+            DateTimeManager.correctTimeBaseOnDiff()
             uiSession.popUps.showManualDateTimeWarningPopup()
         }
 

@@ -96,6 +96,7 @@ public:
     Q_INVOKABLE QString         nowUTC(const QString &outputFormat = QString("yyyy-MM-dd HH:mm:ss"));
 
     Q_INVOKABLE void enableTimeSyncdService();
+    Q_INVOKABLE void correctTimeBaseOnDiff();
 
 private:
     /*!
@@ -121,6 +122,8 @@ private:
      * \param timezone
      */
     void setTimezoneTo(const QTimeZone& timezone);
+
+    void saveDiffTimeFromUTC(const QDateTime &datetime);
 
 signals:
     void autoUpdateTimeChanged();
