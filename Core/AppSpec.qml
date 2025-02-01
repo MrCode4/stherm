@@ -133,6 +133,15 @@ AppSpecCPP {
         Unknown
     }
 
+    // WiFi strength types
+    enum WiFiStrength {
+        Excellent = 0, // more than 90 bBm
+        Good,          // 75 to 90
+        Fair,          // 55 to 74
+        Weak,          // 40 to 54
+        VeryWeak       // below 40
+    }
+
     //! Device location map
     property var residenceTypesNames: {
         var types = {};
@@ -294,6 +303,28 @@ AppSpecCPP {
         // Can not happen
         return "F";
 
+    }
+
+    //! Convert strength to WiFiStrength type.
+    function wiFiStrength(strength: int) : int {
+        if (strength >= 90) {
+            return AppSpec.WiFiStrength.Excellent;
+        }
+
+        if (strength >= 75) {
+            return AppSpec.WiFiStrength.Good;
+        }
+
+        if (strength >= 55) {
+            return AppSpec.WiFiStrength.Fair;
+        }
+
+        if (strength >= 40) {
+            return AppSpec.WiFiStrength.Weak;
+        }
+
+        // Below 40
+        return AppSpec.WiFiStrength.VeryWeak;
     }
 
     //! airQuality <= 1.0
