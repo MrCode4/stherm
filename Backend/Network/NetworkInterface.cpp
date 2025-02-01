@@ -108,7 +108,9 @@ NetworkInterface::NetworkInterface(QObject *parent)
     });
 
     connect(mNmcliInterface, &NmcliInterface::autoConnectSavedInRangeWifiFinished, this, [this](WifiInfo *wifi) {
-        NI_LOG << "Auto connection for " << wifi->wifiInformation();
+        NI_LOG << "Auto connection Finished ...";
+        if (wifi)
+            NI_LOG << "Auto connection for " << wifi->wifiInformation();
         tryConnectToSavedInrangeWifi(wifi);
     });
 

@@ -126,7 +126,7 @@ bool NmcliInterface::autoConnectSavedWifiAsync(WifiInfo* wifi)
 
     setBusy(true);
 
-    mCliWifi->connectToSavedWifi(wifi->ssid(), wifi->security(), "", [&] (QProcess*) {
+    mCliWifi->connectToSavedWifi(wifi->ssid(), wifi->security(), "", [=] (QProcess*) {
         setBusy(false);
         emit autoConnectSavedInRangeWifiFinished(wifi);
     });
