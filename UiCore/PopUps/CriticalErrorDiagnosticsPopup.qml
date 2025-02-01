@@ -5,7 +5,7 @@ import Ronia
 import Stherm
 
 /*! ***********************************************************************************************
- * InitialFlowErrorPopup: Show initial flow errors.
+ * CriticalErrorDiagnosticsPopup: Show initial flow errors.
  * ***********************************************************************************************/
 I_PopUp {
     id: root
@@ -19,6 +19,8 @@ I_PopUp {
 
     property bool isBusy: false
 
+    property bool enableSendLog: true
+
     /* Signals
      * ****************************************************************************************/
     signal stopped();
@@ -30,7 +32,7 @@ I_PopUp {
     titleBar: false
 
     onOpened: {
-        if (NetworkInterface.hasInternet)
+        if (enableSendLog && NetworkInterface.hasInternet)
             deviceController.system.sendLog(false);
     }
 

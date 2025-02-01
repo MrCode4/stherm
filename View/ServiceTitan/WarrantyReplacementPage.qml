@@ -244,7 +244,7 @@ BasePageView {
         }
     }
 
-    InitialFlowErrorPopup {
+    CriticalErrorDiagnosticsPopup {
         id: errorPopup
 
         isBusy: root.isBusy

@@ -2266,32 +2266,17 @@ I_DeviceController {
         var devicesData = [];
 
         // construct object for device with minimal data required
-        var deviceObj = {
-         "sn": deviceControllerCPP.system.serialNumber,
-         "zip_code": device.serviceTitan.zipCode.toUpperCase(),
-         "country": AppSpec.supportedCountries.indexOf(device.serviceTitan.country) + 1,
-         "installation_type": device.installationType === AppSpec.ITNewInstallation? "new" : "existing",
-         "resident_type_id": device.residenceType, // or maybe using condition
-         "where_installed_id": device.whereInstalled
-        }
+        var deviceObj = _prepareAddressPacket();
+
+        deviceObj.sn = deviceControllerCPP.system.serialNumber;
+        deviceObj.installation_type = (device.installationType === AppSpec.ITNewInstallation) ? "new" : "existing";
+        deviceObj.resident_type_id = device.residenceType; // or maybe using condition
+        deviceObj.where_installed_id = device.whereInstalled;
 
         //! add dynamic fileds
         if (device.thermostatName) {
             deviceObj.name = device.thermostatName;
         }
-        if (device.serviceTitan.address1) {
-            deviceObj.address1 = device.serviceTitan.address1;
-        }
-        if (device.serviceTitan.address2) {
-            deviceObj.address2 = device.serviceTitan.address2;
-        }
-        if (device.serviceTitan.state_id > -1) {
-            deviceObj.state = device.serviceTitan.state_id;
-        }
-        if (device.serviceTitan.city_id > -1) {
-            deviceObj.city = device.serviceTitan.city_id;
-        }
-
 
         // Add the constructed device object to the devices array
         devicesData.push(deviceObj);
@@ -2311,9 +2296,9 @@ I_DeviceController {
     }
 
     //! we do not resend it if last time it was success so we have better chance in total
-    function getZipCodeJobInformationManual() {
-        if (internal.syncReturnedZip !== device.serviceTitan.zipCode)
-            sync.getAddressInformationManual(device.serviceTitan.zipCode);
+    function getZipCodeJobInformationManual(zipCode = device.serviceTitan.zipCode) {
+        if (internal.syncReturnedZip !== zipCode)
+            sync.getAddressInformationManual(zipCode);
         else
             zipCodeInfoReady("", false);
     }
@@ -2367,5 +2352,34 @@ I_DeviceController {
         }
 
         return "None"
+    }
+
+    function updateAddressInformation() {
+        var deviceObj = _prepareAddressPacket();
+        deviceObj.sn = deviceControllerCPP.system.serialNumber;
+
+        sync.updateAddressInformationManual(deviceObj);
+    }
+
+    function _prepareAddressPacket() : var {
+        var deviceObj = {
+         "zip_code": device.serviceTitan.zipCode.toUpperCase(),
+         "country": AppSpec.supportedCountries.indexOf(device.serviceTitan.country) + 1
+        }
+
+        if (device.serviceTitan.address1) {
+            deviceObj.address1 = device.serviceTitan.address1;
+        }
+        if (device.serviceTitan.address2) {
+            deviceObj.address2 = device.serviceTitan.address2;
+        }
+        if (device.serviceTitan.state_id > -1) {
+            deviceObj.state = device.serviceTitan.state_id;
+        }
+        if (device.serviceTitan.city_id > -1) {
+            deviceObj.city = device.serviceTitan.city_id;
+        }
+
+        return deviceObj;
     }
 }

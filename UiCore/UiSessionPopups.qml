@@ -241,11 +241,11 @@ Item {
         }
     }
 
-    property InitialFlowErrorPopup _initialFlowErrorPopup: null
+    property CriticalErrorDiagnosticsPopup _criticalErrorDiagnosticsPopup: null
     Component {
-        id: initialFlowErrorPopupComponent
+        id: criticalErrorDiagnosticsPopupComponent
 
-        InitialFlowErrorPopup {
+        CriticalErrorDiagnosticsPopup {
             deviceController: root.uiSession.deviceController
             isBusy: deviceController.isSendingInitialSetupData
 
@@ -409,13 +409,13 @@ Item {
         }
 
         function onShowInitialSetupPushError(err: string) {
-            if (!_initialFlowErrorPopup) {
-                _initialFlowErrorPopup = initialFlowErrorPopupComponent.createObject(root);
+            if (!_criticalErrorDiagnosticsPopup) {
+                _criticalErrorDiagnosticsPopup = criticalErrorDiagnosticsPopupComponent.createObject(root);
             }
 
-            if (_initialFlowErrorPopup) {
-                _initialFlowErrorPopup.errorMessage = err;
-                uiSession.popupLayout.displayPopUp(_initialFlowErrorPopup);
+            if (_criticalErrorDiagnosticsPopup) {
+                _criticalErrorDiagnosticsPopup.errorMessage = err;
+                uiSession.popupLayout.displayPopUp(_criticalErrorDiagnosticsPopup);
             }
         }
 

@@ -175,7 +175,7 @@ qt6_add_qml_module(appStherm
         UiCore/PopUps/AboutPopUp.qml
         UiCore/PopUps/ConfirmPopup.qml
         UiCore/PopUps/UpdatePopup.qml
-        UiCore/PopUps/InitialFlowErrorPopup.qml
+        UiCore/PopUps/CriticalErrorDiagnosticsPopup.qml
         UiCore/PopUps/SkipWIFIConnectionPopup.qml
         UiCore/PopUps/LimitedInitialSetupPopup.qml
         UiCore/PopUps/SendingLogPopup.qml

@@ -640,6 +640,26 @@ void Sync::getAddressInformationManual(const QString &zipCode)
     }
 }
 
+void Sync::updateAddressInformationManual(const QVariantMap &data)
+{
+    QJsonObject reqData = QJsonObject::fromVariantMap(data);
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            TRACE << rawData << data;
+            emit clientAddressUpdatingFinished(true);
+
+        } else {
+            auto err = getReplyError(reply);
+
+            auto isNeedRetry = isNeedRetryNetRequest(reply);
+            emit clientAddressUpdatingFinished(false, err, isNeedRetry);
+            TRACE << rawData << data << err;
+        }
+    };
+
+    callPostApi(baseUrl() + QString("/api/sync/updateAddress"),  QJsonDocument(reqData).toJson(), callback);
+}
+
 void Sync::installDevice(const QVariantMap &data)
 {
     QJsonObject reqData = QJsonObject::fromVariantMap(data);
