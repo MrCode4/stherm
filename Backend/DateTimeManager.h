@@ -97,6 +97,7 @@ public:
 
     Q_INVOKABLE void enableTimeSyncdService();
     Q_INVOKABLE void correctTimeBaseOnDiff();
+    Q_INVOKABLE QString getCurrentTimeOnlineSyncAsString();
 
 private:
     /*!
@@ -124,6 +125,10 @@ private:
     void setTimezoneTo(const QTimeZone& timezone);
 
     void saveDiffTimeFromUTC(const QDateTime &datetime);
+
+    QDateTime getCurrentTimeOnlineSync();
+    void getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
+                                   std::function<void()> onError);
 
 signals:
     void autoUpdateTimeChanged();
