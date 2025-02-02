@@ -279,8 +279,6 @@ public:
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
 
-    Q_INVOKABLE QString getCurrentTime();
-
     Q_INVOKABLE void fetchServiceTitanInformation();
 
     Q_INVOKABLE bool attemptToRunCommand(const QString& command, const QString& tag);
