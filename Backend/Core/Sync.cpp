@@ -79,10 +79,12 @@ void Sync::setSerialNumber(const QString &serialNumber)
 
     // Force to update with new settings
     resetFetchTime();
+
+    Device->updateSerialNumber(serialNumber, true);
+
     // Fetch with new serial number
     emit serialNumberChanged();
 
-    Device->updateSerialNumber(serialNumber, true);
 }
 
 void Sync::setUID(cpuid_t accessUid)
@@ -147,14 +149,6 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 
             mSerialNumber = sn;
 
-            if (!mSerialNumber.isEmpty()) {
-                emit serialNumberReady();
-            }
-
-            if (mSerialNumber.isEmpty() && notifyUser) {
-                emit testModeStarted();
-            }
-
             // Save the serial number in settings
 #if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON) && !defined(SERIAL_TEST_MODE_ON)
             QSettings setting;
@@ -162,6 +156,15 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             setting.setValue(cSerialNumberSetting, mSerialNumber);
 #endif
             Device->updateSerialNumber(mSerialNumber, mHasClient);
+
+            // These signals are needed once all local and global parameters are updated.
+            if (!mSerialNumber.isEmpty()) {
+                emit serialNumberReady();
+            }
+
+            if (mSerialNumber.isEmpty() && notifyUser) {
+                emit testModeStarted();
+            }
         }
         else {
             if (reply->error() == QNetworkReply::NoError) {

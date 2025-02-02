@@ -785,12 +785,12 @@ void DeviceControllerCPP::setSystemSetup(SystemSetup *systemSetup) {
     mSchemeDataProvider->setSystemSetup(mSystemSetup);
 
     // To provide outdoor temperature
-    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [=] {
+    connect(mSystemSetup, &SystemSetup::systemTypeChanged, this, [this] {
         checkForOutdoorTemperature();
     });
 
     // To provide outdoor temperature
-    connect(mSystemSetup, &SystemSetup::isAUXAutoChanged, this, [=] {
+    connect(mSystemSetup, &SystemSetup::isAUXAutoChanged, this, [this] {
         checkForOutdoorTemperature();
     });
 

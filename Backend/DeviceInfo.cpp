@@ -35,11 +35,6 @@ DeviceInfo::DeviceInfo(QObject *parent)
 
 bool DeviceInfo::updateSerialNumber(const QString& sn, bool clientSet)
 {
-    if (sn.isEmpty() || sn == serialNumber()){
-        TRACE << "serial number not set:" << sn << ", current is :" << serialNumber();
-        return false;
-    }
-
     hasClient(clientSet);
     serialNumber(sn);
 
