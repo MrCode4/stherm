@@ -351,6 +351,7 @@ void DateTimeManager::setTimezoneTo(const QTimeZone& timezone)
 
 void DateTimeManager::saveDiffTimeFromUTC(const QDateTime &datetime)
 {
+    cancelRetry();
     auto callback = [this, datetime](const QDateTime &utcDateTime) {
         QDateTime localTime = utcDateTime.toLocalTime();
         qint64 diffInSeconds = localTime.secsTo(datetime);
@@ -359,15 +360,14 @@ void DateTimeManager::saveDiffTimeFromUTC(const QDateTime &datetime)
         setting.setValue("DiffTimeFromUTC", diffInSeconds);
     };
 
-    auto errorCallback = []() {
-        qWarning() << "[DateTimeManager] Failed to get UTC time for saveDiffTimeFromUTC.";
-    };
+    auto errorCallback = [this, callback]() { scheduleRetryGetAsync(callback, 0); };
 
     getCurrentTimeOnlineAsync(callback, errorCallback);
 }
 
 void DateTimeManager::correctTimeBaseOnDiff()
 {
+    cancelRetry();
     auto callback = [this](const QDateTime &utcDateTime) {
         QSettings settings;
         qint64 secondsToAdd = settings.value("DiffTimeFromUTC", 0).toInt();
@@ -378,9 +378,7 @@ void DateTimeManager::correctTimeBaseOnDiff()
         setDateTime(newDateTime);
     };
 
-    auto errorCallback = []() {
-        qWarning() << "[DateTimeManager] Failed to get UTC time for correctTimeBaseOnDiff.";
-    };
+    auto errorCallback = [this, callback]() { scheduleRetryGetAsync(callback, 0); };
 
     getCurrentTimeOnlineAsync(callback, errorCallback);
 }
@@ -395,8 +393,9 @@ void DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
         if (reply->error() != QNetworkReply::NoError) {
             qWarning() << "[DateTimeManager] Network error while fetching time: "
                        << reply->errorString();
-            if (onError)
+            if (onError) {
                 onError();
+            }
             return;
         }
 
@@ -404,8 +403,9 @@ void DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
                                                       Qt::ISODate);
         if (!utcDateTime.isValid()) {
             qWarning() << "[DateTimeManager] Invalid datetime format in API response";
-            if (onError)
+            if (onError) {
                 onError();
+            }
             return;
         }
 
@@ -419,6 +419,57 @@ void DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
                                     false);
 
     connect(netReply, &QNetworkReply::finished, api, &QObject::deleteLater);
+}
+
+void DateTimeManager::scheduleRetryGetAsync(std::function<void(const QDateTime &)> callback,
+                                            int retryCount)
+{
+    const int maxRetry = 4;
+    if (retryCount >= maxRetry) {
+        qWarning() << "[DateTimeManager] Max retries reached.";
+        return;
+    }
+
+    if (!mRetryTimer) {
+        mRetryTimer = new QTimer(this);
+        mRetryTimer->setSingleShot(true);
+    } else {
+        mRetryTimer->stop();
+        mRetryTimer->disconnect();
+    }
+
+    int delayMs = calculateDelayTime(retryCount);
+
+    qWarning() << "[DateTimeManager] Retrying in " << delayMs / 1000 << " seconds (attempt "
+               << retryCount + 1 << " of " << maxRetry << ")";
+
+    connect(mRetryTimer, &QTimer::timeout, this, [this, callback, retryCount]() {
+        getCurrentTimeOnlineAsync(callback, [this, callback, retryCount]() {
+            scheduleRetryGetAsync(callback, retryCount + 1);
+        });
+    });
+
+    mRetryTimer->start(delayMs);
+}
+
+void DateTimeManager::cancelRetry()
+{
+    if (mRetryTimer) {
+        mRetryTimer->stop();
+        delete mRetryTimer;
+        mRetryTimer = nullptr;
+    }
+}
+
+int DateTimeManager::calculateDelayTime(int retryCount)
+{
+    const int initialDelay = 1000; // 1 second in milliseconds
+    const int factor = 3;          // Factor to increase time
+    const int maxDelay = 180000;   // Max 180s
+
+    int delay = initialDelay * std::pow(factor, retryCount);
+
+    return qMin(delay, maxDelay);
 }
 
 QDateTime DateTimeManager::getCurrentTimeOnlineSync()

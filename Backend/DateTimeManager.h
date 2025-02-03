@@ -130,6 +130,11 @@ private:
     void getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
                                    std::function<void()> onError);
 
+    void scheduleRetryGetAsync(std::function<void(const QDateTime &)> callback, int retryCount);
+
+    void cancelRetry();
+    int calculateDelayTime(int retryCount);
+
 signals:
     void autoUpdateTimeChanged();
     void currentTimeZoneChanged();
@@ -185,6 +190,8 @@ private:
     //! \brief mTzMap
     //!
     TimezonesDSTMap     mTzMap;
+
+    QTimer *mRetryTimer;
 };
 
 /*!
