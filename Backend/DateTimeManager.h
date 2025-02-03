@@ -67,7 +67,7 @@ public:
      * \param datetime
      * \return
      */
-    Q_INVOKABLE void            setDateTime(const QDateTime& datetime);
+    Q_INVOKABLE void            setDateTime(const QDateTime& datetime, bool calledFromUI = true);
 
     /*!
      * \brief timeZones Returns a list of all the timezones avaialable in the system.
@@ -96,7 +96,11 @@ public:
     Q_INVOKABLE QString         nowUTC(const QString &outputFormat = QString("yyyy-MM-dd HH:mm:ss"));
 
     Q_INVOKABLE void enableTimeSyncdService();
-    Q_INVOKABLE void correctTimeBaseOnDiff();
+
+    Q_INVOKABLE void correctTimeBaseLatestState();
+    Q_INVOKABLE void stopTimeCorrectionFromLatest();
+
+    Q_INVOKABLE void stopGettingCurrentTime();
     Q_INVOKABLE QString getCurrentTimeOnlineSyncAsString();
 
 private:
@@ -104,13 +108,7 @@ private:
      * \brief setAutoUpdateTimeProperty Sets mAutoUpdateTime value
      * \param autoUpdate
      */
-    inline void setAutoUpdateTimeProperty(bool autoUpdate)
-    {
-        if (mAutoUpdateTime != autoUpdate) {
-            mAutoUpdateTime = autoUpdate;
-            emit autoUpdateTimeChanged();
-        }
-    }
+    void setAutoUpdateTimeProperty(bool autoUpdate);
 
     /*!
      * \brief callProcessFinished Calls \ref onfinish callback if its a callable
@@ -124,7 +122,7 @@ private:
      */
     void setTimezoneTo(const QTimeZone& timezone);
 
-    void saveDiffTimeFromUTC(const QDateTime &datetime);
+    void updateTimeDiffrenceBasedonServer();
 
     QDateTime getCurrentTimeOnlineSync();
     void getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
@@ -132,7 +130,6 @@ private:
 
     void scheduleRetryGetAsync(std::function<void(const QDateTime &)> callback, int retryCount);
 
-    void cancelRetry();
     int calculateDelayTime(int retryCount);
 
 signals:
@@ -191,7 +188,12 @@ private:
     //!
     TimezonesDSTMap     mTzMap;
 
-    QTimer *mRetryTimer;
+    QTimer *mRetryToGetCurrentTimeTimer;
+
+    bool mNeedToSaveTimeDiffrence;
+    bool mNeedToCorrectTimeBaseLatest;
+
+    void getCurrentTimeFromServerAsync();
 };
 
 /*!
