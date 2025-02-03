@@ -440,8 +440,8 @@ void DateTimeManager::scheduleRetryGetAsync(std::function<void(const QDateTime &
 
     int delayMs = calculateDelayTime(retryCount);
 
-    qWarning() << "[DateTimeManager] Retrying in " << delayMs / 1000 << " seconds (attempt "
-               << retryCount + 1 << " of " << maxRetry << ")";
+    qWarning() << "[DateTimeManager] Retrying in" << delayMs / 1000 << "seconds (attempt"
+               << retryCount + 1 << "of" << maxRetry << ")";
 
     connect(mRetryTimer, &QTimer::timeout, this, [this, callback, retryCount]() {
         getCurrentTimeOnlineAsync(callback, [this, callback, retryCount]() {
