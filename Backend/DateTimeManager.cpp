@@ -401,7 +401,7 @@ void DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
             return;
         }
 
-        QDateTime utcDateTime = QDateTime::fromString(data.value("currentDateTime").toString(),
+        QDateTime utcDateTime = QDateTime::fromString(data.value("utc_datetime").toString(),
                                                       Qt::ISODate);
         if (!utcDateTime.isValid()) {
             qWarning() << "[DateTimeManager] Invalid datetime format in API response";
@@ -415,7 +415,7 @@ void DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
         }
     };
 
-    auto netReply = api->callGetApi(QString("http://worldclockapi.com/api/json/utc/now"),
+    auto netReply = api->callGetApi(QString("https://worldtimeapi.org/api/timezone/Etc/UTC"),
                                     callback,
                                     false);
 
@@ -432,7 +432,7 @@ QDateTime DateTimeManager::getCurrentTimeOnlineSync()
     QEventLoop loop;
     auto callback = [&loop,
                      &time](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        QDateTime dateTime = QDateTime::fromString(data.value("currentDateTime").toString(),
+        QDateTime dateTime = QDateTime::fromString(data.value("utc_datetime").toString(),
                                                    Qt::ISODate);
 
         if (dateTime.isValid()) {
@@ -441,11 +441,12 @@ QDateTime DateTimeManager::getCurrentTimeOnlineSync()
             qWarning() << "[DateTimeManager] Invalid datetime format in API response (Sync)";
         }
 
-        TRACE << "getCurrentTime: " << data.value("currentDateTime").toString() << dateTime;
+        TRACE << "getCurrentTime: " << data.value("utc_datetime").toString() << dateTime;
         loop.quit();
     };
 
-    QNetworkReply *netReply = api->callGetApi(QString("http://worldclockapi.com/api/json/utc/now"),
+    QNetworkReply *netReply = api->callGetApi(QString(
+                                                  "https://worldtimeapi.org/api/timezone/Etc/UTC"),
                                               callback,
                                               false);
 
