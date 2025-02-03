@@ -20,6 +20,7 @@ I_PopUp {
     rightPadding: 5
 
     title: qsTr("Device Time May Be Incorrect After Power Loss")
+    keepOpen: true
 
     /* Signals
      * ****************************************************************************************/
