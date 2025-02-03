@@ -2,7 +2,6 @@
 
 #include <QCoreApplication>
 #include <QSettings>
-#include <QSharedPointer>
 #include <QTimeZone>
 
 #include "LogHelper.h"
