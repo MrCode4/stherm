@@ -72,7 +72,7 @@ void ProcessExecutor::execAsync(const QString& command, const QStringList& args,
     preExec(process, command, args, logline);
     connect(process, &QProcess::finished, this, [this, process, callback, logline](int exitCode, QProcess::ExitStatus exitStatus) {
         postExec(process, callback, logline);
-        delete process;
+        process->deleteLater();
     }, Qt::SingleShotConnection);
 }
 

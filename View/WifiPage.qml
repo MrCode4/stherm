@@ -389,8 +389,10 @@ BasePageView {
                         }
                     } else {
                         //! Disconnect from this wifi
-                        if (_wifisRepeater.currentItem)
+                        if (_wifisRepeater.currentItem) {
+                            busyDisconnectPopup.open();
                             NetworkInterface.disconnectWifi(_wifisRepeater.currentItem.wifi);
+                        }
                     }
 
                     _wifisRepeater.currentIndex = -2;
@@ -477,10 +479,20 @@ BasePageView {
         }
     }
 
+    BusyPopUp {
+        id: busyDisconnectPopup
+
+        title: "Disconnecting..."
+    }
+
     Connections {
         target: NetworkInterface
 
         function onConnectedWifiChanged() {
+
+            // The popup will close when the connected Wi-Fi changed.
+            busyDisconnectPopup.close();
+
             // To address the issue of users reconnecting to Wi-Fi after navigating back from other pages.
             if (NetworkInterface.connectedWifi && !openFromNoWiFiInstallation)
                 deviceController.setInitialSetupNoWIFI(false);
