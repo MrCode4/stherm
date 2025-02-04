@@ -27,6 +27,7 @@ DateTimeManager::DateTimeManager(QObject *parent)
     , mCurrentTimeZone { QTimeZone::systemTimeZone() }
     , mNow { QDateTime::currentDateTime() }
     , mEffectDst { true }
+    , mRetryToGetCurrentTimeTimer { nullptr }
     , mNeedToSaveTimeDiffrence { false }
     , mNeedToCorrectTimeBaseLatest { false }
 {
@@ -218,7 +219,6 @@ void DateTimeManager::setDateTime(const QDateTime& datetime, bool calledFromUI)
                                     TDC_SET_TIME,
                                     newDateTime,
                                 });
-
     // Device DateTime request sent by user or server.
     stopTimeCorrectionFromLatest();
 }
@@ -485,9 +485,10 @@ void DateTimeManager::scheduleRetryGetAsync(std::function<void(const QDateTime &
         return;
     }
 
-    if (!mRetryToGetCurrentTimeTimer) {
+    if (mRetryToGetCurrentTimeTimer == nullptr) {
         mRetryToGetCurrentTimeTimer = new QTimer(this);
         mRetryToGetCurrentTimeTimer->setSingleShot(true);
+
     } else {
         mRetryToGetCurrentTimeTimer->stop();
         mRetryToGetCurrentTimeTimer->disconnect();
@@ -509,7 +510,7 @@ void DateTimeManager::scheduleRetryGetAsync(std::function<void(const QDateTime &
 
 void DateTimeManager::stopGettingCurrentTime()
 {
-    if (mRetryToGetCurrentTimeTimer) {
+    if (mRetryToGetCurrentTimeTimer != nullptr) {
         mRetryToGetCurrentTimeTimer->stop();
         delete mRetryToGetCurrentTimeTimer;
         mRetryToGetCurrentTimeTimer = nullptr;
