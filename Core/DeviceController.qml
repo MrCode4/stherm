@@ -2349,7 +2349,7 @@ I_DeviceController {
         deviceControllerCPP.resetToFactorySetting();
 
         if (system) {
-            system.rebootDevice();
+            system.rebootDevice(true);
         }
     }
 

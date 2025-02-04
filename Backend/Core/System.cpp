@@ -1957,10 +1957,13 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
     return latestVersionKey;
 }
 
-void NUVE::System::rebootDevice()
+void NUVE::System::rebootDevice(const bool &isResetFactory)
 {
+    // In order to avoid writing to settings that have already been cleared in the reset to factory process.
+    if (!isResetFactory)
+        setRestartFlag();
+
 #ifdef __unix__
-    setRestartFlag();
     QProcess process;
     QString command = "reboot";
 

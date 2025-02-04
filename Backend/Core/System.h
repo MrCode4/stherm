@@ -102,7 +102,7 @@ public:
      * ****************************************************************************************/
 
     //! Reboot device
-    Q_INVOKABLE void rebootDevice();
+    Q_INVOKABLE void rebootDevice(const bool &isResetFactory = false);
 
     //! Get log by version
     Q_INVOKABLE QString getLogByVersion(const QString version);
