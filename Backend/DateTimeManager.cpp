@@ -381,7 +381,6 @@ void DateTimeManager::getCurrentTimeFromServerAsync() {
         QSettings settings;
         QDateTime serverDateTimeUTCLocalTime = serverDateTimeUTC.toLocalTime();
         TRACE << "[DateTimeManager] server date time: " << serverDateTimeUTC << serverDateTimeUTCLocalTime;
-        TRACE << "[DateTimeManager] " << mNeedToCorrectTimeBaseLatest << mNeedToSaveTimeDiffrence;
 
         if (mNeedToCorrectTimeBaseLatest) {
             qint64 secondsToAdd = settings.value(DIFF_TIME_FROM_UTC_KEY, 0).toInt();
@@ -400,6 +399,7 @@ void DateTimeManager::getCurrentTimeFromServerAsync() {
             settings.setValue(DIFF_TIME_FROM_UTC_KEY, diffInSeconds);
 
             mNeedToSaveTimeDiffrence = false;
+            TRACE << "[DateTimeManager] Saved diffrence time in seconds: " << diffInSeconds;
         }
     };
 
