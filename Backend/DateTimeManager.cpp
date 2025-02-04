@@ -8,6 +8,9 @@
 #include "NetworkInterface.h"
 #include "RestApiExecutor.h"
 
+Q_LOGGING_CATEGORY(DateTimeManagerLog, "DateTimeManager")
+#define DTM_LOG TRACE_CATEGORY(DateTimeManagerLog)
+
 const QString TIME_API_URL           = QString("https://worldtimeapi.org/api/timezone/Etc/UTC");
 const QString UTC_TIME_KEY_IN_API    = QString("utc_datetime");
 const QString DIFF_TIME_FROM_UTC_KEY = QString("DiffTimeFromUTC");
@@ -316,9 +319,9 @@ QString DateTimeManager::utcDateTimeToLocalString(const QString& utcDateTime,
 
     QString output = dateTimeObject.toString(outputFormat);
     if (output.isEmpty()) {
-        TRACE << "Conversion error: Date time" << utcDateTime
-              << "inputFormat: "  << inputFormat
-              << "outputFormat: " << outputFormat;
+        DTM_LOG << "Conversion error: Date time" << utcDateTime
+                            << "inputFormat: "  << inputFormat
+                            << "outputFormat: " << outputFormat;
     }
 
     return output;
@@ -380,7 +383,7 @@ void DateTimeManager::getCurrentTimeFromServerAsync() {
     auto callback = [this](const QDateTime &serverDateTimeUTC) {
         QSettings settings;
         QDateTime serverDateTimeUTCLocalTime = serverDateTimeUTC.toLocalTime();
-        TRACE << "[DateTimeManager] server date time: " << serverDateTimeUTC << serverDateTimeUTCLocalTime;
+        DTM_LOG << "[DateTimeManager] server date time: " << serverDateTimeUTC << serverDateTimeUTCLocalTime;
 
         if (mNeedToCorrectTimeBaseLatest) {
             qint64 secondsToAdd = settings.value(DIFF_TIME_FROM_UTC_KEY, 0).toInt();
@@ -389,7 +392,7 @@ void DateTimeManager::getCurrentTimeFromServerAsync() {
             setDateTime(newDateTime, false);
             mNeedToCorrectTimeBaseLatest = false;
 
-            TRACE << "[DateTimeManager] secondsToAdd: " << secondsToAdd << " - newDateTime: " << newDateTime;
+            DTM_LOG << "[DateTimeManager] secondsToAdd: " << secondsToAdd << " - newDateTime: " << newDateTime;
         }
 
         if (mNeedToSaveTimeDiffrence) {
@@ -399,7 +402,7 @@ void DateTimeManager::getCurrentTimeFromServerAsync() {
             settings.setValue(DIFF_TIME_FROM_UTC_KEY, diffInSeconds);
 
             mNeedToSaveTimeDiffrence = false;
-            TRACE << "[DateTimeManager] Saved diffrence time in seconds: " << diffInSeconds;
+            DTM_LOG << "[DateTimeManager] Saved diffrence time in seconds: " << diffInSeconds;
         }
     };
 
@@ -435,6 +438,8 @@ void DateTimeManager::stopTimeCorrectionFromLatest() {
 void DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
                                                 std::function<void()> onError)
 {
+    if (!NetworkInterface::me()->hasInternet())
+        return;
 
     auto callback = [onSuccess,
                      onError](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
@@ -458,7 +463,7 @@ void DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
                 onSuccess(utcDateTime);
 
             } else {
-                qWarning() << "[DateTimeManager] Invalid date time and/or invalid onSuccess";
+                qWarning() << "[DateTimeManager] Invalid date time and invalid onSuccess";
             }
         }
     };
@@ -481,7 +486,7 @@ void DateTimeManager::scheduleRetryGetAsync(std::function<void(const QDateTime &
 
     const int maxRetry = 4;
     if (retryCount >= maxRetry) {
-        qWarning() << "[DateTimeManager] Max retries reached.";
+        qWarning() << "[DateTimeManager] Max retries reached. retried due to " << mNeedToSaveTimeDiffrence << mNeedToCorrectTimeBaseLatest;
         return;
     }
 
@@ -543,10 +548,10 @@ QDateTime DateTimeManager::getCurrentTimeOnlineSync()
         if (dateTime.isValid()) {
             time = dateTime;
         } else {
-            qWarning() << "[DateTimeManager] Invalid datetime format in API response (Sync)";
+            qWarning() << "Invalid datetime format in API response (Sync)";
         }
 
-        TRACE << "getCurrentTime: " << data.value(UTC_TIME_KEY_IN_API).toString() << dateTime;
+        DTM_LOG << "getCurrentTime: " << data.value(UTC_TIME_KEY_IN_API).toString() << dateTime;
         loop.quit();
     };
 
