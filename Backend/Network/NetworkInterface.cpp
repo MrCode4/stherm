@@ -257,6 +257,7 @@ void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
 {
     if (!wifiInfo || !mNmcliInterface->isDeviceOn()) {
         NI_LOG << "Worst case scenario: Error in forgetWifi" << wifiInfo << mNmcliInterface->isDeviceOn();
+        emit  wifiForgotten(wifiInfo);
         return;
     }
 

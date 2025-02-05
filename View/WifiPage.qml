@@ -390,8 +390,8 @@ BasePageView {
                     } else {
                         //! Disconnect from this wifi
                         if (_wifisRepeater.currentItem) {
-                            busyDisconnectPopup.isForgetting = false;
-                            busyDisconnectPopup.open();
+                            busyProcessPopup.isForgetting = false;
+                            busyProcessPopup.open();
                             NetworkInterface.disconnectWifi(_wifisRepeater.currentItem.wifi);
                         }
                     }
@@ -424,8 +424,8 @@ BasePageView {
         wifiSsid: wifiToForget?.ssid ?? ""
         onAccepted: {
             if (wifiToForget) {
-                busyDisconnectPopup.isForgetting = true;
-                busyDisconnectPopup.open();
+                busyProcessPopup.isForgetting = true;
+                busyProcessPopup.open();
 
                 //! Forget requested wifi
                 NetworkInterface.forgetWifi(wifiToForget);
@@ -484,9 +484,10 @@ BasePageView {
     }
 
     BusyPopUp {
-        id: busyDisconnectPopup
+        id: busyProcessPopup
 
         property bool isForgetting: false
+
         title: isForgetting ? "Forgetting..." : "Disconnecting..."
     }
 
@@ -497,13 +498,14 @@ BasePageView {
 
         function onWifiForgotten(wifi: WifiInfo) {
             console.log(wifi?.ssid, " forgotten.")
-            busyDisconnectPopup.close();
+            busyProcessPopup.close();
         }
 
         function onConnectedWifiChanged() {
 
             // The popup will close when the connected Wi-Fi changed.
-            busyDisconnectPopup.close();
+            if(busyProcessPopup.isForgetting == false)
+                busyProcessPopup.close();
 
             // To address the issue of users reconnecting to Wi-Fi after navigating back from other pages.
             if (NetworkInterface.connectedWifi && !openFromNoWiFiInstallation)
