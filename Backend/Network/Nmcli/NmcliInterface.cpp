@@ -173,13 +173,15 @@ void NmcliInterface::forgetWifi(WifiInfo* wifi)
     if (!wifi || !wifi->isSaved() || busy()) {
         NC_DEBUG << "Worst case scenario: Error in forgetWifi" << wifi << busy();
         NC_DEBUG_IF(wifi) << "Worst case scenario: Error in forgetWifi" << wifi->isSaved();
+        emit wifiForgotten(wifi);
         return;
     }
 
     setBusy(true);
     //! Perform disconnect command
-    mCliWifi->forgetWifi(wifi->ssid(), [this] (QProcess*) {
+    mCliWifi->forgetWifi(wifi->ssid(), [this, wifi] (QProcess*) {
         setBusy(false);
+        emit wifiForgotten(wifi);
     });
 }
 

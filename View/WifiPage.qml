@@ -390,6 +390,7 @@ BasePageView {
                     } else {
                         //! Disconnect from this wifi
                         if (_wifisRepeater.currentItem) {
+                            busyDisconnectPopup.isForgetting = false;
                             busyDisconnectPopup.open();
                             NetworkInterface.disconnectWifi(_wifisRepeater.currentItem.wifi);
                         }
@@ -423,6 +424,9 @@ BasePageView {
         wifiSsid: wifiToForget?.ssid ?? ""
         onAccepted: {
             if (wifiToForget) {
+                busyDisconnectPopup.isForgetting = true;
+                busyDisconnectPopup.open();
+
                 //! Forget requested wifi
                 NetworkInterface.forgetWifi(wifiToForget);
                 wifiToForget = null;
@@ -482,11 +486,19 @@ BasePageView {
     BusyPopUp {
         id: busyDisconnectPopup
 
-        title: "Disconnecting..."
+        property bool isForgetting: false
+        title: isForgetting ? "Forgetting..." : "Disconnecting..."
     }
 
     Connections {
         target: NetworkInterface
+
+        enabled: root.visible
+
+        function onWifiForgotten(wifi: WifiInfo) {
+            console.log(wifi?.ssid, " forgotten.")
+            busyDisconnectPopup.close();
+        }
 
         function onConnectedWifiChanged() {
 

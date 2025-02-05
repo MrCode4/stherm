@@ -317,6 +317,8 @@ signals:
     //! Auto connection finished for wifi.
     void autoConnectSavedInRangeWifiFinished(WifiInfo *wifi);
 
+    void wifiForgotten(WifiInfo* wifi);
+
 private:
     /*!
      * \brief mObserver

@@ -58,6 +58,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(mNmcliInterface, &NmcliInterface::wifisChanged, this, &NetworkInterface::wifisChanged);
     connect(mNmcliInterface, &NmcliInterface::wifiNeedAuthentication, this,
             &NetworkInterface::incorrectWifiPassword);
+    connect(mNmcliInterface, &NmcliInterface::wifiForgotten, this,
+            &NetworkInterface::wifiForgotten);
 
     //! Set up time for checking internet access: every 30 seconds
     mCheckInternetAccessTmr.setInterval(cCheckInternetAccessInterval);
