@@ -1351,9 +1351,14 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
             }
         }
 
+        float backlightFactor = 0;
         // Check backlight data.
         if (backLightData.size() != 5) {
             backLightData = QVariantList{-255, -255, -255, -1, "invalid"};
+            DC_LOG << "backlight data is wrong";
+        } else {
+            if (backLightData[4].toString() == "true")
+                backlightFactor = 1;
         }
 
         foreach (auto key, header) {
@@ -1387,13 +1392,13 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(backLightData[4].toString());
 
             }  else if (key == m_BacklightRHeader) {
-                dataStrList.append(QString::number(backLightData[0].toInt() / 255.0));
+                dataStrList.append(QString::number(backlightFactor * backLightData[0].toInt() / 255.0));
 
             }  else if (key == m_BacklightGHeader) {
-                dataStrList.append(QString::number(backLightData[1].toInt() / 255.0));
+                dataStrList.append(QString::number(backlightFactor * backLightData[1].toInt() / 255.0));
 
             }  else if (key == m_BacklightBHeader) {
-                dataStrList.append(QString::number(backLightData[2].toInt() / 255.0));
+                dataStrList.append(QString::number(backlightFactor * backLightData[2].toInt() / 255.0));
 
             } else if (key == m_LedEffectHeader) {
                 auto ledEffectInt = backLightData[3].toInt();
