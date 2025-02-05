@@ -24,6 +24,16 @@ static  const QString m_NightModeHeader       = "Is Night Mode Running";
 static  const QString m_BacklightRHeader      = "Backlight - R";
 static  const QString m_BacklightGHeader      = "Backlight - G";
 static  const QString m_BacklightBHeader      = "Backlight - B";
+static  const QString m_RelayHeaderG          = "Relay - g";
+static  const QString m_RelayHeaderY1         = "Relay - y1";
+static  const QString m_RelayHeaderY2         = "Relay - y2";
+static  const QString m_RelayHeaderW1         = "Relay - w1";
+static  const QString m_RelayHeaderW2         = "Relay - w2";
+static  const QString m_RelayHeaderW3         = "Relay - w3";
+static  const QString m_RelayHeaderAcc2       = "Relay - acc2";
+static  const QString m_RelayHeaderAcc1p      = "Relay - acc1p";
+static  const QString m_RelayHeaderAcc1n      = "Relay - acc1n";
+static  const QString m_RelayHeaderOB         = "Relay - o_b";
 static  const QString m_LedEffectHeader       = "Backlight - LED effect";
 static  const QString m_CPUUsage              = "CPU Usage (%)";
 static  const QString m_FanStatus             = "Fan status (0, 1)";
@@ -424,6 +434,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     }
 
     connect(_deviceIO, &DeviceIOController::relaysUpdated, this, [this](STHERM::RelayConfigs relays) {
+        mRelaysUpdated = relays;
         emit fanWorkChanged(relays.g == STHERM::ON);
     });
 
@@ -1319,7 +1330,10 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
                           m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader, m_ProcessedTemperatureHeader,
                           m_NightModeHeader, m_BacklightState, m_BacklightRHeader, m_BacklightGHeader,
-                          m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus};
+                          m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus,
+                          m_RelayHeaderG, m_RelayHeaderY1, m_RelayHeaderY2,
+                          m_RelayHeaderW1, m_RelayHeaderW2, m_RelayHeaderW3,
+                          m_RelayHeaderAcc1n, m_RelayHeaderAcc1p, m_RelayHeaderAcc2, m_RelayHeaderOB};
 
     QFile file(mGeneralSystemDatafilePath);
 
@@ -1360,6 +1374,11 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
             if (backLightData[4].toString() == "true")
                 backlightFactor = 1;
         }
+
+        // model
+        STHERM::RelayConfigs relays = Relay::instance()->relays();
+        // last returned by TI
+        relays = mRelaysUpdated;
 
         foreach (auto key, header) {
             if (key == m_DateTimeHeader) {
@@ -1431,6 +1450,36 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 
             } else if (key == m_T1) {
                 dataStrList.append(QString::number(mTEMPERATURE_COMPENSATION_T1 * 1.8));
+
+            } else if (key == m_RelayHeaderG) {
+                dataStrList.append(QString::number(relays.g == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderY1) {
+                dataStrList.append(QString::number(relays.y1 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderY2) {
+                dataStrList.append(QString::number(relays.y2 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderW1) {
+                dataStrList.append(QString::number(relays.w1 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderW2) {
+                dataStrList.append(QString::number(relays.w2 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderW3) {
+                dataStrList.append(QString::number(relays.w3 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderAcc1n) {
+                dataStrList.append(QString::number(relays.acc1n == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderAcc1p) {
+                dataStrList.append(QString::number(relays.acc1p == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderAcc2) {
+                dataStrList.append(QString::number(relays.acc2 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderOB) {
+                dataStrList.append(QString::number(relays.o_b == STHERM::RelayMode::ON ? 1 : 0));
             }
         }
 

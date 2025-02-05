@@ -420,5 +420,7 @@ private:
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
 
+    STHERM::RelayConfigs mRelaysUpdated;
+
     bool mBackdoorSchemeEnabled = false;
 };
