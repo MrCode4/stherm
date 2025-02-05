@@ -570,13 +570,12 @@ inline void removeResultCSVFiles() {
 void DeviceControllerCPP::forgetDevice()
 {
     QFile::remove("/usr/local/bin/QSCore.cfg");
-    QFile::remove(PROTOBUFF_FILE_PATH);
     QFile::remove(CUSTOMER_IMAGE_PATH);
     QFile::remove(MAIN_DATA_OVERRIDE_PATH);
     removeResultCSVFiles();
 
-    QDir backdoor(m_backdoorPath);
-    backdoor.removeRecursively();
+    AppUtilities::removeDirectory(PROTOBUFF_FILES_PATH);
+    AppUtilities::removeDirectory(m_backdoorPath);
 
     _deviceAPI->forgetDevice();
     m_system->forgetDevice();

@@ -112,5 +112,7 @@ private:
 
     //! Flag to stash data
     int mChangeMode;
+
+    bool mSendingToServer;
 };
 
