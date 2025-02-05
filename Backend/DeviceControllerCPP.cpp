@@ -434,7 +434,11 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     }
 
     connect(_deviceIO, &DeviceIOController::relaysUpdated, this, [this](STHERM::RelayConfigs relays) {
+
         mRelaysUpdated = relays;
+
+        SCHEME_LOG << "relays Updated. Relays: " << relays.printStr();
+
         emit fanWorkChanged(relays.g == STHERM::ON);
     });
 
