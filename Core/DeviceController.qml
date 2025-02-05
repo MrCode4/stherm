@@ -90,6 +90,8 @@ I_DeviceController {
 
     property bool isNeedSendInstallLog: false
 
+    property bool nightModeControlEnabled : deviceControllerCPP.deviceAPI.nightModeControlEnabled()
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -195,7 +197,7 @@ I_DeviceController {
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
-        running: device.nightMode.mode === AppSpec.NMOn && deviceControllerCPP.deviceAPI.nightModeControlEnabled()
+        running: device.nightMode.mode === AppSpec.NMOn && root.nightModeControlEnabled
 
         interval: 1000
 
@@ -209,7 +211,7 @@ I_DeviceController {
     property Connections nightModeController: Connections {
         target: device.nightMode
 
-        enabled: deviceControllerCPP.deviceAPI.nightModeControlEnabled()
+        enabled: root.nightModeControlEnabled
 
         function onModeChanged() {
             if (device.nightMode.mode === AppSpec.NMOff) {
@@ -221,14 +223,20 @@ I_DeviceController {
         function on_RunningChanged() {
             runNightMode();
         }
+
+        onEnabledChanged : {
+            if (!nightModeController.enabled) {
+                device.nightMode._running = false;
+                runNightMode();
+            }
+        }
     }
 
     //! Manage the night mode with screen saver
     property Connections nightMode_screenSaverController: Connections {
         target: ScreenSaverManager
 
-        enabled: device.nightMode._running &&
-                 deviceControllerCPP.deviceAPI.nightModeControlEnabled()
+        enabled: device.nightMode._running && root.nightModeControlEnabled
 
         function onStateChanged() {
             if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
