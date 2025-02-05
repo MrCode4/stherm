@@ -67,6 +67,7 @@ void Sync::setSerialNumber(const QString &serialNumber)
         TRACE << "serial number not set:" << serialNumber << ", current is :" << mSerialNumber
               << ", has client is :" << mHasClient << ", set to true";
         mHasClient            = true;
+        Device->updateSerialNumber(serialNumber, true);
         return;
     }
 
