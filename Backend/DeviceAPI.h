@@ -49,8 +49,11 @@ public:
 
     Q_INVOKABLE bool nightModeControlEnabled() const;
 
+    void setNightModeControlEnabled(bool enabled);
+
 signals:
     void uidChanged();
+    void nightModeControlEnabledChanged();
 
 private:
     NUVE::DeviceConfig m_deviceConfig;

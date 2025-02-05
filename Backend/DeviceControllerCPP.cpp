@@ -42,6 +42,11 @@ static const QByteArray m_default_backdoor_backlight = R"({
 }
 )";
 
+static const QByteArray m_default_backdoor_nightmode = R"({
+    "on" : // true
+}
+)";
+
 static const QByteArray m_default_backdoor_brightness = R"({
     "brightness": // 100
 }
@@ -927,6 +932,8 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
         processRelaySettings(path);
     } else if (path.endsWith("emulateWarrantyFlow.json")) {
         processEmulateWarrantyFlow(path);
+    } else if (path.endsWith("nightMode.json")) {
+        processNightModeControlSettings(path);
     } else {
         qWarning() << "Incompatible backdoor file, processed nothing";
     }
@@ -1512,6 +1519,20 @@ void DeviceControllerCPP::processFanSettings(const QString &path)
     _deviceIO->setFanSpeed(speed);
 }
 
+void DeviceControllerCPP::processNightModeControlSettings(const QString &path)
+{
+    bool on = _deviceAPI->nightModeControlEnabled(); // or use default true?
+
+    QJsonObject json = processJsonFile(path, {"on"});
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
+    {
+        on = json["on"].toBool();
+    }
+
+    _deviceAPI->setNightModeControlEnabled(on);
+}
+
 void DeviceControllerCPP::processBrightnessSettings(const QString &path)
 {
     auto data = mSettingsModelData;
@@ -1585,22 +1606,29 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 {
     if (path.endsWith("backlight.json")) {
         return m_default_backdoor_backlight;
-
-    } else if (path.endsWith("fan.json")) {
-        return m_default_backdoor_fan;
-
-    } else if (path.endsWith("brightness.json")) {
-        return m_default_backdoor_brightness;
-
-    } else if (path.endsWith("relays.json")) {
-        return m_default_backdoor_relays;
-
-    } else if (path.endsWith("emulateWarrantyFlow.json")) {
-        return m_default_Emulate_Warranty_flow;
-
-    } else {
-        qWarning() << "Incompatible backdoor file, returning empty values";
     }
+
+    if (path.endsWith("fan.json")) {
+        return m_default_backdoor_fan;
+    }
+
+    if (path.endsWith("brightness.json")) {
+        return m_default_backdoor_brightness;
+    }
+
+    if (path.endsWith("relays.json")) {
+        return m_default_backdoor_relays;
+    }
+
+    if (path.endsWith("emulateWarrantyFlow.json")) {
+        return m_default_Emulate_Warranty_flow;
+    }
+
+    if (path.endsWith("nightMode.json")) {
+        return m_default_backdoor_nightmode;
+    }
+
+    qWarning() << "Incompatible backdoor file, returning empty values";
 
     return "";
 }

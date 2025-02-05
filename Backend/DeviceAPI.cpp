@@ -139,3 +139,14 @@ QVariantMap DeviceAPI::testConfigs() const
 bool DeviceAPI::nightModeControlEnabled() const {
     return m_deviceConfig.nightModeControlEnabled;
 }
+
+void DeviceAPI::setNightModeControlEnabled(bool enabled)
+{
+    if (m_deviceConfig.nightModeControlEnabled == enabled)
+        return;
+
+    m_deviceConfig.nightModeControlEnabled = enabled;
+    m_deviceConfig.save();
+
+    emit nightModeControlEnabledChanged();
+}

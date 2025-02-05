@@ -3,8 +3,6 @@
 #include <QSettings>
 #include <QtGlobal>
 
-#include "LogHelper.h"
-
 NUVE::DeviceConfig::DeviceConfig() {
     init();
     load();
@@ -62,7 +60,7 @@ void NUVE::DeviceConfig::init()
     system_type = 1;
     endpoint = API_SERVER_BASE_URL;
     controlAlertEnabled = false;
-    nightModeControlEnabled = false;
+    nightModeControlEnabled = true;
 }
 
 void NUVE::DeviceConfig::setSampleRate(const uint32_t& sr) {
@@ -86,6 +84,8 @@ void NUVE::DeviceConfig::load()
 #if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON) && !defined(SERIAL_TEST_MODE_ON)
     serial_number = config.value("serial_number").toString().toStdString();
 #endif
+
+    nightModeControlEnabled = config.value("nightModeControlEnabled", true).toBool();
 
     endpoint = config.value("endpoint", API_SERVER_BASE_URL).toString().toStdString();
 
@@ -121,6 +121,7 @@ void NUVE::DeviceConfig::save()
 #endif
     config.setValue("testConfigDestination", QString::fromStdString(testConfigDestination));
 
+    config.setValue("nightModeControlEnabled", nightModeControlEnabled);
 }
 
 void NUVE::DeviceConfig::setEnv()

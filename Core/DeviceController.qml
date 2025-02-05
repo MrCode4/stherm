@@ -207,6 +207,21 @@ I_DeviceController {
         }
     }
 
+    //! deviceAPI connections
+    property Connections deviceAPIConnections: Connections {
+        target: deviceControllerCPP.deviceAPI
+
+        //! Manage the night mode
+        function onNightModeControlEnabledChanged() {
+            root.nightModeControlEnabled = deviceControllerCPP.deviceAPI.nightModeControlEnabled()
+
+            if (!root.nightModeControlEnabled && device.nightMode._running) {
+                device.nightMode._running = false;
+                runNightMode();
+            }
+        }
+    }
+
     //! Manage the night mode
     property Connections nightModeController: Connections {
         target: device.nightMode
@@ -222,13 +237,6 @@ I_DeviceController {
 
         function on_RunningChanged() {
             runNightMode();
-        }
-
-        onEnabledChanged : {
-            if (!nightModeController.enabled) {
-                device.nightMode._running = false;
-                runNightMode();
-            }
         }
     }
 
@@ -1030,6 +1038,7 @@ I_DeviceController {
 
         console.log("* requestedTemp initial: ", device.requestedTemp);
         console.log("* requestedHum initial: ", device.requestedHum);
+        console.log("* nightModeControlEnabled: ", nightModeControlEnabled);
         deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
