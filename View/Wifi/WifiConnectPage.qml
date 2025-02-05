@@ -105,10 +105,10 @@ BasePageView {
 
     Connections {
         target: NetworkInterface
-        enabled: visible
+        enabled: _root.visible
 
         function onConnectedWifiChanged() {
-            if (wifi.connected) {
+            if (NetworkInterface.connectedWifi) {
                 if (_root.StackView.view) {
                     _root.StackView.view.pop();
                 }
