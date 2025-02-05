@@ -10,6 +10,9 @@
  * Log properties
  * ************************************************************************************************/
 #ifdef DEBUG_MODE
+Q_LOGGING_CATEGORY(DC_LOG_DeviceControllerCPP, "Debug DeviceControllerCPP")
+#define DC_LOG TRACE_CATEGORY(DC_LOG_DeviceControllerCPP)
+
 static  const QString m_DateTimeHeader        = "DateTime UTC (sec)";
 static  const QString m_DeltaCorrectionHeader = "Delta Correction (F)";
 static  const QString m_DTIHeader             = "Delta Temperature Integrator";
@@ -23,7 +26,7 @@ static  const QString m_BacklightGHeader      = "Backlight - G";
 static  const QString m_BacklightBHeader      = "Backlight - B";
 static  const QString m_LedEffectHeader       = "Backlight - LED effect";
 static  const QString m_CPUUsage              = "CPU Usage (%)";
-static  const QString m_FanStatus             = "Fan status";
+static  const QString m_FanStatus             = "Fan status (0, 1)";
 static  const QString m_BacklightState        = "Backlight state";
 static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
@@ -1314,7 +1317,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 #ifdef DEBUG_MODE
 
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
-                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader, m_ProcessedTemperatureHeader
+                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader, m_ProcessedTemperatureHeader,
                           m_NightModeHeader, m_BacklightState, m_BacklightRHeader, m_BacklightGHeader,
                           m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus};
 
@@ -1419,7 +1422,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(UtilityHelper::CPUUsage()));
 
             } else if (key == m_FanStatus) {
-                dataStrList.append(isFanON() ? "On" : "Off");
+                dataStrList.append(isFanON() ? "1" : "0");
 
             } else if (key == m_T1) {
                 dataStrList.append(QString::number(mTEMPERATURE_COMPENSATION_T1 * 1.8));
