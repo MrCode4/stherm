@@ -100,6 +100,27 @@ I_DeviceController {
 
     property int connectedWiFiStrength: AppSpec.wiFiStrength(NetworkInterface.connectedWifi?.strength ?? 0)
 
+    property bool allowPushWifiStrength: true
+
+    property Timer wifiStrengthPushCoolDown: Timer {
+        repeat: false
+        running: false
+        interval: 15 * 60 * 1000
+
+        property bool droppedEvent : false
+
+        onTriggered: {
+            if (droppedEvent) {
+                root.updateEditMode(AppSpec.EMWiFi);
+                root.allowPushWifiStrength = false;
+                droppedEvent = false;
+                wifiStrengthPushCoolDown.start();
+            } else {
+                root.allowPushWifiStrength = true;
+            }
+        }
+    }
+
     //! Active the Network Connection Watchdog when device has not internet for 1 hour.
     property Timer networkWatchdogTimer: Timer {
         repeat: false
@@ -333,7 +354,13 @@ I_DeviceController {
         }
 
         function onConnectedWiFiStrengthChanged() {
-            updateEditMode(AppSpec.EMWiFi);
+            if (allowPushWifiStrength){
+                updateEditMode(AppSpec.EMWiFi);
+                allowPushWifiStrength = false;
+                wifiStrengthPushCoolDown.restart();
+            } else {
+                wifiStrengthPushCoolDown.droppedEvent = true;
+            }
         }
     }
 
@@ -492,6 +519,9 @@ I_DeviceController {
 
         function onConnectedWifiChanged() {
             updateEditMode(AppSpec.EMWiFi);
+            allowPushWifiStrength = false;
+            wifiStrengthPushCoolDown.droppedEvent = false;
+            wifiStrengthPushCoolDown.restart();
         }
     }
 
