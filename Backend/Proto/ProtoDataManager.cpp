@@ -135,7 +135,8 @@ void ProtoDataManager::sendDataToServer()
 
     auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
     auto callback = [this] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
-        if (reply->error() == QNetworkReply::NoError) {
+        // ServiceUnavailableError: 403
+        if (reply->error() == QNetworkReply::NoError || reply->error() == QNetworkReply::ServiceUnavailableError) {
 
             PROTO_LOG << " files sent, remove: " << AppUtilities::removeContentDirectory(BINARYFILESPATH);
 
@@ -177,7 +178,7 @@ void ProtoDataManager::generateBinaryFile()
         fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
     }
 
-    QString fileName = QString("%0/%1.bin").arg(BINARYFILESPATH, QDateTime::currentDateTime().currentMSecsSinceEpoch());
+    QString fileName = QString("%0/%1.bin").arg(BINARYFILESPATH, QString::number(QDateTime::currentDateTime().currentMSecsSinceEpoch()));
     std::fstream output(fileName.toStdString(), std::ios::out | std::ios::binary);
     mLiveDataPointList.SerializeToOstream(&output);
     mLiveDataPointList.clear_data_points();
