@@ -109,8 +109,13 @@ void ProtoDataManager::sendDataToServer()
 
     // Collecting the file data
     {
-        QDir protoDir("/mnt/log/proto");
+        QDir protoDir(BINARYFILESPATH);
         QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
+
+        if (fileList.isEmpty()) {
+            PROTO_LOG << "File list is empty!";
+            return;
+        }
 
         while (!fileList.isEmpty()) {
             QString fileToOpen = fileList.first().absoluteFilePath();
@@ -123,9 +128,8 @@ void ProtoDataManager::sendDataToServer()
             } else {
                 qWarning() << "Error opening file: " << file.errorString() << " - Remove: "
                            << QFile::remove(fileToOpen);
-                fileList.removeFirst();
-                return;
             }
+            fileList.removeFirst();
         }
     }
 
