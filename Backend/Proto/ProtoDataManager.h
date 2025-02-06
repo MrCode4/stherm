@@ -99,6 +99,9 @@ private:
          *      current_heating_stage         - currently running heating stage (0 means heating is off)
          *      current_fan_status            - fan state (0 means is off)
          *      led_status                    - led lights state (0 means is off)
+         *      system_type                   - Current system type (string)
+         *      running_mode                  - Running system mode (string)
+         *      online_status                 - Online status
          *      is_sync                       - indication of synchronization packet (package should contain all 11 values). Should be at least every hour.
         */
 #ifdef PROTOBUF_ENABLED
