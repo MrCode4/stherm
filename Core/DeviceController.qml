@@ -959,6 +959,11 @@ I_DeviceController {
      * ****************************************************************************************/
     deviceControllerCPP: DeviceControllerCPP {
         systemSetup: device.systemSetup
+
+        Component.onCompleted: {
+            console.log("device controller constructed", "unit:", temperatureUnit)
+            setCelsius(temperatureUnit === AppSpec.TempratureUnit.Cel)
+        }
     }
 
     /* Signals
