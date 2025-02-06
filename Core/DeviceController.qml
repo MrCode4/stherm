@@ -809,7 +809,6 @@ I_DeviceController {
             // In a normal initial setup, the system setup will be sent from the system setup page.
             if (initialSetupNoWIFI) {
                 updateEditMode(AppSpec.EMAll);
-
             }
 
             // Send install log
@@ -822,6 +821,8 @@ I_DeviceController {
 
             // Go to home
             firstRunFlowEnded();
+
+            ProtoDataManager.sendFullDataPacketToServer();
         }
 
         function onInstallFailed(err : string, needToRetry : bool) {

@@ -68,6 +68,8 @@ public:
     //! Send the binary data to server
     Q_INVOKABLE void sendDataToServer();
 
+    Q_INVOKABLE void sendFullDataPacketToServer();
+
 private:
     static ProtoDataManager* mMe;
 
@@ -108,7 +110,7 @@ private:
 
     QTimer mSenderTimer;
     QTimer mDataPointLogger;
-    QTimer mCreatGeneralBufferTimer;
+    QTimer mCreateGeneralBufferTimer;
 
     //! Flag to stash data
     int mChangeMode;

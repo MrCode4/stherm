@@ -55,12 +55,11 @@ ProtoDataManager::ProtoDataManager(QObject *parent)
         logStashData();
     });
 
-    mCreatGeneralBufferTimer.setInterval(1 * 60 * 60 * 1000);
-    connect(&mCreatGeneralBufferTimer, &QTimer::timeout, this, [this]() {
-        updateChangeMode(CMAll);
-        logStashData();
+    mCreateGeneralBufferTimer.setInterval(1 * 60 * 60 * 1000);
+    connect(&mCreateGeneralBufferTimer, &QTimer::timeout, this, [this]() {
+        sendFullDataPacketToServer();
     });
-    mCreatGeneralBufferTimer.start();
+    mCreateGeneralBufferTimer.start();
 
     mChangeMode = CMNone;
 
@@ -76,7 +75,7 @@ ProtoDataManager::~ProtoDataManager()
 
     mDataPointLogger.stop();
     mSenderTimer.stop();
-    mCreatGeneralBufferTimer.stop();
+    mCreateGeneralBufferTimer.stop();
 
     delete mLateastDataPoint;
     mLateastDataPoint->Clear();
@@ -152,6 +151,15 @@ void ProtoDataManager::sendDataToServer()
     mDataPointLogger.stop();
     callPostApi(url, serializedData, callback, true, "application/x-protobuf");
 #endif
+}
+
+void ProtoDataManager::sendFullDataPacketToServer()
+{
+    // Restart the timer
+    mCreateGeneralBufferTimer.start();
+
+    updateChangeMode(CMAll);
+    logStashData();
 }
 
 void ProtoDataManager::generateBinaryFile()
