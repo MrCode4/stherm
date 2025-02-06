@@ -88,6 +88,10 @@ ProtoDataManager::~ProtoDataManager()
 
 void ProtoDataManager::sendDataToServer()
 {
+    if (Device->serialNumber().isEmpty()) {
+        return;
+    }
+
 #ifdef PROTOBUF_ENABLED
     auto protoFoldersize = AppUtilities::getFolderUsedBytes(BINARYFILESPATH);
     bool existValidBinaryFile = protoFoldersize > 0;
@@ -102,7 +106,7 @@ void ProtoDataManager::sendDataToServer()
         generateBinaryFile();
 
     } else {
-        PROTO_LOG << "Sending old data points in the file with size: " << protoFoldersize;
+        PROTO_LOG << "Sending old data points in the file with size (Bytes): " << protoFoldersize;
     }
 
     QByteArray serializedData;
@@ -110,7 +114,7 @@ void ProtoDataManager::sendDataToServer()
     // Collecting the file data
     {
         QDir protoDir(BINARYFILESPATH);
-        QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
+        QFileInfoList fileList = protoDir.entryInfoList({"*.bin"}, QDir::Files, QDir::Time);
 
         if (fileList.isEmpty()) {
             PROTO_LOG << "File list is empty!";
@@ -121,7 +125,6 @@ void ProtoDataManager::sendDataToServer()
             QString fileToOpen = fileList.last().absoluteFilePath();
             QFile file(fileToOpen);
             if (file.exists() && file.open(QIODevice::ReadOnly)) {
-                TRACE << file.errorString();
                 serializedData += file.readAll();
                 file.close();
 
@@ -137,7 +140,6 @@ void ProtoDataManager::sendDataToServer()
     auto callback = [this] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
         // ServiceUnavailableError: 403
         if (reply->error() == QNetworkReply::NoError || reply->error() == QNetworkReply::ServiceUnavailableError) {
-
             PROTO_LOG << " files sent, remove: " << AppUtilities::removeContentDirectory(BINARYFILESPATH);
 
         } else {
@@ -165,6 +167,7 @@ void ProtoDataManager::sendFullDataPacketToServer()
 
 void ProtoDataManager::generateBinaryFile()
 {
+#ifdef PROTOBUF_ENABLED
     if (mSendingToServer) {
         return;
     }
@@ -173,15 +176,14 @@ void ProtoDataManager::generateBinaryFile()
         return;
     }
 
-#ifdef PROTOBUF_ENABLED
     // Check the proto folder size
     auto protoFoldersize = AppUtilities::getFolderUsedBytes(BINARYFILESPATH);
     QDir protoDir(BINARYFILESPATH);
     QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
-
+    PROTO_LOG << BINARYFILESPATH << " size (Bytes): " <<  protoFoldersize;
     while (!fileList.isEmpty() && (protoFoldersize > MAXIMUMPROTOFOLDERSIZE)) {
         auto fileToRemove = fileList.last().absoluteFilePath();
-        PROTO_LOG << QString("Remove the file due to memory limitation (size: %0): %1").arg(QString::number(protoFoldersize),  fileToRemove)
+        PROTO_LOG << QString("Remove the file due to memory limitation (size: %0 Bytes): %1").arg(QString::number(protoFoldersize),  fileToRemove)
                   << QFile::remove(fileToRemove);
 
         protoFoldersize = AppUtilities::getFolderUsedBytes(BINARYFILESPATH);

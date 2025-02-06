@@ -118,6 +118,7 @@ private:
     //! Flag to stash data
     int mChangeMode;
 
+    //! Use to avoid create new file when sender is busy.
     bool mSendingToServer;
 };
 
