@@ -13,8 +13,9 @@
 
 const QString BINARYFILESPATH        = PROTOBUFF_FILES_PATH;
 const int     MEMORYLIMITAIONRECORDS = 3000;
-const int     MAXIMUMPROTOFOLDERSIZE = 50 * 1024 * 1024;
+const int     MAXIMUMPROTOFOLDERSIZE = 50 * 1024 * 1024; // 50 MB
 const double  TEMPERATURETHRESHOLD   = 1 / 1.8;
+const double  MCUTEMPERATURETHRESHOLD   = 3 / 1.8;
 
 Q_LOGGING_CATEGORY(ProtobufferDataManager, "ProtobufferDataManager")
 #define PROTO_LOG TRACE_CATEGORY(ProtobufferDataManager)
@@ -252,7 +253,7 @@ void ProtoDataManager::setMCUTemperature(const double &mcuTempratureC)
 {
 #ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_current_temperature_mcu() &&
-        qAbs(mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) <  TEMPERATURETHRESHOLD) {
+        qAbs(mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) <  MCUTEMPERATURETHRESHOLD) {
         return;
     }
 
