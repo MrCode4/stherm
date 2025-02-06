@@ -215,6 +215,21 @@ I_DeviceController {
         }
     }
 
+    property Timer sendOnceFullDataPacketToServerTimer: Timer {
+        interval: 1000
+        repeat: false
+        running: temperatureSensorHealth && humiditySensorHealth && airConditionSensorHealth
+
+        onTriggered: {
+            if (temperatureSensorHealth && humiditySensorHealth) {
+                ProtoDataManager.sendFullDataPacketToServer();
+
+                //! To break the binding, Only one data transmission is needed.
+                running = false;
+            }
+        }
+    }
+
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
