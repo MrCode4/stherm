@@ -433,7 +433,7 @@ Control {
             //! Update slider value (UI) with changed requestedTemp
             //! When setDesiredTemperature failed, update slider with previous value.
             function onRequestedTempChanged() {
-                updateUITemperature();
+                updateFirstSecondValuesTmr.restart();
             }
         }
 
@@ -466,7 +466,7 @@ Control {
 
             //! Update slider value (UI) with mode change.
             function onSystemModeChanged() {
-                updateUITemperature();
+                updateFirstSecondValuesTmr.restart();
             }
         }
     }
