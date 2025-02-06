@@ -310,6 +310,7 @@ private:
     QJsonObject processJsonFile(const QString &path, const QStringList &requiredKeys);
     void processBackLightSettings(const QString &path);
     void processFanSettings(const QString &path);
+    void processNightModeControlSettings(const QString &path);
     void processBrightnessSettings(const QString &path);
     void processRelaySettings(const QString &path);
     void processEmulateWarrantyFlow(const QString &path);
@@ -355,7 +356,7 @@ private:
     NUVE::System *m_system;
 
     QString m_backdoorPath = "/usr/local/bin/backdoor/";
-    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" , "relays.json", "emulateWarrantyFlow.json" };
+    QStringList m_watchFiles = { "backlight.json", "brightness.json", "fan.json" , "relays.json", "emulateWarrantyFlow.json", "nightMode.json" };
     QFileSystemWatcher m_fileSystemWatcher;
 
     QTimer mBacklightTimer;
@@ -418,6 +419,8 @@ private:
     QStringList mAllTestNames; // to keep them in order
 
     AppSpecCPP::CPUGovernerOption mCPUGoverner = AppSpecCPP::CPUGUnknown;
+
+    STHERM::RelayConfigs mRelaysUpdated;
 
     bool mBackdoorSchemeEnabled = false;
 };

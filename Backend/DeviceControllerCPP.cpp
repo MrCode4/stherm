@@ -10,20 +10,33 @@
  * Log properties
  * ************************************************************************************************/
 #ifdef DEBUG_MODE
+Q_LOGGING_CATEGORY(DC_LOG_DeviceControllerCPP, "Debug DeviceControllerCPP")
+#define DC_LOG TRACE_CATEGORY(DC_LOG_DeviceControllerCPP)
+
 static  const QString m_DateTimeHeader        = "DateTime UTC (sec)";
 static  const QString m_DeltaCorrectionHeader = "Delta Correction (F)";
 static  const QString m_DTIHeader             = "Delta Temperature Integrator";
 static  const QString m_BacklightFactorHeader = "backlightFactor";
-static  const QString m_BrightnessHeader      = "Brightness (%)";
+static  const QString m_BrightnessHeader      = "Brightness (fraction)";
 static  const QString m_RawTemperatureHeader  = "Raw Temperature (F)";
 static  const QString m_ProcessedTemperatureHeader  = "Processed Temperature (F)";
 static  const QString m_NightModeHeader       = "Is Night Mode Running";
 static  const QString m_BacklightRHeader      = "Backlight - R";
 static  const QString m_BacklightGHeader      = "Backlight - G";
 static  const QString m_BacklightBHeader      = "Backlight - B";
+static  const QString m_RelayHeaderG          = "Relay - g";
+static  const QString m_RelayHeaderY1         = "Relay - y1";
+static  const QString m_RelayHeaderY2         = "Relay - y2";
+static  const QString m_RelayHeaderW1         = "Relay - w1";
+static  const QString m_RelayHeaderW2         = "Relay - w2";
+static  const QString m_RelayHeaderW3         = "Relay - w3";
+static  const QString m_RelayHeaderAcc2       = "Relay - acc2";
+static  const QString m_RelayHeaderAcc1p      = "Relay - acc1p";
+static  const QString m_RelayHeaderAcc1n      = "Relay - acc1n";
+static  const QString m_RelayHeaderOB         = "Relay - o_b";
 static  const QString m_LedEffectHeader       = "Backlight - LED effect";
 static  const QString m_CPUUsage              = "CPU Usage (%)";
-static  const QString m_FanStatus             = "Fan status";
+static  const QString m_FanStatus             = "Fan status (0, 1)";
 static  const QString m_BacklightState        = "Backlight state";
 static  const QString m_T1                    = "Temperature compensation T1 (F) - fan effect";
 #endif
@@ -39,6 +52,11 @@ static const QByteArray m_default_backdoor_backlight = R"({
     "blue": 255,
     "mode": 0,
     "on": // true
+}
+)";
+
+static const QByteArray m_default_backdoor_nightmode = R"({
+    "on" : // true
 }
 )";
 
@@ -416,6 +434,11 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     }
 
     connect(_deviceIO, &DeviceIOController::relaysUpdated, this, [this](STHERM::RelayConfigs relays) {
+
+        mRelaysUpdated = relays;
+
+        SCHEME_LOG << "relays Updated. Relays: " << relays.printStr();
+
         emit fanWorkChanged(relays.g == STHERM::ON);
     });
 
@@ -927,6 +950,8 @@ void DeviceControllerCPP::processBackdoorSettingFile(const QString &path)
         processRelaySettings(path);
     } else if (path.endsWith("emulateWarrantyFlow.json")) {
         processEmulateWarrantyFlow(path);
+    } else if (path.endsWith("nightMode.json")) {
+        processNightModeControlSettings(path);
     } else {
         qWarning() << "Incompatible backdoor file, processed nothing";
     }
@@ -1307,9 +1332,12 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
 #ifdef DEBUG_MODE
 
     QStringList header = {m_DateTimeHeader, m_DeltaCorrectionHeader, m_T1, m_DTIHeader,
-                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader, m_ProcessedTemperatureHeader
+                          m_BacklightFactorHeader, m_BrightnessHeader, m_RawTemperatureHeader, m_ProcessedTemperatureHeader,
                           m_NightModeHeader, m_BacklightState, m_BacklightRHeader, m_BacklightGHeader,
-                          m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus};
+                          m_BacklightBHeader, m_LedEffectHeader, m_CPUUsage, m_FanStatus,
+                          m_RelayHeaderG, m_RelayHeaderY1, m_RelayHeaderY2,
+                          m_RelayHeaderW1, m_RelayHeaderW2, m_RelayHeaderW3,
+                          m_RelayHeaderAcc1n, m_RelayHeaderAcc1p, m_RelayHeaderAcc2, m_RelayHeaderOB};
 
     QFile file(mGeneralSystemDatafilePath);
 
@@ -1341,10 +1369,20 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
             }
         }
 
+        float backlightFactor = 0;
         // Check backlight data.
         if (backLightData.size() != 5) {
             backLightData = QVariantList{-255, -255, -255, -1, "invalid"};
+            DC_LOG << "backlight data is wrong";
+        } else {
+            if (backLightData[4].toString() == "true")
+                backlightFactor = 1;
         }
+
+        // model
+        STHERM::RelayConfigs relays = Relay::instance()->relays();
+        // last returned by TI
+        relays = mRelaysUpdated;
 
         foreach (auto key, header) {
             if (key == m_DateTimeHeader) {
@@ -1360,7 +1398,7 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(_deviceIO->backlightFactor()));
 
             } else if (key == m_BrightnessHeader) {
-                dataStrList.append(QString::number(brightness));
+                dataStrList.append(QString::number(brightness / 100));
 
             } else if (key == m_RawTemperatureHeader) {
                 auto rawTemperatureC = _mainData.value(temperatureRawKey).toDouble();
@@ -1377,13 +1415,13 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(backLightData[4].toString());
 
             }  else if (key == m_BacklightRHeader) {
-                dataStrList.append(QString::number(backLightData[0].toInt() / 255.0));
+                dataStrList.append(QString::number(backlightFactor * backLightData[0].toInt() / 255.0));
 
             }  else if (key == m_BacklightGHeader) {
-                dataStrList.append(QString::number(backLightData[1].toInt() / 255.0));
+                dataStrList.append(QString::number(backlightFactor * backLightData[1].toInt() / 255.0));
 
             }  else if (key == m_BacklightBHeader) {
-                dataStrList.append(QString::number(backLightData[2].toInt() / 255.0));
+                dataStrList.append(QString::number(backlightFactor * backLightData[2].toInt() / 255.0));
 
             } else if (key == m_LedEffectHeader) {
                 auto ledEffectInt = backLightData[3].toInt();
@@ -1412,10 +1450,40 @@ void DeviceControllerCPP::writeGeneralSysData(const QStringList& cpuData, const 
                 dataStrList.append(QString::number(UtilityHelper::CPUUsage()));
 
             } else if (key == m_FanStatus) {
-                dataStrList.append(isFanON() ? "On" : "Off");
+                dataStrList.append(isFanON() ? "1" : "0");
 
             } else if (key == m_T1) {
                 dataStrList.append(QString::number(mTEMPERATURE_COMPENSATION_T1 * 1.8));
+
+            } else if (key == m_RelayHeaderG) {
+                dataStrList.append(QString::number(relays.g == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderY1) {
+                dataStrList.append(QString::number(relays.y1 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderY2) {
+                dataStrList.append(QString::number(relays.y2 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderW1) {
+                dataStrList.append(QString::number(relays.w1 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderW2) {
+                dataStrList.append(QString::number(relays.w2 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderW3) {
+                dataStrList.append(QString::number(relays.w3 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderAcc1n) {
+                dataStrList.append(QString::number(relays.acc1n == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderAcc1p) {
+                dataStrList.append(QString::number(relays.acc1p == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderAcc2) {
+                dataStrList.append(QString::number(relays.acc2 == STHERM::RelayMode::ON ? 1 : 0));
+
+            } else if (key == m_RelayHeaderOB) {
+                dataStrList.append(QString::number(relays.o_b == STHERM::RelayMode::ON ? 1 : 0));
             }
         }
 
@@ -1512,6 +1580,20 @@ void DeviceControllerCPP::processFanSettings(const QString &path)
     _deviceIO->setFanSpeed(speed);
 }
 
+void DeviceControllerCPP::processNightModeControlSettings(const QString &path)
+{
+    bool on = _deviceAPI->nightModeControlEnabled(); // or use default true?
+
+    QJsonObject json = processJsonFile(path, {"on"});
+    // if returned value is ok override the defaule values
+    if (!json.isEmpty())
+    {
+        on = json["on"].toBool();
+    }
+
+    _deviceAPI->setNightModeControlEnabled(on);
+}
+
 void DeviceControllerCPP::processBrightnessSettings(const QString &path)
 {
     auto data = mSettingsModelData;
@@ -1585,22 +1667,29 @@ QByteArray DeviceControllerCPP::defaultSettings(const QString &path)
 {
     if (path.endsWith("backlight.json")) {
         return m_default_backdoor_backlight;
-
-    } else if (path.endsWith("fan.json")) {
-        return m_default_backdoor_fan;
-
-    } else if (path.endsWith("brightness.json")) {
-        return m_default_backdoor_brightness;
-
-    } else if (path.endsWith("relays.json")) {
-        return m_default_backdoor_relays;
-
-    } else if (path.endsWith("emulateWarrantyFlow.json")) {
-        return m_default_Emulate_Warranty_flow;
-
-    } else {
-        qWarning() << "Incompatible backdoor file, returning empty values";
     }
+
+    if (path.endsWith("fan.json")) {
+        return m_default_backdoor_fan;
+    }
+
+    if (path.endsWith("brightness.json")) {
+        return m_default_backdoor_brightness;
+    }
+
+    if (path.endsWith("relays.json")) {
+        return m_default_backdoor_relays;
+    }
+
+    if (path.endsWith("emulateWarrantyFlow.json")) {
+        return m_default_Emulate_Warranty_flow;
+    }
+
+    if (path.endsWith("nightMode.json")) {
+        return m_default_backdoor_nightmode;
+    }
+
+    qWarning() << "Incompatible backdoor file, returning empty values";
 
     return "";
 }

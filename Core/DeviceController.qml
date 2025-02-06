@@ -90,6 +90,8 @@ I_DeviceController {
 
     property bool isNeedSendInstallLog: false
 
+    property bool nightModeControlEnabled : deviceControllerCPP.deviceAPI.nightModeControlEnabled()
+
     property var internal: QtObject {
         //! This property will hold last returned data from manual first run flow
         property string syncReturnedEmail: ""
@@ -195,7 +197,7 @@ I_DeviceController {
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
-        running: device.nightMode.mode === AppSpec.NMOn
+        running: device.nightMode.mode === AppSpec.NMOn && root.nightModeControlEnabled
 
         interval: 1000
 
@@ -205,9 +207,26 @@ I_DeviceController {
         }
     }
 
+    //! deviceAPI connections
+    property Connections deviceAPIConnections: Connections {
+        target: deviceControllerCPP.deviceAPI
+
+        //! Manage the night mode
+        function onNightModeControlEnabledChanged() {
+            root.nightModeControlEnabled = deviceControllerCPP.deviceAPI.nightModeControlEnabled()
+
+            if (!root.nightModeControlEnabled && device.nightMode._running) {
+                device.nightMode._running = false;
+                runNightMode();
+            }
+        }
+    }
+
     //! Manage the night mode
     property Connections nightModeController: Connections {
         target: device.nightMode
+
+        enabled: root.nightModeControlEnabled
 
         function onModeChanged() {
             if (device.nightMode.mode === AppSpec.NMOff) {
@@ -225,7 +244,7 @@ I_DeviceController {
     property Connections nightMode_screenSaverController: Connections {
         target: ScreenSaverManager
 
-        enabled: device.nightMode._running
+        enabled: device.nightMode._running && root.nightModeControlEnabled
 
         function onStateChanged() {
             if (ScreenSaverManager.state !== ScreenSaverManager.Timeout) {
@@ -1019,6 +1038,7 @@ I_DeviceController {
 
         console.log("* requestedTemp initial: ", device.requestedTemp);
         console.log("* requestedHum initial: ", device.requestedHum);
+        console.log("* nightModeControlEnabled: ", nightModeControlEnabled);
         deviceControllerCPP.setRequestedTemperature(device.requestedTemp);
         deviceControllerCPP.setRequestedHumidity(device.requestedHum);
         // TODO what parameters should be initialized here?
