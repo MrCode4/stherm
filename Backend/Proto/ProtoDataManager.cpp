@@ -118,7 +118,7 @@ void ProtoDataManager::sendDataToServer()
         }
 
         while (!fileList.isEmpty()) {
-            QString fileToOpen = fileList.first().absoluteFilePath();
+            QString fileToOpen = fileList.last().absoluteFilePath();
             QFile file(fileToOpen);
             if (file.exists() && file.open(QIODevice::ReadOnly)) {
                 TRACE << file.errorString();
@@ -129,7 +129,7 @@ void ProtoDataManager::sendDataToServer()
                 qWarning() << "Error opening file: " << file.errorString() << " - Remove: "
                            << QFile::remove(fileToOpen);
             }
-            fileList.removeFirst();
+            fileList.removeLast();
         }
     }
 
@@ -171,8 +171,9 @@ void ProtoDataManager::generateBinaryFile()
     QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
 
     while (!fileList.isEmpty() && (protoFoldersize > MAXIMUMPROTOFOLDERSIZE)) {
-        auto fileToRemove = fileList.first().absoluteFilePath();
-        PROTO_LOG << "Remove the file due to memory limitation: " << fileToRemove << QFile::remove(fileToRemove);
+        auto fileToRemove = fileList.last().absoluteFilePath();
+        PROTO_LOG << QString("Remove the file due to memory limitation (size: %0): %1").arg(QString::number(protoFoldersize),  fileToRemove)
+                  << QFile::remove(fileToRemove);
 
         protoFoldersize = AppUtilities::getFolderUsedBytes(BINARYFILESPATH);
         fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
