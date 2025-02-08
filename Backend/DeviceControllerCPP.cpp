@@ -150,7 +150,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
     , mDeviceHasInternet(false)
     , mIsNeedOutdoorTemperature(false)
     , mIsEligibleOutdoorTemperature(false)
-    , mIsZipCodeValid(true)
+    , mIsZipCodeValid(false)
 {
 
     m_system = _deviceAPI->system();
