@@ -78,8 +78,8 @@ ProtoDataManager::~ProtoDataManager()
     mSenderTimer.stop();
     mCreateGeneralBufferTimer.stop();
 
-    delete mLateastDataPoint;
     mLateastDataPoint->Clear();
+    delete mLateastDataPoint;
 
     // Optional:  Delete all global objects allocated by libprotobuf.
     google::protobuf::ShutdownProtobufLibrary();
@@ -192,9 +192,14 @@ void ProtoDataManager::generateBinaryFile()
 
     QString fileName = QString("%0/%1.bin").arg(BINARYFILESPATH, QString::number(QDateTime::currentDateTime().currentMSecsSinceEpoch()));
     std::fstream output(fileName.toStdString(), std::ios::out | std::ios::binary);
-    mLiveDataPointList.SerializeToOstream(&output);
-    mLiveDataPointList.clear_data_points();
-    output.close();
+
+    if (mLiveDataPointList.SerializeToOstream(&output)) {
+        mLiveDataPointList.clear_data_points();
+        output.close();
+    } else {
+        output.close();
+        QFile::remove(fileName);
+    }
 
 #endif
 }
