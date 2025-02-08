@@ -3,9 +3,9 @@
 #include "Config.h"
 #include "LogHelper.h"
 #include "AppUtilities.h"
+#include "DeviceInfo.h"
 
 #ifdef PROTOBUF_ENABLED
-#include "DeviceInfo.h"
 #include <ctime>
 #include <fstream>
 #include <google/protobuf/util/time_util.h>
