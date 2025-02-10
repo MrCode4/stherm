@@ -85,6 +85,10 @@ public:
 
     QJsonObject lastSettingsResponseData() const;
 
+    Q_INVOKABLE void pushSensorTemperatureC(const double &temperatureC);
+    Q_INVOKABLE void pushSensorHumidity(const double &humidity);
+    Q_INVOKABLE void pushSensorCo2ID(const int &co2ID);
+
     Q_INVOKABLE void updateAddressInformationManual(const QVariantMap &data);
 
 public slots:
@@ -156,6 +160,10 @@ signals:
 
     void alertPushed(QString alertUid, bool success, QVariantMap alert = QVariantMap());
     void resetFactoryFinished(bool ok, const QString &message = "");
+
+    void sensorTemperaturePushed(bool success, double pushedTemperatureC);
+    void sensorHumidityPushed(bool success, double pushedHumidity);
+    void sensorCo2Pushed(bool success, double pushedCo2Id);
 
     void clientAddressUpdatingFinished(bool success, const QString &err = "", bool needToRetry = false);
 

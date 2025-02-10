@@ -177,6 +177,12 @@ public:
         EMMessages           = 1 << 14,
         EMGeneral            = 1 << 15,
         EMWiFi               = 1 << 16,
+
+        // Do not include the bellows in EMAll:
+        EMSensorTemperature  = 1 << 17,
+        EMSensorHumidity     = 1 << 18,
+        EMSensorCO2          = 1 << 19,
+
         EMAll                = EMHold | EMFan | EMVacation | EMRequestedHumidity |
                                EMDesiredTemperature | EMSettings | EMBacklight | EMSystemSetup |
                                EMSystemMode | EMDateTime | EMAutoMode | EMSensorValues | EMWiFi

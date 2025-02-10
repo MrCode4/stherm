@@ -872,6 +872,24 @@ I_DeviceController {
 
             fetchContractorInfoTimer.restart();
         }
+
+        function onSensorTemperaturePushed(success: bool, pushedTemperatureC: real) {
+            if (success && Math.abs(pushedTemperatureC - root.displayCurrentTemp) < 0.001) {
+                stageMode &= ~AppSpec.EMSensorTemperature;
+            }
+        }
+
+        function onSensorHumidityPushed(success: bool, pushedHumidity: real) {
+            if (success && Math.abs(pushedHumidity - device.currentHum) < 0.001) {
+                stageMode &= ~AppSpec.EMSensorHumidity;
+            }
+        }
+
+        function onSensorCo2Pushed(success: bool, pushedCo2Id: int) {
+            if (success && (pushedCo2Id === (device._co2_id + 1))) {
+                stageMode &= ~AppSpec.EMSensorCO2;
+            }
+        }
     }
 
     property Timer initialSetupDataPushTimer: Timer {
@@ -926,7 +944,11 @@ I_DeviceController {
             editMode = AppSpec.EMNone;
 
             // deprioritize if only sensorValues there to push auto mode api sooner
-            var priorityMode = root.stageMode & ~AppSpec.EMSensorValues;
+            var priorityMode = root.stageMode &
+                    ~AppSpec.EMSensorValues &
+                    ~AppSpec.EMSensorTemperature &
+                    ~AppSpec.EMSensorHumidity &
+                    ~AppSpec.EMSensorCO2;
 
             // Start push process if stage mode is available
             // push auto mode first if nothing else is staged except EMSensorValues
@@ -935,15 +957,33 @@ I_DeviceController {
             //! this can be delayed too much if never push success or too much edits
             if (priorityMode === AppSpec.EMAutoMode) {
                 pushAutoModeSettingsToServer();
-            } else if (root.stageMode !== AppSpec.EMNone){
-                try {
-                    pushToServer();
-                } catch (err) {
-                    console.log("DeviceController.qml: Push, error in push to server")
-                    isPushing = alse;
+            } else if (root.stageMode !== AppSpec.EMNone) {
+                // deprioritize if only sensorValues there to push other changed to the server sooner
+                var priorityStageMode = root.stageMode &
+                        ~AppSpec.EMSensorTemperature &
+                        ~AppSpec.EMSensorHumidity &
+                        ~AppSpec.EMSensorCO2;
+
+                if (priorityStageMode !== AppSpec.EMNone) {
+                    try {
+                        pushToServer();
+
+                    } catch (err) {
+                        console.log("DeviceController.qml: Push, error in push to server")
+                        isPushing = false;
+                    }
+
+                } else if ((root.stageMode & AppSpec.EMSensorTemperature) === AppSpec.EMSensorTemperature) {
+                    sync.pushSensorTemperatureC(root.displayCurrentTemp);
+
+                } else if ((root.stageMode & AppSpec.EMSensorHumidity) === AppSpec.EMSensorHumidity) {
+                    sync.pushSensorHumidity(device.currentHum);
+
+                } else if ((root.stageMode & AppSpec.EMSensorCO2) === AppSpec.EMSensorCO2) {
+                    sync.pushSensorCo2ID(device._co2_id + 1);
                 }
             } else {
-                isPushing = alse;
+                isPushing = false;
             }
 
             // sensor true fails, in between goes false
@@ -2030,9 +2070,6 @@ I_DeviceController {
         var isRoundedTempChanged = Math.abs(root.displayCurrentTemp - (result?.roundTemperature ?? root.displayCurrentTemp)) > 0.01
         var isVisualHumChanged = Math.abs(Math.round(device.currentHum) - Math.round(result?.humidity ?? device.currentHum)) > 0
         var isCo2IdChanged = device._co2_id !== co2Id;
-        var isNeedToPushToServer = isVisualHumChanged ||
-                isRoundedTempChanged || // isVisualTempChangedC || isVisualTempChangedF ||
-                isCo2IdChanged;
 
         // should be catched later here
         device.currentHum = result?.humidity ?? 0
@@ -2050,8 +2087,16 @@ I_DeviceController {
         ProtoDataManager.setCurrentHumidity(device.currentHum);
         ProtoDataManager.setCurrentAirQuality(device._co2_id);
 
-        if (isNeedToPushToServer) {
-            updateEditMode(AppSpec.EMSensorValues);
+        if (isRoundedTempChanged) {
+            updateEditMode(AppSpec.EMSensorTemperature);
+        }
+
+        if (isVisualHumChanged) {
+            updateEditMode(AppSpec.EMSensorHumidity);
+        }
+
+        if (isCo2IdChanged) {
+            updateEditMode(AppSpec.EMSensorCO2);
         }
 
         //        console.log("--------------- End: updateInformation -------------------")
