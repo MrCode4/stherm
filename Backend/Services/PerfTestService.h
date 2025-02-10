@@ -43,6 +43,9 @@ public:
     static PerfTestService* me();
     static PerfTestService* create(QQmlEngine*, QJSEngine*) {return me();}
 
+
+    Q_INVOKABLE double perfTestTemperatureC();
+
 signals:
     void eligibilityChecked(const QString& errorMsg);
 

@@ -1,5 +1,6 @@
 #include "SchemeDataProvider.h"
 
+#include "PerfTestService.h"
 #include "LogHelper.h"
 #include "UtilityHelper.h"
 #include "Relay.h"
@@ -83,7 +84,7 @@ double SchemeDataProvider::effectiveTemperature() const
     double monitoringTemprature = effTemperature;
 
     if (isPerfTestRunning()) {
-        effTemperature = perfTestSystemMode() == AppSpecCPP::Heating ? 90 : 40;
+        effTemperature = UtilityHelper::toFahrenheit(PerfTestService::me()->perfTestTemperatureC());
         monitoringTemprature = effTemperature;
 
     } else if (isVacationEffective()) {
@@ -98,7 +99,10 @@ double SchemeDataProvider::effectiveTemperature() const
             effTemperature = maximumTemperature;
         }
 
-         monitoringTemprature = (minimumTemperature + maximumTemperature) / 2;
+        // The TemperatureScheme does not utilize this value, as it has its own logic for controlling the temperature.
+        // This value is only used for monitoring,
+        // In the Update API, we follow the same logic..
+        monitoringTemprature = (minimumTemperature + maximumTemperature) / 2;
 
     } else if (schedule() || effectiveSystemMode() == AppSpecCPP::SystemMode::Auto) {
 

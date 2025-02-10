@@ -898,6 +898,14 @@ I_DeviceController {
         }
     }
 
+    property Connections perfTestServiceConnections: Connections {
+        target: PerfTestService
+
+        function onIsTestRunningChanged() {
+            updateEditMode(AppSpec.EMDesiredTemperature);
+        }
+    }
+
     property Timer initialSetupDataPushTimer: Timer {
         property int retryCounter: 0
 
@@ -1389,11 +1397,19 @@ I_DeviceController {
 
     //! On/off the vacation.
     function setVacationOn(on: bool, save = true) {
+        if (device.systemSetup.isVacation === on) {
+            return;
+        }
+
         device.systemSetup.isVacation = on;
 
         if (save) {
             updateEditMode(AppSpec.EMVacation);
             saveSettings();
+
+        } else {
+            // We need to send the desired temperature to the server
+            updateEditMode(AppSpec.EMDesiredTemperature);
         }
     }
 
@@ -1544,7 +1560,13 @@ I_DeviceController {
     function getTemperatureForServer() : real {
         var temperature = device.requestedTemp;
 
-        if (currentSchedule) {
+        if (PerfTestService.isTestRunning) {
+            temperature = PerfTestService.perfTestTemperatureC();
+
+        } else if (device.systemSetup.isVacation) {
+            temperature = (device.vacation.temp_min + device.vacation.temp_max) / 2;
+
+        } else if (currentSchedule) {
             if (currentSchedule.systemMode === AppSpec.Cooling) {
                 temperature = currentSchedule.maximumTemperature;
 
@@ -1670,6 +1692,18 @@ I_DeviceController {
     function setDesiredTemperatureFromServer(temperature: real) {
         if (editModeEnabled(AppSpec.EMDesiredTemperature)) {
             console.log("The temperature is being edited and cannot be updated by the server.")
+            return;
+        }
+
+         // When the performance test is running and has been pushed to the server, the temperature value correspond to the performance test value and should be ignored.
+        if (PerfTestService.isTestRunning) {
+            console.log("The temperature ignored due to perf test.")
+            return;
+        }
+
+        // When the vacation is running and has been pushed to the server, the temperature value correspond to the vacation value and should be ignored.
+        if (device.systemSetup.isVacation) {
+            console.log("The temperature ignored due to vacation mode.")
             return;
         }
 
