@@ -879,8 +879,8 @@ I_DeviceController {
             }
         }
 
-        function onSensorHumidityPushed(success: bool, pushedHumidity: real) {
-            if (success && Math.abs(pushedHumidity - device.currentHum) < 0.001) {
+        function onSensorHumidityPushed(success: bool, pushedHumidity: int) {
+            if (success && (pushedHumidity === device.currentHum)) {
                 stageMode &= ~AppSpec.EMSensorHumidity;
             }
         }

@@ -977,7 +977,7 @@ void Sync::pushSensorTemperatureC(const double &temperatureC)
     callPostApi(baseUrl() + QString("api/device/temperature?sn=%0").arg(mSerialNumber), QJsonDocument(requestDataObj).toJson(), callback);
 }
 
-void Sync::pushSensorHumidity(const double &humidity)
+void Sync::pushSensorHumidity(const int &humidity)
 {
     if (mSerialNumber.isEmpty()) {
         SYNC_LOG <<"Sn is not ready!";
@@ -991,7 +991,7 @@ void Sync::pushSensorHumidity(const double &humidity)
         TRACE_CHECK(!success) << "Push device humidity error: " << reply->errorString();
 
         // Check the responce for the humidity validation:
-        auto pushedhumidity = data.value("humidity").toDouble();
+        auto pushedhumidity = data.value("humidity").toInt();
         emit sensorHumidityPushed(success, pushedhumidity);
 
         TRACE_CHECK(pushedhumidity != humidity) << "The push device humidity response is different: " << humidity << pushedhumidity;;
