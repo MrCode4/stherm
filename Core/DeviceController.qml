@@ -877,18 +877,24 @@ I_DeviceController {
             if (success && Math.abs(pushedTemperatureC - root.displayCurrentTemp) < 0.001) {
                 stageMode &= ~AppSpec.EMSensorTemperature;
             }
+
+            settingsPush.isPushing = false;
         }
 
         function onSensorHumidityPushed(success: bool, pushedHumidity: int) {
             if (success && (pushedHumidity === device.currentHum)) {
                 stageMode &= ~AppSpec.EMSensorHumidity;
             }
+
+            settingsPush.isPushing = false;
         }
 
         function onSensorCo2Pushed(success: bool, pushedCo2Id: int) {
             if (success && (pushedCo2Id === (device._co2_id + 1))) {
                 stageMode &= ~AppSpec.EMSensorCO2;
             }
+
+            settingsPush.isPushing = false;
         }
     }
 
