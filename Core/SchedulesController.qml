@@ -554,21 +554,21 @@ QtObject {
                                         // Update schedule temperatures
                                         var autoTempLow = Utils.clampValue(schedule?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp,
                                                                            AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
-                                        if (Math.abs(newSchedule.minimumTemperature - autoTempLow) > 0.001) {
-                                            newSchedule.minimumTemperature = autoTempLow;
+                                        if (Math.abs(foundSchedule.minimumTemperature - autoTempLow) > 0.001) {
+                                            foundSchedule.minimumTemperature = autoTempLow;
                                         }
 
                                         var autoTempHigh = Utils.clampValue(schedule?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp,
-                                                                            Math.max(newSchedule.minimumTemperature + AppSpec.autoModeDiffrenceC, AppSpec.minAutoMaxTemp),
+                                                                            Math.max(foundSchedule.minimumTemperature + AppSpec.autoModeDiffrenceC, AppSpec.minAutoMaxTemp),
                                                                             AppSpec.autoMaximumTemperatureC);
-                                        if (Math.abs(newSchedule.maximumTemperature - autoTempHigh) > 0.001) {
-                                            newSchedule.maximumTemperature = autoTempLow;
+                                        if (Math.abs(foundSchedule.maximumTemperature - autoTempHigh) > 0.001) {
+                                            foundSchedule.maximumTemperature = autoTempLow;
                                         }
 
                                         // Update schedule mode
-                                        var modeId = (schedule?.mode_id - 1) ?? newSchedule.systemMode
-                                        if (newSchedule.systemMode !== modeId) {
-                                            newSchedule.systemMode = modeId;
+                                        var modeId = (schedule?.mode_id - 1) ?? foundSchedule.systemMode
+                                        if (foundSchedule.systemMode !== modeId) {
+                                            foundSchedule.systemMode = modeId;
                                         }
 
                                         if (foundSchedule.humidity !== schedule.humidity) {
