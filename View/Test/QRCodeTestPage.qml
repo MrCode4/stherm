@@ -32,7 +32,7 @@ BasePageView {
 
     //! Reboot popup with count down timer to send reboot request to system
     CountDownPopup {
-        id: rebootPopup
+        id: forgetWifisPopup
 
         anchors.centerIn: Template.Overlay.overlay
 
@@ -40,9 +40,9 @@ BasePageView {
         actionText: "Serial number is ready.\nRestarting Device..."
 
         onStartAction: {
-            if (system) {
-                system.rebootDevice();
-            }
+            // Forget Wifis
+            actionText = "Serial number is ready.\nForgetting Wi-Fis..."
+            NetworkInterface.forgetAllWifis();
         }
     }
 
@@ -63,7 +63,7 @@ BasePageView {
         onAccepted: {
             if (system.serialNumber.length > 0) {
                 finishButton.enabled = true;
-                rebootPopup.open();
+                forgetWifisPopup.open();
             } else {
                 infoPopup.open();
             }
@@ -186,7 +186,7 @@ BasePageView {
 
         interval: 5000
         running: root.visible && system.serialNumber.length > 0 &&
-                 !rebootPopup.visible && !printConfirmPopup.visible && !testInfoPopup.visible
+                 !forgetWifisPopup.visible && !printConfirmPopup.visible && !testInfoPopup.visible
 
         repeat: true
 
@@ -226,6 +226,17 @@ BasePageView {
 
             // no need but keept anyway
             testInfoPopup.open();
+        }
+    }
+
+    Connections {
+        target: NetworkInterface
+
+        enabled: root.visible
+
+        function onAllWiFiNetworksForgotten() {
+            forgetWifisPopup.actionText = "Serial number is ready.\nRestarting Device..."
+            system.rebootDevice();
         }
     }
 }
