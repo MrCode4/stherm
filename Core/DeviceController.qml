@@ -1528,13 +1528,38 @@ I_DeviceController {
     }
 
     function pushAutoModeSettingsToServer() {
-        deviceControllerCPP.pushAutoSettingsToServer(device.autoMinReqTemp, device.autoMaxReqTemp)
+        var autoTempLow = device.autoMinReqTemp;
+        var autoTempHigh = device.autoMaxReqTemp;
+
+        if (currentSchedule) {
+            if (currentSchedule.systemMode !== AppSpec.Cooling && currentSchedule.systemMode !== AppSpec.Heating) {
+                autoTempLow = currentSchedule.minimumTemperature;
+                autoTempHigh = currentSchedule.maximumTemperature;
+            }
+        }
+
+        deviceControllerCPP.pushAutoSettingsToServer(autoTempLow, autoTempHigh)
+    }
+
+    function getTemperatureForServer() : real {
+        var temperature = device.requestedTemp;
+
+        if (currentSchedule) {
+            if (currentSchedule.systemMode === AppSpec.Cooling) {
+                temperature = currentSchedule.maximumTemperature;
+
+            } else if (currentSchedule.systemMode === AppSpec.Heating) {
+                temperature = currentSchedule.minimumTemperature;
+            }
+        }
+
+        return temperature;
     }
 
     function pushToServer() {
         console.log("DeviceController.qml: Push to server with : pushToServer")
         var send_data = {
-            "temp": device.requestedTemp,
+            "temp": getTemperatureForServer(),
             "humidity": device.requestedHum,
             "current_humidity": device.currentHum.toString(),
             "current_temp": root.displayCurrentTemp.toString(),
@@ -1645,6 +1670,12 @@ I_DeviceController {
     function setDesiredTemperatureFromServer(temperature: real) {
         if (editModeEnabled(AppSpec.EMDesiredTemperature)) {
             console.log("The temperature is being edited and cannot be updated by the server.")
+            return;
+        }
+
+        // When the schedule is running and has been pushed to the server, the temperature value correspond to the schedule value and should be ignored.
+        if (root.currentSchedule) {
+            console.log("The temperature ignored due to running schedule.")
             return;
         }
 
@@ -1943,8 +1974,14 @@ I_DeviceController {
         if (!device)
             return;
 
-        if (editModeEnabled(AppSpec.EMDesiredTemperature)) {
+        if (editModeEnabled(AppSpec.EMAutoMode)) {
             console.log("The temperature is being edited and auto mode cannot be updated by the server.")
+            return;
+        }
+
+        // When the schedule is running and has been pushed to the server, the auto mode values correspond to the schedule values and should be disregarded in auto mode.
+        if (root.currentSchedule) {
+            console.log("The auto mode temperatures ignored due to running schedule.")
             return;
         }
 
@@ -2151,13 +2188,44 @@ I_DeviceController {
         if (root.currentSchedule === schedule)
             return;
 
+        var previousSchedule = root.currentSchedule;
         root.currentSchedule = schedule;
         deviceControllerCPP.setActivatedSchedule(schedule);
 
         // Update the server when currentSchedule is null or changed to a valid schedule with valid id.
-        if (!root.currentSchedule || root.currentSchedule.id > -1)
-            updateEditMode(AppSpec.EMSchedule);
-        else
+        if (!root.currentSchedule || root.currentSchedule.id > -1) {
+            var editMode = AppSpec.EMSchedule;
+
+            if (root.currentSchedule || previousSchedule) {
+                var updateSinleModeTemperature = false;
+                var updateAutoModeTemperature  = false;
+
+                if (root.currentSchedule) {
+                    updateSinleModeTemperature = root.currentSchedule.systemMode === AppSpec.Heating || root.currentSchedule.systemMode === AppSpec.Cooling;
+                    updateAutoModeTemperature = !updateSinleModeTemperature;
+                }
+
+                if (previousSchedule) {
+                    if (!updateSinleModeTemperature)
+                        updateSinleModeTemperature = previousSchedule.systemMode === AppSpec.Heating || previousSchedule.systemMode === AppSpec.Cooling;
+
+                    if (!updateAutoModeTemperature)
+                        updateAutoModeTemperature = previousSchedule.systemMode !== AppSpec.Heating && previousSchedule.systemMode !== AppSpec.Cooling;
+                }
+
+                if (updateSinleModeTemperature) {
+                    editMode |= AppSpec.EMDesiredTemperature;
+                    console.log("Push the DesiredTemperature due to schedule changes.")
+                }
+
+                if (updateAutoModeTemperature) {
+                    editMode |= AppSpec.EMAutoMode;
+                    console.log("Push the auto mode due to schedule changes.")
+                }
+            }
+
+            updateEditMode(editMode);
+        } else
             console.log("current schedule id is invalid.", root.currentSchedule.name);
     }
 
