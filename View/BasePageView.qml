@@ -33,6 +33,8 @@ Page {
     //! Controls visibility of backbutton
     property bool                   backButtonVisible: true
 
+    property bool                   backButtonEnabled: true
+
     property color                  headerColor: "white"
 
     property bool useSimpleStackView: false
@@ -58,9 +60,10 @@ Page {
         contentItem: RowLayout {
             ToolButton {
                 visible: backButtonVisible
+                enabled: backButtonEnabled
                 contentItem: RoniaTextIcon {
                     text: backButtonTextIcon
-                    color: root.headerColor
+                    color: enabled ? root.headerColor : Style.hintTextColor
                 }
 
                 onClicked: if (backButtonCallback instanceof Function) backButtonCallback();

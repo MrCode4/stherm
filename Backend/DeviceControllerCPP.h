@@ -39,6 +39,7 @@ class DeviceControllerCPP  : public QObject
 
     Q_PROPERTY(bool  isNeedOutdoorTemperature READ  isNeedOutdoorTemperature NOTIFY isNeedOutdoorTemperatureChanged)
     Q_PROPERTY(bool  isEligibleOutdoorTemperature READ  isEligibleOutdoorTemperature NOTIFY isEligibleOutdoorTemperatureChanged)
+    Q_PROPERTY(bool  isZipCodeValid READ  isZipCodeValid NOTIFY isZipCodeValidChanged)
 
     //Q_PROPERTY(SystemSetup *systemSetup READ systemSetup WRITE setSystemSetup NOTIFY systemSetupChanged FINAL)
 
@@ -265,6 +266,7 @@ Q_SIGNALS:
 
     void isNeedOutdoorTemperatureChanged();
     void isEligibleOutdoorTemperatureChanged();
+    void isZipCodeValidChanged();
 
     void emulateWarrantyFlow();
 
@@ -291,6 +293,9 @@ private:
 
     void updateIsEligibleOutdoorTemperature();
     bool isEligibleOutdoorTemperature();
+
+    void updateZipCodeValidation(const bool &isValid);
+    bool isZipCodeValid();
 
 private Q_SLOTS:
     /* Private Slots
@@ -385,6 +390,8 @@ private:
 
     //! Check the feasibility of sending outdoor temperature request.
     bool mIsEligibleOutdoorTemperature;
+
+    bool mIsZipCodeValid;
 
     int mFanSpeed;
     bool mFanOff;

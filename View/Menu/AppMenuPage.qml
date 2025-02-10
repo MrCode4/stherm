@@ -118,6 +118,12 @@ BasePageView {
                     icon: FAIcons.lock,
                     text: "Lock",
                     view: "qrc:/Stherm/View/LockPage.qml"
+                },
+                {
+                    icon: FAIcons.locationDot,
+                    text: "Location Hub",
+                    view: "qrc:/Stherm/View/Menu/ZipCodeEditPage.qml",
+                    visible: true
                 }
             ]
         }

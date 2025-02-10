@@ -21,6 +21,8 @@ BasePageView {
 
     property bool openFromNoWiFiInstallation: false
 
+    property bool _canGoToNextPage: true
+
     /* Object properties
      * ****************************************************************************************/
 
@@ -30,6 +32,11 @@ BasePageView {
     titleHeadeingLevel: 4
 
     backButtonVisible: !testMode
+
+    onVisibleChanged: {
+        if (visible)
+            root._canGoToNextPage = true;
+    }
 
     /* Children
      * ****************************************************************************************/
@@ -44,34 +51,7 @@ BasePageView {
         enabled: privacyPolicyChbox.checked
 
         onClicked: {
-            //! Save accepted version and Load the next page
-            if (root.StackView.view) {
-
-                if (testMode) {
-                    appModel.userPolicyTerms.acceptedTimeTester = system.getCurrentTime();
-                    appModel.userPolicyTerms.acceptedVersionOnTestMode = appModel.userPolicyTerms.currentVersion;
-                    root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
-                                                 "uiSession": Qt.binding(() => uiSession),
-                                                 "backButtonVisible" : false
-                                             });
-
-                } else if (openFromNoWiFiInstallation) {
-                    root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
-                                                 "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup,
-                                                 "openFromNoWiFiInstallation": true
-                                             });
-                } else {
-                    appModel.userPolicyTerms.acceptedTimeUser = system.getCurrentTime();
-                    appModel.userPolicyTerms.acceptedVersion = appModel.userPolicyTerms.currentVersion;
-                    root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
-                                                 "uiSession": uiSession,
-                                                 "initialSetup": root.initialSetup
-                                             });
-                }
-
-                deviceController.saveSettings();
-            }
+            nextPageTimer.start();
         }
     }
 
@@ -138,9 +118,55 @@ BasePageView {
         }
     }
 
+    Timer {
+        id: nextPageTimer
+
+        interval: 100
+        repeat: false
+        running: false
+
+        onTriggered: {
+            nextPage();
+        }
+    }
+
     /* Functions
      * ****************************************************************************************/
     function managePrivacyPolicyChbox() {
         privacyPolicyPopup.open();
+    }
+
+    function nextPage() {
+        //! Save accepted version and Load the next page
+        if (root._canGoToNextPage && root.StackView.view) {
+            root._canGoToNextPage = false;
+
+            if (testMode) {
+                appModel.userPolicyTerms.acceptedTimeTester = system.getCurrentTime();
+                appModel.userPolicyTerms.acceptedVersionOnTestMode = appModel.userPolicyTerms.currentVersion;
+                root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
+                                             "uiSession": Qt.binding(() => uiSession),
+                                             "backButtonVisible" : false
+                                         });
+
+            } else if (openFromNoWiFiInstallation) {
+                root.StackView.view.push("qrc:/Stherm/View/ServiceTitan/CustomerDetailsPage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup,
+                                             "openFromNoWiFiInstallation": true
+                                         });
+            } else {
+                appModel.userPolicyTerms.acceptedTimeUser = system.getCurrentTime();
+                appModel.userPolicyTerms.acceptedVersion = appModel.userPolicyTerms.currentVersion;
+                root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
+                                             "uiSession": uiSession,
+                                             "initialSetup": root.initialSetup
+                                         });
+            }
+
+            deviceController.saveSettings();
+
+
+        }
     }
 }

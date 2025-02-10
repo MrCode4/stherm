@@ -229,7 +229,7 @@ InitialSetupBasePageView {
         }
     }
 
-    InitialFlowErrorPopup {
+    CriticalErrorDiagnosticsPopup {
         id: errorPopup
 
         isBusy: isBusyCustomer|| isBusyZip

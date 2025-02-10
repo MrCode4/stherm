@@ -67,6 +67,7 @@ void Sync::setSerialNumber(const QString &serialNumber)
         TRACE << "serial number not set:" << serialNumber << ", current is :" << mSerialNumber
               << ", has client is :" << mHasClient << ", set to true";
         mHasClient            = true;
+        Device->updateSerialNumber(serialNumber, true);
         return;
     }
 
@@ -79,10 +80,12 @@ void Sync::setSerialNumber(const QString &serialNumber)
 
     // Force to update with new settings
     resetFetchTime();
+
+    Device->updateSerialNumber(serialNumber, true);
+
     // Fetch with new serial number
     emit serialNumberChanged();
 
-    Device->updateSerialNumber(serialNumber, true);
 }
 
 void Sync::setUID(cpuid_t accessUid)
@@ -147,14 +150,6 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
 
             mSerialNumber = sn;
 
-            if (!mSerialNumber.isEmpty()) {
-                emit serialNumberReady();
-            }
-
-            if (mSerialNumber.isEmpty() && notifyUser) {
-                emit testModeStarted();
-            }
-
             // Save the serial number in settings
 #if !defined(FAKE_UID_MODE_ON) && !defined(INITIAL_SETUP_MODE_ON) && !defined(SERIAL_TEST_MODE_ON)
             QSettings setting;
@@ -162,6 +157,15 @@ void Sync::fetchSerialNumber(const QString& uid, bool notifyUser)
             setting.setValue(cSerialNumberSetting, mSerialNumber);
 #endif
             Device->updateSerialNumber(mSerialNumber, mHasClient);
+
+            // These signals are needed once all local and global parameters are updated.
+            if (!mSerialNumber.isEmpty()) {
+                emit serialNumberReady();
+            }
+
+            if (mSerialNumber.isEmpty() && notifyUser) {
+                emit testModeStarted();
+            }
         }
         else {
             if (reply->error() == QNetworkReply::NoError) {
@@ -636,6 +640,26 @@ void Sync::getAddressInformationManual(const QString &zipCode)
     }
 }
 
+void Sync::updateAddressInformationManual(const QVariantMap &data)
+{
+    QJsonObject reqData = QJsonObject::fromVariantMap(data);
+    auto callback = [this](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+        if (reply->error() == QNetworkReply::NoError) {
+            TRACE << rawData << data;
+            emit clientAddressUpdatingFinished(true);
+
+        } else {
+            auto err = getReplyError(reply);
+
+            auto isNeedRetry = isNeedRetryNetRequest(reply);
+            emit clientAddressUpdatingFinished(false, err, isNeedRetry);
+            TRACE << rawData << data << err;
+        }
+    };
+
+    callPostApi(baseUrl() + QString("/api/sync/updateAddress"),  QJsonDocument(reqData).toJson(), callback);
+}
+
 void Sync::installDevice(const QVariantMap &data)
 {
     QJsonObject reqData = QJsonObject::fromVariantMap(data);
@@ -879,7 +903,14 @@ void Sync::getOutdoorTemperature() {
             emit outdoorTemperatureReady(!var.isUndefined(), var.toDouble());
         }
         else {
-            emit  outdoorTemperatureReady();
+            // Wrong zip code:
+            if (reply->error() == QNetworkReply::ContentNotFoundError) {
+                SYNC_LOG << "Zip code is not valid: " << rawData;
+                emit zipCodeIsInvalid();
+
+            } else {
+                emit  outdoorTemperatureReady();
+            }
         }
     };
 

@@ -85,6 +85,8 @@ public:
 
     QJsonObject lastSettingsResponseData() const;
 
+    Q_INVOKABLE void updateAddressInformationManual(const QVariantMap &data);
+
 public slots:
     void reportCommandResponse(ReportCommandCallback callback, const QString& command, const QString& data, int retryCount = 2);
 
@@ -146,6 +148,7 @@ signals:
     void customerInfoReady(bool success, QVariantMap data,  QString error, bool needToRetry = false);
 
     void outdoorTemperatureReady(bool success = false, double temp = -1.0);
+    void zipCodeIsInvalid();
 
     void scheduleCleared(int id, bool success);
     void scheduleEdited(int id, bool success);
@@ -153,6 +156,8 @@ signals:
 
     void alertPushed(QString alertUid, bool success, QVariantMap alert = QVariantMap());
     void resetFactoryFinished(bool ok, const QString &message = "");
+
+    void clientAddressUpdatingFinished(bool success, const QString &err = "", bool needToRetry = false);
 
 private slots:
     //! Check firmware update with getSettings reply

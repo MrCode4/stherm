@@ -14,6 +14,8 @@ ToolButton {
     //! I_DeviceController
     property I_DeviceController     deviceController
 
+    property DeviceControllerCPP deviceControllerCPP: deviceController.deviceControllerCPP
+
     //! I_Device
     property I_Device               device: deviceController?.device ?? null
 
@@ -25,8 +27,9 @@ ToolButton {
 
     property int dfhSystemType: deviceController.dfhSystemType
 
-    property bool dfhTroubleshootingMode: deviceController.deviceControllerCPP.isNeedOutdoorTemperature &&
-                                          !deviceController.deviceControllerCPP.isEligibleOutdoorTemperature &&
+    property bool dfhTroubleshootingMode: deviceControllerCPP.isNeedOutdoorTemperature &&
+                                          (!deviceControllerCPP.isEligibleOutdoorTemperature ||
+                                           !deviceControllerCPP.isZipCodeValid) &&
                                           (dfhSystemType === AppSpec.HeatingOnly || dfhSystemType === AppSpec.HeatPump)
 
 
@@ -220,7 +223,7 @@ ToolButton {
     }
 
     Connections {
-        target: deviceController.deviceControllerCPP
+        target: deviceControllerCPP
 
         function onStartSystemDelayCountdown(mode: int, delay: int) {
             realMode = mode;

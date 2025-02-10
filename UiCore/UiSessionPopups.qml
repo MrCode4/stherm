@@ -241,11 +241,11 @@ Item {
         }
     }
 
-    property InitialFlowErrorPopup _initialFlowErrorPopup: null
+    property CriticalErrorDiagnosticsPopup _criticalErrorDiagnosticsPopup: null
     Component {
-        id: initialFlowErrorPopupComponent
+        id: criticalErrorDiagnosticsPopupComponent
 
-        InitialFlowErrorPopup {
+        CriticalErrorDiagnosticsPopup {
             deviceController: root.uiSession.deviceController
             isBusy: deviceController.isSendingInitialSetupData
 
@@ -297,6 +297,18 @@ Item {
 
             onClosed: {
                 destroy(this)
+            }
+        }
+    }
+
+    Component {
+        id: invalidZipCodePopupComponent
+
+        InvalidZipCodePopup {
+            uiSession: root.uiSession
+
+            onClosed: {
+                destroy(this);
             }
         }
     }
@@ -397,13 +409,13 @@ Item {
         }
 
         function onShowInitialSetupPushError(err: string) {
-            if (!_initialFlowErrorPopup) {
-                _initialFlowErrorPopup = initialFlowErrorPopupComponent.createObject(root);
+            if (!_criticalErrorDiagnosticsPopup) {
+                _criticalErrorDiagnosticsPopup = criticalErrorDiagnosticsPopupComponent.createObject(root);
             }
 
-            if (_initialFlowErrorPopup) {
-                _initialFlowErrorPopup.errorMessage = err;
-                uiSession.popupLayout.displayPopUp(_initialFlowErrorPopup);
+            if (_criticalErrorDiagnosticsPopup) {
+                _criticalErrorDiagnosticsPopup.errorMessage = err;
+                uiSession.popupLayout.displayPopUp(_criticalErrorDiagnosticsPopup);
             }
         }
 
@@ -476,5 +488,13 @@ Item {
     function showManualDateTimeWarningPopup() {
         var mdtPopup = manualDateTimeWarningPopup.createObject(root)
         mdtPopup.open()
+    }
+
+    function showInvalidZipCodePopup() : I_PopUp {
+        var popup = invalidZipCodePopupComponent.createObject(root)
+
+        uiSession.popupLayout.displayPopUp(popup);
+
+        return popup;
     }
 }
