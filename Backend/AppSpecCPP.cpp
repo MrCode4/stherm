@@ -75,7 +75,7 @@ QString AppSpecCPP::systemTypeString(SystemType systemType, bool camelCase) {
         return camelCase ? "Traditional" : "traditional";
 
     case HeatPump:
-        return camelCase ? "HeatHump" : "heat_pump";
+        return camelCase ? "HeatPump" : "heat_pump";
 
     case CoolingOnly:
         return camelCase ? "Cooling" : "cooling";
