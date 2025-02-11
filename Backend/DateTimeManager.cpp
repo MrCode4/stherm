@@ -468,11 +468,15 @@ bool DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
             }
 
             // Extract date and time
-            QString datePart = parts[1]; // "25-02-11"
+            int mjdPart = parts[0].toInt(); // "60717"
             QString timePart = parts[2]; // "13:40:25"
 
             // Convert to QDateTime
-            QDate date = QDate::fromString(datePart, "yy-MM-dd");
+            // MJD epoch starts from November 17, 1858
+            QDate mjdEpoch(1858, 11, 17);
+
+            // Add Modified Julian Date(MJD) days to the base date
+            QDate date = mjdEpoch.addDays(mjdPart);
             QTime time = QTime::fromString(timePart, "HH:mm:ss");
 
             if (!date.isValid() || !time.isValid()) {
@@ -495,7 +499,7 @@ bool DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
         }
     };
 
-    m_processExecutor->execAsync("cat", QStringList{"/dev/tcp/time.nist.gov/13"}, callback);
+    m_processExecutor->execAsync("/bin/bash", QStringList{"-c", "cat </dev/tcp/time.nist.gov/13"}, callback);
 
     return true;
 }
