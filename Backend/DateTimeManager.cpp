@@ -5,8 +5,8 @@
 #include <QTimeZone>
 
 #include "LogHelper.h"
+#include "LogCategoires.h"
 #include "NetworkInterface.h"
-#include "RestApiExecutor.h"
 
 Q_LOGGING_CATEGORY(DateTimeManagerLog, "DateTimeManager")
 #define DTM_LOG TRACE_CATEGORY(DateTimeManagerLog)
@@ -458,7 +458,7 @@ bool DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
             // Expected format: "60717 25-02-11 13:40:25 00 0 0 49.6 UTC(NIST) *"
             QStringList parts = output.split(" ");
             if (parts.size() < 3) {
-                qWarning() << "Unexpected time format!";
+                qWarning() << "[DateTimeManager] Unexpected time format!";
 
                 if (onError) {
                     onError();
@@ -476,7 +476,7 @@ bool DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
             QTime time = QTime::fromString(timePart, "HH:mm:ss");
 
             if (!date.isValid() || !time.isValid()) {
-                qWarning() << "Invalid date/time extracted!";
+                qWarning() << "[DateTimeManager] Invalid date/time extracted!";
                 if (onError) {
                     onError();
                 }
