@@ -126,7 +126,7 @@ bool NmcliInterface::autoConnectSavedWifiAsync(WifiInfo* wifi)
 
     setBusy(true);
 
-    mCliWifi->connectToSavedWifi(wifi->ssid(), wifi->security(), "", [&] (QProcess*) {
+    mCliWifi->connectToSavedWifi(wifi->ssid(), wifi->security(), "", [=] (QProcess*) {
         setBusy(false);
         emit autoConnectSavedInRangeWifiFinished(wifi);
     });
@@ -173,13 +173,15 @@ void NmcliInterface::forgetWifi(WifiInfo* wifi)
     if (!wifi || !wifi->isSaved() || busy()) {
         NC_DEBUG << "Worst case scenario: Error in forgetWifi" << wifi << busy();
         NC_DEBUG_IF(wifi) << "Worst case scenario: Error in forgetWifi" << wifi->isSaved();
+        emit wifiForgotten(wifi);
         return;
     }
 
     setBusy(true);
     //! Perform disconnect command
-    mCliWifi->forgetWifi(wifi->ssid(), [this] (QProcess*) {
+    mCliWifi->forgetWifi(wifi->ssid(), [this, wifi] (QProcess*) {
         setBusy(false);
+        emit wifiForgotten(wifi);
     });
 }
 
@@ -564,27 +566,27 @@ void NmcliInterface::parseBssidToCorrectSsidMap(QProcess* process)
     // 2. SSID (network name), which can contain any characters except newline or carriage return
     // 3. Authentication suites, which may include various authentication methods
     static const QRegularExpression wifiDetailsRegex(
-        R"(BSS\s([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})|SSID:\s([^\n\r]+)|Authentication suites:\s(.+))");
+        R"(^BSS\s([a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2}:[a-fA-F0-9]{2})|SSID:(?<!HESSID:)(.*)|Authentication suites:(.*))");
 
     QRegularExpressionMatchIterator wifiMatchIterator = wifiDetailsRegex.globalMatch(mIwOut);
 
     QString bssid, ssid, auth;
 
+    // Loop through at least three iterations to extract Wi-Fi details:
+    // first to get BSSID, second for SSID, and third for authentication information.
+    // Store and reset data for each network as needed when a new network is detected (or at the end).
     while (wifiMatchIterator.hasNext()) {
         QRegularExpressionMatch currentMatch = wifiMatchIterator.next();
 
         auto nextBssid = currentMatch.captured(1).toUpper();
+        bool isNextWifi = (!nextBssid.isEmpty()) && (!bssid.isEmpty()) && (bssid != nextBssid)
+                          || !wifiMatchIterator.hasNext();
 
-        bool isNextWifi = (!nextBssid.isEmpty())
-                              && (!bssid.isEmpty())
-                              && (bssid != nextBssid.toUpper()) ||
-                          !wifiMatchIterator.hasNext();
-
-        if (!currentMatch.captured(2).isEmpty()) {
-            ssid = currentMatch.captured(2);
+        if (!currentMatch.captured(2).isEmpty() && ssid.isEmpty()) {
+            ssid = currentMatch.captured(2).trimmed();
 
         } else if (!currentMatch.captured(3).isEmpty()) {
-            auth = currentMatch.captured(3);
+            auth = currentMatch.captured(3).trimmed();
         }
 
         if (isNextWifi && !bssid.isEmpty()) {
@@ -604,7 +606,6 @@ void NmcliInterface::parseBssidToCorrectSsidMap(QProcess* process)
         if (!nextBssid.isEmpty()) {
             bssid = nextBssid;
         }
-
     }
 
     //! Get the list of wifi connections

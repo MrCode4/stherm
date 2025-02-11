@@ -58,6 +58,8 @@ NetworkInterface::NetworkInterface(QObject *parent)
     connect(mNmcliInterface, &NmcliInterface::wifisChanged, this, &NetworkInterface::wifisChanged);
     connect(mNmcliInterface, &NmcliInterface::wifiNeedAuthentication, this,
             &NetworkInterface::incorrectWifiPassword);
+    connect(mNmcliInterface, &NmcliInterface::wifiForgotten, this,
+            &NetworkInterface::wifiForgotten);
 
     //! Set up time for checking internet access: every 30 seconds
     mCheckInternetAccessTmr.setInterval(cCheckInternetAccessInterval);
@@ -108,7 +110,9 @@ NetworkInterface::NetworkInterface(QObject *parent)
     });
 
     connect(mNmcliInterface, &NmcliInterface::autoConnectSavedInRangeWifiFinished, this, [this](WifiInfo *wifi) {
-        NI_LOG << "Auto connection for " << wifi->wifiInformation();
+        NI_LOG << "Auto connection Finished ...";
+        if (wifi)
+            NI_LOG << "Auto connection for " << wifi->wifiInformation();
         tryConnectToSavedInrangeWifi(wifi);
     });
 
@@ -253,6 +257,7 @@ void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
 {
     if (!wifiInfo || !mNmcliInterface->isDeviceOn()) {
         NI_LOG << "Worst case scenario: Error in forgetWifi" << wifiInfo << mNmcliInterface->isDeviceOn();
+        emit  wifiForgotten(wifiInfo);
         return;
     }
 

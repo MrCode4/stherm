@@ -153,6 +153,8 @@ signals:
 
     void                isWifiDisconnectedManuallyChanged();
 
+    void                 wifiForgotten(WifiInfo* wifi);
+
     /* Private attributes
      * ****************************************************************************************/
 private:

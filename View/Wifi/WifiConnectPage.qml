@@ -53,7 +53,6 @@ BasePageView {
 
                 onClicked: {
                     //! Perform connection
-                    _connectCheckCon.enabled = true;
                     NetworkInterface.connectWifi(wifi, _passwordTf.text);
                 }
             }
@@ -105,19 +104,15 @@ BasePageView {
     }
 
     Connections {
-        id: _connectCheckCon
-        target: wifi
-        enabled: false
+        target: NetworkInterface
+        enabled: _root.visible
 
-        function onConnectedChanged()
-        {
-            if (wifi.connected) {
+        function onConnectedWifiChanged() {
+            if (NetworkInterface.connectedWifi) {
                 if (_root.StackView.view) {
                     _root.StackView.view.pop();
                 }
             }
-
-            _connectCheckCon.enabled = false;
         }
     }
 

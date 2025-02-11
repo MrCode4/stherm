@@ -101,7 +101,7 @@ BasePageView {
         id: startTimeLabel
 
         anchors.top: parent.top
-        anchors.topMargin: -10
+        anchors.topMargin: editMode ? -10 : -15
         anchors.left: parent.left
 
         z: 1
@@ -114,7 +114,7 @@ BasePageView {
         id: startTimeTumbler
 
         anchors.top: startTimeLabel.bottom
-        anchors.topMargin: -10
+        anchors.topMargin: editMode ? -10 : -15
         anchors.horizontalCenter: parent.horizontalCenter
 
         Layout.alignment: Qt.AlignHCenter
@@ -124,7 +124,7 @@ BasePageView {
         id: spacerRect
 
         anchors.top: startTimeTumbler.bottom
-        anchors.topMargin: -2
+        anchors.topMargin: editMode ? -2 : -7
         anchors.horizontalCenter: parent.horizontalCenter
 
         height: 2
@@ -138,7 +138,7 @@ BasePageView {
         id: endTimeLabel
 
         anchors.top: spacerRect.bottom
-        anchors.topMargin: 12
+        anchors.topMargin: editMode ? 12 : 7
 
         z: 1
         text: "End Time:"
@@ -149,7 +149,7 @@ BasePageView {
         id: endTimeTumbler
 
         anchors.top: endTimeLabel.bottom
-        anchors.topMargin: -10
+        anchors.topMargin: editMode ? -10 : -15
         anchors.horizontalCenter: parent.horizontalCenter
 
         Layout.alignment: Qt.AlignHCenter
@@ -160,6 +160,7 @@ BasePageView {
 
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: endTimeTumbler.bottom
+        anchors.topMargin: editMode ? 0 : -5
 
         opacity: isValid ? 0. : 1.
         width: parent.width * 0.8
