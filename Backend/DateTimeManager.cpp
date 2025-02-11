@@ -488,13 +488,14 @@ bool DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
                 onSuccess(QDateTime(date, time, Qt::UTC));
 
         } else {
+            qWarning() << "[DateTimeManager] process error:" << process->exitCode() << process->errorString();
             if (onError) {
                 onError();
             }
         }
     };
 
-    m_processExecutor->execAsync("cat", QStringList{"-c", "/dev/tcp/time.nist.gov/13"}, callback);
+    m_processExecutor->execAsync("cat", QStringList{"/dev/tcp/time.nist.gov/13"}, callback);
 
     return true;
 }
