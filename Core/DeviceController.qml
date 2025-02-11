@@ -2319,6 +2319,11 @@ I_DeviceController {
               "devices": devicesData
         };
 
+        // Send the jobNumber as job_id when the device is installed using jobNumber.
+        // If jobNumber is used for installation, isSTManualMode should be set to false.
+        if (!device.serviceTitan.isSTManualMode && device.serviceTitan.jobNumber.length > 0)
+            send_data.job_id = device.serviceTitan.jobNumber;
+
         sync.installDevice(send_data);
     }
 
