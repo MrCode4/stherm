@@ -2590,7 +2590,11 @@ I_DeviceController {
         let rebootFlag = root.system.getRestartFlag()
 
         if (DateTimeManager.autoUpdateTime === false && rebootFlag === false) {
-            uiSession.popUps.showManualDateTimeWarningPopup()
+            uiSession.popUps.showManualDateTimeWarningPopup();
+
+        } else if (DateTimeManager.autoUpdateTime === false) {
+            // To Save the time difference after update/restart.
+            DateTimeManager.updateTimeDiffrenceBasedonServer();
         }
 
         if (rebootFlag) {

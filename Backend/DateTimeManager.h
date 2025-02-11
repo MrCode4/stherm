@@ -103,6 +103,8 @@ public:
     Q_INVOKABLE void stopGettingCurrentTime();
     Q_INVOKABLE QString getCurrentTimeOnlineSyncAsString();
 
+    Q_INVOKABLE void updateTimeDiffrenceBasedonServer();
+
 private:
     /*!
      * \brief setAutoUpdateTimeProperty Sets mAutoUpdateTime value
@@ -122,8 +124,6 @@ private:
      */
     void setTimezoneTo(const QTimeZone& timezone);
 
-    void updateTimeDiffrenceBasedonServer();
-
     QDateTime getCurrentTimeOnlineSync();
     void getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
                                    std::function<void()> onError);
@@ -131,6 +131,8 @@ private:
     void scheduleRetryGetAsync(std::function<void(const QDateTime &)> callback, int retryCount);
 
     int calculateDelayTime(int retryCount);
+
+    void getCurrentTimeFromServerAsync();
 
 signals:
     void autoUpdateTimeChanged();
@@ -190,10 +192,8 @@ private:
 
     QTimer *mRetryToGetCurrentTimeTimer;
 
-    bool mNeedToSaveTimeDiffrence;
+    bool mNeedToSaveTimeDifference;
     bool mNeedToCorrectTimeBaseLatest;
-
-    void getCurrentTimeFromServerAsync();
 };
 
 /*!
