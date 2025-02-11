@@ -145,6 +145,63 @@ Control {
                 }
             }
 
+            ItemDelegate {
+                Layout.alignment: Qt.AlignRight | Qt.AlignHCenter
+                Layout.fillHeight: true
+
+                visible: wifi && wifiInRange && wifi.connected && !wifi.isConnecting
+                hoverEnabled: false
+
+                rightPadding: 4
+                leftPadding: 8
+
+                contentItem: Label {
+                    anchors.centerIn: parent
+
+                    color: Style.foreground
+                    font.pointSize: Qt.application.font.pointSize * 0.9
+                    font.bold: true
+                    text: " Disconnect "
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: null
+
+                onClicked: {
+                    if (!isSelected)
+                        _root.clicked()
+
+                    disconnectClicked();
+                }
+            }
+
+            ItemDelegate {
+                Layout.alignment: Qt.AlignRight | Qt.AlignHCenter
+                Layout.fillHeight: true
+
+                visible: wifi && wifiInRange && !wifi?.connected && !wifi.isConnecting && _root.isSelected
+                hoverEnabled: false
+
+                rightPadding: 4
+                leftPadding: 8
+
+                contentItem: Label {
+                    anchors.centerIn: parent
+
+                    color: Style.foreground
+                    font.pointSize: Qt.application.font.pointSize * 0.9
+                    font.bold: true
+                    text: " Connect "
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: null
+
+                onClicked: {
+                    connectClicked();
+                }
+            }
+
             BusyIndicator {
                 Layout.fillHeight: true
                 Layout.preferredWidth: height
@@ -157,51 +214,6 @@ Control {
                 running: visible
             }
 
-
-            ItemDelegate {
-                Layout.alignment: Qt.AlignRight | Qt.AlignHCenter
-
-                visible: wifiInRange && (wifi?.connected ?? false)
-                hoverEnabled: false
-
-                rightPadding: 4
-                leftPadding: 8
-
-                contentItem:Label {
-                    color: _root.Material.foreground
-                    font.pointSize: Qt.application.font.pointSize * 0.9
-                    font.bold: true
-                    text: " Disconnect "
-                    verticalAlignment: Text.AlignHCenter
-                }
-
-                onClicked: {
-                    connectClicked();
-                }
-            }
-
-            ItemDelegate {
-                Layout.alignment: Qt.AlignRight | Qt.AlignHCenter
-
-                visible: wifiInRange && !(wifi?.connected ?? true) && _root.isSelected
-                hoverEnabled: false
-
-                rightPadding: 4
-                leftPadding: 8
-
-                contentItem:Label {
-                    color: _root.Material.foreground
-                    font.pointSize: Qt.application.font.pointSize * 0.9
-                    font.bold: true
-                    text: " Connect "
-                    verticalAlignment: Text.AlignHCenter
-                }
-
-                onClicked: {
-                    disconnectClicked();
-                }
-            }
-
             ToolButton {
                 id: forgetBtn
 
@@ -210,7 +222,7 @@ Control {
 
                 contentItem: RoniaTextIcon {
                     font.pointSize: Style.fontIconSize.normalPt
-                    color: _root.Material.foreground
+                    color: Style.foreground
                     text: FAIcons.xmark
                 }
 

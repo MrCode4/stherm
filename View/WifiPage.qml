@@ -153,6 +153,7 @@ BasePageView {
             isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
 
             delegateIndex: -1
+            isSelected: selectConnectedWifi
 
             onDisconnectClicked: {
                 if (NetworkInterface.busy) {
@@ -235,7 +236,7 @@ BasePageView {
                         isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
 
                         delegateIndex: index
-                        isSelected: _wifisRepeater.currentItem.wifi === wifi
+                        isSelected: (_wifisRepeater.currentItem?.wifi === wifi) ?? false
 
                         onClicked: {
                             if (_wifisRepeater.currentIndex === index)
