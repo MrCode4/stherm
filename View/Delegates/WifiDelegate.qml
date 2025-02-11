@@ -32,6 +32,8 @@ Control {
 
     property bool wifiInRange: true
 
+    property bool isSelected: false
+
     /* Object properties
      * ****************************************************************************************/
     implicitHeight: Math.max(
@@ -170,7 +172,8 @@ Control {
                     Layout.leftMargin: _root.leftPadding
 
                     color: _root.Material.foreground
-                    font.pointSize: Qt.application.font.pointSize  * 0.7
+                    font.pointSize: Qt.application.font.pointSize
+                    font.bold: true
                     text: " Disconnect "
                 }
 
@@ -182,7 +185,7 @@ Control {
             ItemDelegate {
                 Layout.alignment: Qt.AlignRight
 
-                visible: wifiInRange && !(wifi?.connected ?? true) && _root.hovered
+                visible: wifiInRange && !(wifi?.connected ?? true) && _root.isSelected
                 hoverEnabled: visible
 
                 rightPadding: 4
@@ -193,7 +196,8 @@ Control {
                     Layout.leftMargin: _root.leftPadding
 
                     color: _root.Material.foreground
-                    font.pointSize: Qt.application.font.pointSize  * 0.7
+                    font.pointSize: Qt.application.font.pointSize
+                    font.bold: true
                     text: " Connect "
                 }
 

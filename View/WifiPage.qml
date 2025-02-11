@@ -59,20 +59,6 @@ BasePageView {
         onTriggered: nextPage()
     }
 
-    //! BusyIndicator for Fetching SN running status in first run flow
-    BusyIndicator {
-        parent: root.header.contentItem
-
-        width: parent.width
-        visible: running
-        running: system.serialNumber.length === 0 && deviceController.checkSNTryCount > 0
-
-        Label {
-            anchors.centerIn: parent
-            text: deviceController.checkSNTryCount
-        }
-    }
-
     RowLayout {
         parent: root.header.contentItem
 
@@ -124,6 +110,24 @@ BasePageView {
                 }
                 visible: running
                 running: NetworkInterface.busyRefreshing
+            }
+
+            //! BusyIndicator for Fetching SN running status in first run flow
+            BusyIndicator {
+                anchors {
+                    horizontalCenter: parent.horizontalCenter
+                    top: parent.bottom
+                    topMargin: -10
+                }
+
+                width: parent.width
+                visible: running
+                running: system.serialNumber.length === 0 && deviceController.checkSNTryCount > 0
+
+                Label {
+                    anchors.centerIn: parent
+                    text: deviceController.checkSNTryCount
+                }
             }
         }
     }
@@ -231,6 +235,8 @@ BasePageView {
                         isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
 
                         delegateIndex: index
+                        isSelected: _wifisRepeater.currentItem.wifi === wifi
+
                         onClicked: {
                             if (_wifisRepeater.currentIndex === index)
                                 _wifisRepeater.currentIndex = -2;
@@ -302,6 +308,7 @@ BasePageView {
                             Layout.fillWidth: true
 
                             wifiInRange: false;
+                            isSelected: false
                             focus: false
                             focusPolicy: Qt.NoFocus
                             hoverEnabled: false
