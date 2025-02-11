@@ -196,7 +196,7 @@ private:
     bool mNeedToSaveTimeDifference;
     bool mNeedToCorrectTimeBaseLatest;
 
-    QSharedPointer<ProcessExecutor> m_processExecutor;
+    QSharedPointer<ProcessExecutor> mProcessExecutor;
 };
 
 /*!

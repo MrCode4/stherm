@@ -35,7 +35,7 @@ DateTimeManager::DateTimeManager(QObject *parent)
 {
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
-    m_processExecutor = QSharedPointer<ProcessExecutor>::create();
+    mProcessExecutor = QSharedPointer<ProcessExecutor>::create();
     mProcess.setReadChannel(QProcess::StandardOutput);
 
     QSettings settings;
@@ -499,7 +499,7 @@ bool DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTi
         }
     };
 
-    m_processExecutor->execAsync("/bin/bash", QStringList{"-c", "cat </dev/tcp/time.nist.gov/13"}, callback);
+    mProcessExecutor->execAsync("/bin/bash", QStringList{"-c", "cat </dev/tcp/time.nist.gov/13"}, callback);
 
     return true;
 }
