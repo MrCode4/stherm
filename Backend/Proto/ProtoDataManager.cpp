@@ -14,6 +14,8 @@
 const QString BINARYFILESPATH        = PROTOBUFF_FILES_PATH;
 const int     MEMORYLIMITAIONRECORDS = 3000;
 const int     MAXIMUMPROTOFOLDERSIZE = 50 * 1024 * 1024; // 50 MB
+const int     MAXFILESIZETOREMOVE    = 5 * 1024 * 1024;  // 5 MB
+
 const double  TEMPERATURETHRESHOLD   = 1 / 1.8;
 const double  MCUTEMPERATURETHRESHOLD   = 3 / 1.8;
 
@@ -176,19 +178,7 @@ void ProtoDataManager::generateBinaryFile()
         return;
     }
 
-    // Check the proto folder size
-    auto protoFoldersize = AppUtilities::getFolderUsedBytes(BINARYFILESPATH);
-    QDir protoDir(BINARYFILESPATH);
-    QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
-    PROTO_LOG << BINARYFILESPATH << " size (Bytes): " <<  protoFoldersize;
-    while (!fileList.isEmpty() && (protoFoldersize > MAXIMUMPROTOFOLDERSIZE)) {
-        auto fileToRemove = fileList.last().absoluteFilePath();
-        PROTO_LOG << QString("Remove the file due to memory limitation (size: %0 Bytes): %1").arg(QString::number(protoFoldersize),  fileToRemove)
-                  << QFile::remove(fileToRemove);
-
-        protoFoldersize = AppUtilities::getFolderUsedBytes(BINARYFILESPATH);
-        fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
-    }
+    checkMemoryAndCleanup();
 
     QString fileName = QString("%0/%1.bin").arg(BINARYFILESPATH, QString::number(QDateTime::currentDateTime().currentMSecsSinceEpoch()));
     std::fstream output(fileName.toStdString(), std::ios::out | std::ios::binary);
@@ -196,12 +186,50 @@ void ProtoDataManager::generateBinaryFile()
     if (mLiveDataPointList.SerializeToOstream(&output)) {
         mLiveDataPointList.clear_data_points();
         output.close();
+
     } else {
         output.close();
         QFile::remove(fileName);
     }
 
 #endif
+}
+
+void ProtoDataManager::checkMemoryAndCleanup()
+{
+    auto protoFoldersize = AppUtilities::getFolderUsedBytes(BINARYFILESPATH);
+    QDir protoDir(BINARYFILESPATH);
+    QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
+
+    if (protoFoldersize > MAXIMUMPROTOFOLDERSIZE) {
+        PROTO_LOG << BINARYFILESPATH << " size (Bytes): " <<  protoFoldersize;
+
+        qint64 clearedSize = 0;
+
+        // When the maximum size is reached, we need to free up at least 5MB of space.
+        while (!fileList.isEmpty()) {
+            auto file = fileList.last();
+
+            auto fileToRemove = file.absoluteFilePath();
+            if (QFile::remove(fileToRemove)) {
+                clearedSize += file.size();
+
+            } else {
+                PROTO_LOG << QString("Error removing file %1.").arg(fileToRemove);
+            }
+
+            if (clearedSize >= MAXFILESIZETOREMOVE) {
+                break;
+            }
+
+            fileList.removeLast();
+        }
+
+        PROTO_LOG << QString("Removed some files due to memory limitation (cleared size: %0 Bytes)").arg(QString::number(clearedSize));
+
+        protoFoldersize = AppUtilities::getFolderUsedBytes(BINARYFILESPATH);
+        PROTO_LOG << BINARYFILESPATH << "  size after cleanUp (Bytes): " <<  protoFoldersize;
+    }
 }
 
 void ProtoDataManager::setSetTemperature(const double &tempratureC)

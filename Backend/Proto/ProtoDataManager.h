@@ -82,7 +82,9 @@ private:
     void updateChangeMode(ChangeMode cm);
 
     //! Create the binary file
-    void generateBinaryFile();    
+    void generateBinaryFile();
+
+    void checkMemoryAndCleanup();
 
 private:
         /*
