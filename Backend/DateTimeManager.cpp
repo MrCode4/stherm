@@ -11,10 +11,6 @@
 Q_LOGGING_CATEGORY(DateTimeManagerLog, "DateTimeManager")
 #define DTM_LOG TRACE_CATEGORY(DateTimeManagerLog)
 
-// API Keys
-const QString TIME_API_URL         = QString("https://worldtimeapi.org/api/timezone/Etc/UTC");
-const QString UTC_TIMESTAMP_KEY    = QString("utc_datetime");
-
 // Settings Keys
 const QString UTC_DIFFERENCE_TIME_SETTINGS = QString("utcDifferenceTime");
 
@@ -39,6 +35,7 @@ DateTimeManager::DateTimeManager(QObject *parent)
 {
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
+    m_processExecutor = QSharedPointer<ProcessExecutor>::create();
     mProcess.setReadChannel(QProcess::StandardOutput);
 
     QSettings settings;
@@ -446,46 +443,60 @@ void DateTimeManager::stopTimeCorrectionFromLatest() {
         stopGettingCurrentTime();
 }
 
-void DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
+bool DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
                                                 std::function<void()> onError)
 {
     if (!NetworkInterface::me()->hasInternet())
-        return;
+        return false;
 
-    auto callback = [onSuccess,
-                     onError](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        if (reply->error() != QNetworkReply::NoError) {
-            qWarning() << "[DateTimeManager] Network error while fetching time: "
-                       << reply->errorString();
-            if (onError) {
-                onError();
-            }
+    auto callback = [this, onSuccess, onError] (QProcess* process) {
+        if (process->exitCode() == 0) {
+            QString output = process->readAllStandardOutput().trimmed();
+            DTM_LOG << "Raw NIST response:" << output;
 
-        } else  {
-            QDateTime utcDateTime = QDateTime::fromString(data.value(UTC_TIMESTAMP_KEY).toString(),
-                                                          Qt::ISODate);
-            if (!utcDateTime.isValid()) {
-                qWarning() << "[DateTimeManager] Invalid datetime format in API response";
+            // We can use a QRegularExpression
+            // Expected format: "60717 25-02-11 13:40:25 00 0 0 49.6 UTC(NIST) *"
+            QStringList parts = output.split(" ");
+            if (parts.size() < 3) {
+                qWarning() << "Unexpected time format!";
+
                 if (onError) {
                     onError();
                 }
 
-            } else if (onSuccess) {
-                onSuccess(utcDateTime);
+                return;
+            }
 
-            } else {
-                qWarning() << "[DateTimeManager] Invalid date time and invalid onSuccess";
+            // Extract date and time
+            QString datePart = parts[1]; // "25-02-11"
+            QString timePart = parts[2]; // "13:40:25"
+
+            // Convert to QDateTime
+            QDate date = QDate::fromString(datePart, "yy-MM-dd");
+            QTime time = QTime::fromString(timePart, "HH:mm:ss");
+
+            if (!date.isValid() || !time.isValid()) {
+                qWarning() << "Invalid date/time extracted!";
+                if (onError) {
+                    onError();
+                }
+
+                return;
+            }
+
+            if (onSuccess)
+                onSuccess(QDateTime(date, time, Qt::UTC));
+
+        } else {
+            if (onError) {
+                onError();
             }
         }
     };
 
-    RestApiExecutor *api = new RestApiExecutor(this);
-    auto netReply = api->callGetApi(TIME_API_URL, callback, false);
+    m_processExecutor->execAsync("cat", QStringList{"-c", "/dev/tcp/time.nist.gov/13"}, callback);
 
-    if (netReply)
-        connect(netReply, &QNetworkReply::finished, api, &QObject::deleteLater);
-    else
-        api->deleteLater();
+    return true;
 }
 
 void DateTimeManager::scheduleRetryGetAsync(std::function<void(const QDateTime &)> callback,
@@ -550,34 +561,27 @@ QDateTime DateTimeManager::getCurrentTimeOnlineSync()
     // Default to system UTC time if network fails
     QDateTime time = QDateTime::currentDateTimeUtc();
 
-    QEventLoop loop;
-    auto callback = [&loop,
-                     &time](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        QDateTime dateTime = QDateTime::fromString(data.value(UTC_TIMESTAMP_KEY).toString(),
-                                                   Qt::ISODate);
 
-        if (dateTime.isValid()) {
-            time = dateTime;
+    QEventLoop loop;
+
+    auto callback = [this, &loop, &time](const QDateTime &serverDateTimeUTC) {
+
+        if (serverDateTimeUTC.isValid()) {
+            time = serverDateTimeUTC;
         } else {
             qWarning() << "Invalid datetime format in API response (Sync)";
         }
 
-        DTM_LOG << "getCurrentTime: " << data.value(UTC_TIMESTAMP_KEY).toString() << dateTime;
+        DTM_LOG << "getCurrentTime: " << serverDateTimeUTC;
         loop.quit();
     };
 
-    RestApiExecutor *api = new RestApiExecutor(this);
-    QNetworkReply *netReply = api->callGetApi(TIME_API_URL,
-                                              callback,
-                                              false);
+    auto errorCallback = [this, &loop]() {
+        loop.quit();
+    };
 
-    if (netReply) {
-        connect(netReply, &QNetworkReply::finished, api, &QObject::deleteLater);
+    if (getCurrentTimeOnlineAsync(callback, errorCallback))
         loop.exec();
-
-    } else {
-        api->deleteLater();
-    }
 
     return time;
 }

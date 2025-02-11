@@ -6,6 +6,7 @@
 #include <QTimeZone>
 #include <QTimer>
 
+#include "ProcessExecutor.h"
 #include "TimezonesDSTMap.h"
 
 #define TDC_COMMAND         "timedatectl"
@@ -125,7 +126,7 @@ private:
     void setTimezoneTo(const QTimeZone& timezone);
 
     QDateTime getCurrentTimeOnlineSync();
-    void getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
+    bool getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
                                    std::function<void()> onError);
 
     void scheduleRetryGetAsync(std::function<void(const QDateTime &)> callback, int retryCount);
@@ -194,6 +195,8 @@ private:
 
     bool mNeedToSaveTimeDifference;
     bool mNeedToCorrectTimeBaseLatest;
+
+    QSharedPointer<ProcessExecutor> m_processExecutor;
 };
 
 /*!
