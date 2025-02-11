@@ -14,10 +14,10 @@ Control {
 
     /* Signals
      * ****************************************************************************************/
-    signal clicked
-    signal forgetClicked
-    signal disconnectClicked
-    signal connectClicked
+    signal clicked()
+    signal forgetClicked()
+    signal disconnectClicked()
+    signal connectClicked()
 
 
     /* Property declaration
@@ -159,22 +159,20 @@ Control {
 
 
             ItemDelegate {
-                Layout.alignment: Qt.AlignRight
+                Layout.alignment: Qt.AlignRight | Qt.AlignHCenter
 
                 visible: wifiInRange && (wifi?.connected ?? false)
-                hoverEnabled: visible
+                hoverEnabled: false
 
                 rightPadding: 4
                 leftPadding: 8
 
                 contentItem:Label {
-                    Layout.alignment: Qt.AlignRight
-                    Layout.leftMargin: _root.leftPadding
-
                     color: _root.Material.foreground
-                    font.pointSize: Qt.application.font.pointSize
+                    font.pointSize: Qt.application.font.pointSize * 0.9
                     font.bold: true
                     text: " Disconnect "
+                    verticalAlignment: Text.AlignHCenter
                 }
 
                 onClicked: {
@@ -183,22 +181,20 @@ Control {
             }
 
             ItemDelegate {
-                Layout.alignment: Qt.AlignRight
+                Layout.alignment: Qt.AlignRight | Qt.AlignHCenter
 
                 visible: wifiInRange && !(wifi?.connected ?? true) && _root.isSelected
-                hoverEnabled: visible
+                hoverEnabled: false
 
                 rightPadding: 4
                 leftPadding: 8
 
                 contentItem:Label {
-                    Layout.alignment: Qt.AlignRight
-                    Layout.leftMargin: _root.leftPadding
-
                     color: _root.Material.foreground
-                    font.pointSize: Qt.application.font.pointSize
+                    font.pointSize: Qt.application.font.pointSize * 0.9
                     font.bold: true
                     text: " Connect "
+                    verticalAlignment: Text.AlignHCenter
                 }
 
                 onClicked: {
