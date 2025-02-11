@@ -41,20 +41,6 @@ BasePageView {
     /* Children
      * ****************************************************************************************/
 
-    //! Next button (loads SystemTypePage in normal mode or VersionInformationPage in test mode)
-    ToolButton {
-        parent: root.header.contentItem
-        contentItem: RoniaTextIcon {
-            text: FAIcons.arrowRight
-        }
-
-        enabled: privacyPolicyChbox.checked
-
-        onClicked: {
-            nextPageTimer.start();
-        }
-    }
-
     CheckBox {
         id: privacyPolicyChbox
 
@@ -113,8 +99,10 @@ BasePageView {
         }
 
         onClosed: {
-            if (isAccepted)
+            if (isAccepted) {
                 privacyPolicyChbox.checked = isRead;
+                nextPageTimer.start();
+            }
         }
     }
 

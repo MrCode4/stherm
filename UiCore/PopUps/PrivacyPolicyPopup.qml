@@ -87,10 +87,10 @@ I_PopUp {
 
         leftPadding: 8
         rightPadding: 8
-        text: (isRead && !isAccepted) ? " Accept " : "  Close  "
+        text: (isRead && !isAccepted) ? " Accept & Continue " : "  Close  "
 
         onClicked: {
-            if (text === " Accept ")
+            if ((isRead && !isAccepted))
                 isAccepted = true;
 
             close();
