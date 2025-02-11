@@ -59,36 +59,17 @@ BasePageView {
         onTriggered: nextPage()
     }
 
-    //! Next button
-    ToolButton {
+    //! BusyIndicator for Fetching SN running status in first run flow
+    BusyIndicator {
         parent: root.header.contentItem
 
-        visible: nextButtonEnabled
+        width: parent.width
+        visible: running
+        running: system.serialNumber.length === 0 && deviceController.checkSNTryCount > 0
 
-        contentItem: RoniaTextIcon {
-            text: FAIcons.arrowRight
-        }
-
-        // Enable when the serial number is correctly filled
-        enabled: initialSetupReady
-        onClicked: nextPage()
-
-        //! BusyIndicator for Fetching SN running status in first run flow
-        BusyIndicator {
-            anchors {
-                horizontalCenter: parent.horizontalCenter
-                top: parent.bottom
-                topMargin: -10
-            }
-
-            width: parent.width
-            visible: running
-            running: system.serialNumber.length === 0 && deviceController.checkSNTryCount > 0
-
-            Label {
-                anchors.centerIn: parent
-                text: deviceController.checkSNTryCount
-            }
+        Label {
+            anchors.centerIn: parent
+            text: deviceController.checkSNTryCount
         }
     }
 
@@ -168,6 +149,18 @@ BasePageView {
             isWPA3: root.isSecuredByWPA3(wifi?.security ?? "")
 
             delegateIndex: -1
+
+            onDisconnectClicked: {
+                if (NetworkInterface.busy) {
+                    return;
+                }
+
+                busyProcessPopup.isForgetting = false;
+                busyProcessPopup.open();
+                NetworkInterface.disconnectWifi(wifi);
+                _wifisRepeater.currentIndex = -2;
+            }
+
             onClicked: {
                 if (selectConnectedWifi)
                     _wifisRepeater.currentIndex = -2;
@@ -245,6 +238,39 @@ BasePageView {
                                 _wifisRepeater.currentIndex = index;
                         }
 
+                        onConnectClicked: {
+                            if (NetworkInterface.busy) {
+                                return;
+                            }
+
+                            if ((root.isSecuredByWPA3(wifi.security) === true) && (NetworkInterface.doesDeviceSupportWPA3 === false)) {
+                                 uiSession.popupLayout.displayPopUp(wpa3WifiAlert)
+                                return
+                            }
+
+                            console.log("connecting to wifi: ", wifi.ssid, ", security: ", wifi.security)
+
+                            //! Check if we need user prompt for password, i.e., access point is open or is saved and has a profile.
+                            if (wifi.security === "" || NetworkInterface.isWifiSaved(wifi)) {
+                                NetworkInterface.connectWifi(wifi, "");
+                            } else {
+                                var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
+
+                                //! Open connect page
+                                if (root.StackView.view && _wifisRepeater.currentItem) {
+                                    //! Note: it's better to stop wifi refreshing to prevent any deleted
+                                    //! object access issues
+                                    root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
+                                                                 "uiSession": uiSession,
+                                                                 "wifi": _wifisRepeater.currentItem.wifi,
+                                                                 "minPasswordLength": minPasswordLength,
+                                                             })
+                                }
+                            }
+
+                            _wifisRepeater.currentIndex = -2;
+                        }
+
                         onForgetClicked: {
                             if (uiSession) {
                                 //! Ask for forgeting this wifi
@@ -275,6 +301,7 @@ BasePageView {
 
                             Layout.fillWidth: true
 
+                            wifiInRange: false;
                             focus: false
                             focusPolicy: Qt.NoFocus
                             hoverEnabled: false
@@ -352,51 +379,13 @@ BasePageView {
 
                 anchors.right: parent.right
                 anchors.rightMargin: 8
-                visible: _wifisRepeater.currentItem?.wifi ?? false
-                text: _wifisRepeater.currentItem?.wifi?.connected ? "Disconnect" : "Connect"
+
+                visible: nextButtonEnabled
+                enabled: initialSetupReady
+                text: "Next"
 
                 onClicked: {
-                    if (NetworkInterface.busy) {
-                        return;
-                    }
-
-                    if (text === "Connect") {
-                        var wifi = _wifisRepeater.currentItem.wifi;
-
-                        if ((root.isSecuredByWPA3(wifi.security) === true) && (NetworkInterface.doesDeviceSupportWPA3 === false)) {
-                             uiSession.popupLayout.displayPopUp(wpa3WifiAlert)
-                            return
-                        }
-
-                        console.log("connecting to wifi: ", wifi.ssid, ", security: ", wifi.security)
-
-                        //! Check if we need user prompt for password, i.e., access point is open or is saved and has a profile.
-                        if (wifi.security === "" || NetworkInterface.isWifiSaved(wifi)) {
-                            NetworkInterface.connectWifi(wifi, "");
-                        } else {
-                            var minPasswordLength = (wifi.security === "--" || wifi.security === "" ? 0 : 8)
-
-                            //! Open connect page
-                            if (root.StackView.view && _wifisRepeater.currentItem) {
-                                //! Note: it's better to stop wifi refreshing to prevent any deleted
-                                //! object access issues
-                                root.StackView.view.push("qrc:/Stherm/View/Wifi/WifiConnectPage.qml", {
-                                                             "uiSession": uiSession,
-                                                             "wifi": _wifisRepeater.currentItem.wifi,
-                                                             "minPasswordLength": minPasswordLength,
-                                                         })
-                            }
-                        }
-                    } else {
-                        //! Disconnect from this wifi
-                        if (_wifisRepeater.currentItem) {
-                            busyProcessPopup.isForgetting = false;
-                            busyProcessPopup.open();
-                            NetworkInterface.disconnectWifi(_wifisRepeater.currentItem.wifi);
-                        }
-                    }
-
-                    _wifisRepeater.currentIndex = -2;
+                    nextPage();
                 }
             }
 

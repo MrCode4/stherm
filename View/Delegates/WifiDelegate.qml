@@ -16,6 +16,8 @@ Control {
      * ****************************************************************************************/
     signal clicked
     signal forgetClicked
+    signal disconnectClicked
+    signal connectClicked
 
 
     /* Property declaration
@@ -28,6 +30,7 @@ Control {
 
     property bool isWPA3: false
 
+    property bool wifiInRange: true
 
     /* Object properties
      * ****************************************************************************************/
@@ -150,6 +153,53 @@ Control {
                 implicitHeight: 0
                 visible: wifi?.isConnecting ?? false
                 running: visible
+            }
+
+
+            ItemDelegate {
+                Layout.alignment: Qt.AlignRight
+
+                visible: wifiInRange && (wifi?.connected ?? false)
+                hoverEnabled: visible
+
+                rightPadding: 4
+                leftPadding: 8
+
+                contentItem:Label {
+                    Layout.alignment: Qt.AlignRight
+                    Layout.leftMargin: _root.leftPadding
+
+                    color: _root.Material.foreground
+                    font.pointSize: Qt.application.font.pointSize  * 0.7
+                    text: " Disconnect "
+                }
+
+                onClicked: {
+                    connectClicked();
+                }
+            }
+
+            ItemDelegate {
+                Layout.alignment: Qt.AlignRight
+
+                visible: wifiInRange && !(wifi?.connected ?? true) && _root.hovered
+                hoverEnabled: visible
+
+                rightPadding: 4
+                leftPadding: 8
+
+                contentItem:Label {
+                    Layout.alignment: Qt.AlignRight
+                    Layout.leftMargin: _root.leftPadding
+
+                    color: _root.Material.foreground
+                    font.pointSize: Qt.application.font.pointSize  * 0.7
+                    text: " Connect "
+                }
+
+                onClicked: {
+                    disconnectClicked();
+                }
             }
 
             ToolButton {
