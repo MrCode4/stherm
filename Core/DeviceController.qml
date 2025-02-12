@@ -951,26 +951,20 @@ I_DeviceController {
 
             // deprioritize if only sensorValues there to push auto mode api sooner
             var priorityMode = root.stageMode &
-                    ~AppSpec.EMSensorValues &
                     ~AppSpec.EMSensorTemperature &
                     ~AppSpec.EMSensorHumidity &
                     ~AppSpec.EMSensorCO2;
 
             // Start push process if stage mode is available
-            // push auto mode first if nothing else is staged except EMSensorValues
+            // push auto mode first if nothing else is staged except sensor related events like EMSensorTemperature, EMSensorHumidity, EMSensorCO2
             // need some delay here between two api pushes so if another one exist we push the other first!
             // then, this will be called after success push
             //! this can be delayed too much if never push success or too much edits
             if (priorityMode === AppSpec.EMAutoMode) {
                 pushAutoModeSettingsToServer();
-            } else if (root.stageMode !== AppSpec.EMNone) {
-                // deprioritize if only sensorValues there to push other changed to the server sooner
-                var priorityStageMode = root.stageMode &
-                        ~AppSpec.EMSensorTemperature &
-                        ~AppSpec.EMSensorHumidity &
-                        ~AppSpec.EMSensorCO2;
 
-                if (priorityStageMode !== AppSpec.EMNone) {
+            } else if (root.stageMode !== AppSpec.EMNone) {
+                if (priorityMode !== AppSpec.EMNone) {
                     try {
                         pushToServer();
 
