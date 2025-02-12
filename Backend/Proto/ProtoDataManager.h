@@ -68,6 +68,8 @@ public:
     //! Send the binary data to server
     Q_INVOKABLE void sendDataToServer();
 
+    Q_INVOKABLE void sendFullDataPacketToServer();
+
 private:
     static ProtoDataManager* mMe;
 
@@ -80,7 +82,9 @@ private:
     void updateChangeMode(ChangeMode cm);
 
     //! Create the binary file
-    void generateBinaryFile();    
+    void generateBinaryFile();
+
+    void checkMemoryAndCleanup();
 
 private:
         /*
@@ -97,6 +101,9 @@ private:
          *      current_heating_stage         - currently running heating stage (0 means heating is off)
          *      current_fan_status            - fan state (0 means is off)
          *      led_status                    - led lights state (0 means is off)
+         *      system_type                   - Current system type (string)
+         *      running_mode                  - Running system mode (string)
+         *      online_status                 - Online status
          *      is_sync                       - indication of synchronization packet (package should contain all 11 values). Should be at least every hour.
         */
 #ifdef PROTOBUF_ENABLED
@@ -108,9 +115,12 @@ private:
 
     QTimer mSenderTimer;
     QTimer mDataPointLogger;
-    QTimer mCreatGeneralBufferTimer;
+    QTimer mCreateGeneralBufferTimer;
 
     //! Flag to stash data
     int mChangeMode;
+
+    //! Use to avoid create new file when sender is busy.
+    bool mSendingToServer;
 };
 

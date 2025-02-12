@@ -2,17 +2,22 @@
 
 #include "Config.h"
 #include "LogHelper.h"
+#include "AppUtilities.h"
+#include "DeviceInfo.h"
 
 #ifdef PROTOBUF_ENABLED
-#include "DeviceInfo.h"
 #include <ctime>
 #include <fstream>
 #include <google/protobuf/util/time_util.h>
 #endif
 
-const QString BINARYFILEPATH         = PROTOBUFF_FILE_PATH;
-const int     MEMORYLIMITAIONRECORDS = 3000;
-const double  TEMPERATURETHRESHOLD   = 1 / 1.8;
+const QString m_binaryFilesPath          = PROTOBUFF_FILES_PATH;
+const int     m_memoryLimitationRecords = 3000;
+const int     m_maximumProtoFolderSize = 50 * 1024 * 1024; // 50 MB
+const int     m_minFileSizeToRemove       = 5 * 1024 * 1024;  // 5 MB
+
+const double  m_temperatureThreshold    = 1 / 1.8;
+const double  m_mcuTemperatureThreshold = 3 / 1.8;
 
 Q_LOGGING_CATEGORY(ProtobufferDataManager, "ProtobufferDataManager")
 #define PROTO_LOG TRACE_CATEGORY(ProtobufferDataManager)
@@ -31,7 +36,8 @@ ProtoDataManager* ProtoDataManager::me()
 }
 
 ProtoDataManager::ProtoDataManager(QObject *parent)
-    : DevApiExecutor{parent}
+    : mSendingToServer{false}
+    , DevApiExecutor{parent}
 {
 #ifdef PROTOBUF_ENABLED
     GOOGLE_PROTOBUF_VERIFY_VERSION;
@@ -46,18 +52,17 @@ ProtoDataManager::ProtoDataManager(QObject *parent)
 
     mSenderTimer.start();
 
-    mDataPointLogger.setInterval(30 * 1000);
+    mDataPointLogger.setInterval(1000);
     mDataPointLogger.setSingleShot(true);
     connect(&mDataPointLogger, &QTimer::timeout, this, [this]() {
         logStashData();
     });
 
-    mCreatGeneralBufferTimer.setInterval(1 * 60 * 60 * 1000);
-    connect(&mCreatGeneralBufferTimer, &QTimer::timeout, this, [this]() {
-        updateChangeMode(CMAll);
-        logStashData();
+    mCreateGeneralBufferTimer.setInterval(1 * 60 * 60 * 1000);
+    connect(&mCreateGeneralBufferTimer, &QTimer::timeout, this, [this]() {
+        sendFullDataPacketToServer();
     });
-    mCreatGeneralBufferTimer.start();
+    mCreateGeneralBufferTimer.start();
 
     mChangeMode = CMNone;
 
@@ -73,10 +78,10 @@ ProtoDataManager::~ProtoDataManager()
 
     mDataPointLogger.stop();
     mSenderTimer.stop();
-    mCreatGeneralBufferTimer.stop();
+    mCreateGeneralBufferTimer.stop();
 
-    delete mLateastDataPoint;
     mLateastDataPoint->Clear();
+    delete mLateastDataPoint;
 
     // Optional:  Delete all global objects allocated by libprotobuf.
     google::protobuf::ShutdownProtobufLibrary();
@@ -85,16 +90,16 @@ ProtoDataManager::~ProtoDataManager()
 
 void ProtoDataManager::sendDataToServer()
 {
+    if (Device->serialNumber().isEmpty()) {
+        return;
+    }
+
 #ifdef PROTOBUF_ENABLED
-    QFileInfo binFile(BINARYFILEPATH);
-    bool existValidBinaryFile = binFile.exists() && binFile.size() > 0;
+    auto protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
+    bool existValidBinaryFile = protoFoldersize > 0;
 
     if (mLiveDataPointList.data_points_size() < 1 && !existValidBinaryFile) {
         PROTO_LOG << "No data for sending.";
-
-        if (binFile.exists())
-           PROTO_LOG << BINARYFILEPATH << " - Invalid file removed: " << QFile::remove(BINARYFILEPATH);
-
         return;
     }
 
@@ -103,62 +108,135 @@ void ProtoDataManager::sendDataToServer()
         generateBinaryFile();
 
     } else {
-        PROTO_LOG << "Sending old data points in the file: " << existValidBinaryFile;
+        PROTO_LOG << "Sending old data points in the file with size (Bytes): " << protoFoldersize;
     }
 
     QByteArray serializedData;
-    QFile file(BINARYFILEPATH);
-    if (file.exists() && file.open(QIODevice::ReadOnly)) {
-        TRACE << file.errorString();
-        serializedData = file.readAll();
-        file.close();
 
-    } else {
-        qWarning() << "Error opening file: " << file.errorString();
-        return;
+    // Collecting the file data
+    {
+        QDir protoDir(m_binaryFilesPath);
+        QFileInfoList fileList = protoDir.entryInfoList({"*.bin"}, QDir::Files, QDir::Time);
+
+        if (fileList.isEmpty()) {
+            PROTO_LOG << "File list is empty!";
+            return;
+        }
+
+        while (!fileList.isEmpty()) {
+            QString fileToOpen = fileList.last().absoluteFilePath();
+            QFile file(fileToOpen);
+            if (file.exists() && file.open(QIODevice::ReadOnly)) {
+                serializedData += file.readAll();
+                file.close();
+
+            } else {
+                qWarning() << "Error opening file: " << file.errorString() << " - Remove: "
+                           << QFile::remove(fileToOpen);
+            }
+            fileList.removeLast();
+        }
     }
 
     auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
-    auto callback = [this, existValidBinaryFile] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
-        if (reply->error() == QNetworkReply::NoError) {
-
-            if (QFileInfo::exists(BINARYFILEPATH)) {
-                PROTO_LOG << BINARYFILEPATH << " file sent, remove: " << QFile::remove(BINARYFILEPATH);
-            }
-
-            if(!existValidBinaryFile) {
-                mLiveDataPointList.clear_data_points();
-
-            } else if (mLiveDataPointList.data_points_size() > 1) {
-                QTimer::singleShot(10000, this, [this] {
-                    sendDataToServer();
-                });
-            }
+    auto callback = [this] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
+        // ServiceUnavailableError: 403
+        if (reply->error() == QNetworkReply::NoError || reply->error() == QNetworkReply::ServiceUnavailableError) {
+            PROTO_LOG << " files sent, remove: " << AppUtilities::removeContentDirectory(m_binaryFilesPath);
 
         } else {
             qWarning() << reply->url() << " - ERROR: " << reply->errorString();
         }
 
+        mSendingToServer = false;
+        mDataPointLogger.start();
     };
 
+    mSendingToServer = true;
+    mDataPointLogger.stop();
     callPostApi(url, serializedData, callback, true, "application/x-protobuf");
 #endif
+}
+
+void ProtoDataManager::sendFullDataPacketToServer()
+{
+    // Restart the timer
+    mCreateGeneralBufferTimer.start();
+
+    updateChangeMode(CMAll);
+    logStashData();
 }
 
 void ProtoDataManager::generateBinaryFile()
 {
 #ifdef PROTOBUF_ENABLED
-    std::fstream output(BINARYFILEPATH.toStdString(), std::ios::out | std::ios::binary);
-    mLiveDataPointList.SerializeToOstream(&output);
-    output.close();
+    if (mSendingToServer) {
+        return;
+    }
+
+    if (mLiveDataPointList.data_points_size() < 1) {
+        return;
+    }
+
+    checkMemoryAndCleanup();
+
+    QString fileName = QString("%0/%1.bin").arg(m_binaryFilesPath, QString::number(QDateTime::currentDateTime().currentMSecsSinceEpoch()));
+    std::fstream output(fileName.toStdString(), std::ios::out | std::ios::binary);
+
+    if (mLiveDataPointList.SerializeToOstream(&output)) {
+        mLiveDataPointList.clear_data_points();
+        output.close();
+
+    } else {
+        output.close();
+        QFile::remove(fileName);
+    }
+
 #endif
+}
+
+void ProtoDataManager::checkMemoryAndCleanup()
+{
+    auto protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
+    QDir protoDir(m_binaryFilesPath);
+    QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
+
+    if (protoFoldersize > m_maximumProtoFolderSize) {
+        PROTO_LOG << m_binaryFilesPath << " size (Bytes): " <<  protoFoldersize;
+
+        qint64 clearedSize = 0;
+
+        // When the maximum size is reached, we need to free up at least 5MB of space.
+        while (!fileList.isEmpty()) {
+            auto file = fileList.last();
+
+            auto fileToRemove = file.absoluteFilePath();
+            if (QFile::remove(fileToRemove)) {
+                clearedSize += file.size();
+
+            } else {
+                PROTO_LOG << QString("Error removing file %1.").arg(fileToRemove);
+            }
+
+            if (clearedSize >= m_minFileSizeToRemove) {
+                break;
+            }
+
+            fileList.removeLast();
+        }
+
+        PROTO_LOG << QString("Removed some files due to memory limitation (cleared size: %0 Bytes)").arg(QString::number(clearedSize));
+
+        protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
+        PROTO_LOG << m_binaryFilesPath << "  size after cleanUp (Bytes): " <<  protoFoldersize;
+    }
 }
 
 void ProtoDataManager::setSetTemperature(const double &tempratureC)
 {
 #ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_set_temperature() &&
-        qAbs(mLateastDataPoint->set_temperature() - tempratureC) < TEMPERATURETHRESHOLD) {
+        qAbs(mLateastDataPoint->set_temperature() - tempratureC) < m_temperatureThreshold) {
         return;
     }
 
@@ -184,7 +262,7 @@ void ProtoDataManager::setCurrentTemperature(const double &tempratureC)
 {
 #ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_current_temperature_embedded() &&
-        qAbs(mLateastDataPoint->current_temperature_embedded() - tempratureC) < TEMPERATURETHRESHOLD) {
+        qAbs(mLateastDataPoint->current_temperature_embedded() - tempratureC) < m_temperatureThreshold) {
         return;
     }
 
@@ -210,7 +288,7 @@ void ProtoDataManager::setMCUTemperature(const double &mcuTempratureC)
 {
 #ifdef PROTOBUF_ENABLED
     if (mLateastDataPoint->has_current_temperature_mcu() &&
-        qAbs(mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) <  TEMPERATURETHRESHOLD) {
+        qAbs(mLateastDataPoint->current_temperature_mcu() - mcuTempratureC) <  m_mcuTemperatureThreshold) {
         return;
     }
 
@@ -346,8 +424,8 @@ void ProtoDataManager::setLedStatus(const bool &ledStatus)
 #ifdef PROTOBUF_ENABLED
 LiveDataPoint *ProtoDataManager::addNewPoint()
 {
-    if (mLiveDataPointList.data_points_size() > 0 && mLiveDataPointList.data_points_size() > MEMORYLIMITAIONRECORDS) {
-        int outRangeIndex = mLiveDataPointList.data_points_size() - MEMORYLIMITAIONRECORDS;
+    if (mLiveDataPointList.data_points_size() > 0 && mLiveDataPointList.data_points_size() > m_memoryLimitationRecords) {
+        int outRangeIndex = mLiveDataPointList.data_points_size() - m_memoryLimitationRecords;
         PROTO_LOG << "Delete the first data points in the list due to memory limitation."
         << ", Deleted range: 0 to " << outRangeIndex << mLiveDataPointList.data_points_size();
         mLiveDataPointList.mutable_data_points()->DeleteSubrange(0, outRangeIndex);
@@ -416,6 +494,7 @@ void ProtoDataManager::logStashData()
         newPoint->set_is_sync(mChangeMode == CMAll);
 
         updateChangeMode(CMNone);
+        generateBinaryFile();
     }
 #endif
 }

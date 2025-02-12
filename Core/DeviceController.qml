@@ -215,6 +215,21 @@ I_DeviceController {
         }
     }
 
+    property Timer sendOnceFullDataPacketToServerTimer: Timer {
+        interval: 1000
+        repeat: false
+        running: temperatureSensorHealth && humiditySensorHealth && airConditionSensorHealth
+
+        onTriggered: {
+            if (temperatureSensorHealth && humiditySensorHealth && airConditionSensorHealth) {
+                ProtoDataManager.sendFullDataPacketToServer();
+
+                //! To break the binding, Only one data transmission is needed.
+                running = false;
+            }
+        }
+    }
+
     //! Timer to check and run the night mode.
     property Timer nightModeControllerTimer: Timer {
         repeat: true
@@ -809,7 +824,6 @@ I_DeviceController {
             // In a normal initial setup, the system setup will be sent from the system setup page.
             if (initialSetupNoWIFI) {
                 updateEditMode(AppSpec.EMAll);
-
             }
 
             // Send install log
@@ -822,6 +836,8 @@ I_DeviceController {
 
             // Go to home
             firstRunFlowEnded();
+
+            ProtoDataManager.sendFullDataPacketToServer();
         }
 
         function onInstallFailed(err : string, needToRetry : bool) {

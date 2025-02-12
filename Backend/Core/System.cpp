@@ -1,4 +1,5 @@
 #include "System.h"
+#include "Config.h"
 #include "LogHelper.h"
 #include "PerfTestService.h"
 #include "DeviceInfo.h"
@@ -173,6 +174,9 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
 
     if (!mountDirectory("/mnt/log", "/mnt/log/networkLogs"))
         qWarning() << "unable to create networkLogs folder";
+
+    if (!mountDirectory("/mnt/log", PROTOBUFF_FILES_PATH))
+        qWarning() << "unable to create proto folder";
 
     QSettings setting;
     mLastInstalledUpdateDate = setting.value(m_InstalledUpdateDateSetting).toString();
