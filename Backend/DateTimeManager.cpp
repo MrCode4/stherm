@@ -4,7 +4,6 @@
 #include <QSettings>
 #include <QTimeZone>
 
-#include "LogHelper.h"
 #include "LogCategoires.h"
 #include "NetworkInterface.h"
 
@@ -565,7 +564,6 @@ QDateTime DateTimeManager::getCurrentTimeOnlineSync()
 
     // Default to system UTC time if network fails
     QDateTime time = QDateTime::currentDateTimeUtc();
-
 
     QEventLoop loop;
 
