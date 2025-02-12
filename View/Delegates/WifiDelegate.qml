@@ -14,8 +14,10 @@ Control {
 
     /* Signals
      * ****************************************************************************************/
-    signal clicked
-    signal forgetClicked
+    signal clicked()
+    signal forgetClicked()
+    signal disconnectClicked()
+    signal connectClicked()
 
 
     /* Property declaration
@@ -28,6 +30,9 @@ Control {
 
     property bool isWPA3: false
 
+    property bool wifiInRange: true
+
+    property bool isSelected: false
 
     /* Object properties
      * ****************************************************************************************/
@@ -140,6 +145,63 @@ Control {
                 }
             }
 
+            ItemDelegate {
+                Layout.alignment: Qt.AlignRight | Qt.AlignHCenter
+                Layout.fillHeight: true
+
+                visible: wifi && wifiInRange && wifi.connected && !wifi.isConnecting
+                hoverEnabled: false
+
+                rightPadding: 4
+                leftPadding: 8
+
+                contentItem: Label {
+                    anchors.centerIn: parent
+
+                    color: Style.foreground
+                    font.pointSize: Qt.application.font.pointSize * 0.9
+                    font.bold: true
+                    text: " Disconnect "
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: null
+
+                onClicked: {
+                    if (!isSelected)
+                        _root.clicked()
+
+                    disconnectClicked();
+                }
+            }
+
+            ItemDelegate {
+                Layout.alignment: Qt.AlignRight | Qt.AlignHCenter
+                Layout.fillHeight: true
+
+                visible: wifi && wifiInRange && !wifi?.connected && !wifi.isConnecting && _root.isSelected
+                hoverEnabled: false
+
+                rightPadding: 4
+                leftPadding: 8
+
+                contentItem: Label {
+                    anchors.centerIn: parent
+
+                    color: Style.foreground
+                    font.pointSize: Qt.application.font.pointSize * 0.9
+                    font.bold: true
+                    text: " Connect "
+                    verticalAlignment: Text.AlignVCenter
+                }
+
+                background: null
+
+                onClicked: {
+                    connectClicked();
+                }
+            }
+
             BusyIndicator {
                 Layout.fillHeight: true
                 Layout.preferredWidth: height
@@ -160,7 +222,7 @@ Control {
 
                 contentItem: RoniaTextIcon {
                     font.pointSize: Style.fontIconSize.normalPt
-                    color: _root.Material.foreground
+                    color: Style.foreground
                     text: FAIcons.xmark
                 }
 
