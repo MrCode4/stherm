@@ -221,7 +221,7 @@ I_DeviceController {
         running: temperatureSensorHealth && humiditySensorHealth && airConditionSensorHealth
 
         onTriggered: {
-            if (temperatureSensorHealth && humiditySensorHealth) {
+            if (temperatureSensorHealth && humiditySensorHealth && airConditionSensorHealth) {
                 ProtoDataManager.sendFullDataPacketToServer();
 
                 //! To break the binding, Only one data transmission is needed.
