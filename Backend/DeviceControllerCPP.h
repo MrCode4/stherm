@@ -304,6 +304,7 @@ private Q_SLOTS:
     void onCurrentSystemModeChanged(AppSpecCPP::SystemMode obState,
                                     int currentHeatingStage,
                                     int currentCoolingStage);
+    void saveTempratures();
 
 private:
     /* Private Functions
@@ -326,6 +327,8 @@ private:
     void checkForOutdoorTemperature();
 
     double calculateProcessedTemperature(const double &temperatureC) const;
+
+    void loadTempratures();
 
 private:
     /* Attributes
@@ -418,6 +421,8 @@ private:
         // the hypothesis is correction value is in F and should be converted
         return  correction;
     }
+
+    QTimer mSaveTemperatureTimer;
 
     // Testing
     std::map<QString, bool> mAllTestsResults;
