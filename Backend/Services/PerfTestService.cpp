@@ -441,3 +441,7 @@ void PerfTestService::finishTest()
         scheduleNextCheck(PerfTest::Noon12PM);
     }
 }
+
+double PerfTestService::perfTestTemperatureC() {
+    return mode() == AppSpecCPP::Heating ? 32.22222 : 4.444444;
+}

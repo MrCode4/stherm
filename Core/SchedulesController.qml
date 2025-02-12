@@ -497,77 +497,113 @@ QtObject {
 
         serverSchedules.forEach(schedule => {
                                   // Find Schedule in the model
-                                  var foundSchedule = modelSchedules.find(modelSchedule => schedule.schedule_id === modelSchedule.id ||
-                                                                              (modelSchedule.id  < 0 && schedule.name === modelSchedule.name)
-                                                                          );
+                                    var foundSchedule = modelSchedules.find(modelSchedule => schedule.schedule_id === modelSchedule.id ||
+                                                                            (modelSchedule.id  < 0 && schedule.name === modelSchedule.name)
+                                                                            );
 
                                   // Add new schedule
-                                  if (foundSchedule === undefined) {
-                                      var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
-                                      newSchedule._qsRepo = AppCore.defaultRepo;
-                                      newSchedule.enable = schedule.is_enable;
-                                      newSchedule.id = schedule.schedule_id;
-                                      newSchedule.name = schedule.name;
-                                      newSchedule.type = schedule.type_id;
+                                    if (foundSchedule === undefined) {
+                                        var newSchedule = QSSerializer.createQSObject("ScheduleCPP", ["Stherm", "QtQuickStream"], AppCore.defaultRepo);
+                                        newSchedule._qsRepo = AppCore.defaultRepo;
+                                        newSchedule.enable = schedule.is_enable;
+                                        newSchedule.id = schedule.schedule_id;
+                                        newSchedule.name = schedule.name;
+                                        newSchedule.type = schedule.type_id;
 
-                                      // TODO
-                                      var difference = deviceController.temperatureUnit === AppSpec.TempratureUnit.Fah ? AppSpec.autoModeDiffrenceF : AppSpec.autoModeDiffrenceC
+                                        newSchedule.humidity = Utils.clampValue(schedule.humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
+                                        newSchedule.startTime = formatTime(schedule.start_time);
+                                        newSchedule.endTime = formatTime(schedule.end_time);
+                                        newSchedule.repeats = schedule.weekdays.map(String).join(',');
+                                        newSchedule.dataSource = schedule.dataSource;
 
-                                      newSchedule.minimumTemperature = Utils.clampValue(schedule?.minimumTemperature ?? AppSpec.defaultAutoMinReqTemp,
-                                                                                        AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
+                                        // Keep the order of temperature updates.
+                                        newSchedule.systemMode = (schedule?.mode_id - 1) ?? newSchedule.systemMode;
 
-                                      newSchedule.maximumTemperature = Utils.clampValue(schedule?.maximumTemperature ?? AppSpec.defaultAutoMaxReqTemp,
-                                                                                        Math.max(newSchedule.minimumTemperature + AppSpec.autoModeDiffrenceC, AppSpec.minAutoMaxTemp),
-                                                                                        AppSpec.autoMaximumTemperatureC);
-                                      newSchedule.humidity = Utils.clampValue(schedule.humidity, AppSpec.minimumHumidity, AppSpec.maximumHumidity);
-                                      newSchedule.startTime = formatTime(schedule.start_time);
-                                      newSchedule.endTime = formatTime(schedule.end_time);
-                                      newSchedule.repeats = schedule.weekdays.map(String).join(',');
-                                      newSchedule.dataSource = schedule.dataSource;
+                                        newSchedule.minimumTemperature = Utils.clampValue(schedule?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp,
+                                                                                          AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
 
-                                      device.schedules.push(newSchedule);
+                                        newSchedule.maximumTemperature = Utils.clampValue(schedule?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp,
+                                                                                          Math.max(newSchedule.minimumTemperature + AppSpec.autoModeDiffrenceC, AppSpec.minAutoMaxTemp),
+                                                                                          AppSpec.autoMaximumTemperatureC);
 
-                                      isNeedToUpdate = true;
-                                      console.log("Schecule: ", newSchedule?.id ?? "undefined", " added to model.");
+                                        // Check: Dont need clamp
+                                        if (schedule.systemMode === AppSpec.Cooling) {
+                                            newSchedule.maximumTemperature = schedule.temp;
 
-                                  } else {
+                                        } else if (schedule.systemMode === AppSpec.Heating) {
+                                            newSchedule.minimumTemperature = schedule.temp;
+                                        }
+
+                                        device.schedules.push(newSchedule);
+
+                                        isNeedToUpdate = true;
+                                        console.log("Schecule: ", newSchedule?.id ?? "undefined", " added to model.");
+
+                                    } else {
                                         foundSchedule.id = schedule.schedule_id ?? foundSchedule.id
 
-                                      if (foundSchedule.enable !== schedule.is_enable) {
-                                          foundSchedule.enable = schedule.is_enable;
-                                      }
+                                        if (foundSchedule.enable !== schedule.is_enable) {
+                                            foundSchedule.enable = schedule.is_enable;
+                                        }
 
-                                      if (foundSchedule.type !== schedule.type_id) {
-                                          foundSchedule.type = schedule.type_id;
-                                      }
-                                      var startTime = formatTime(schedule.start_time);
-                                      if (foundSchedule.startTime !== startTime) {
-                                          foundSchedule.startTime = startTime;
-                                      }
-                                      var endTime = formatTime(schedule.end_time);
-                                      if (foundSchedule.endTime !== endTime) {
-                                          foundSchedule.endTime = endTime;
-                                      }
+                                        if (foundSchedule.type !== schedule.type_id) {
+                                            foundSchedule.type = schedule.type_id;
+                                        }
+                                        var startTime = formatTime(schedule.start_time);
+                                        if (foundSchedule.startTime !== startTime) {
+                                            foundSchedule.startTime = startTime;
+                                        }
+                                        var endTime = formatTime(schedule.end_time);
+                                        if (foundSchedule.endTime !== endTime) {
+                                            foundSchedule.endTime = endTime;
+                                        }
 
-                                      // TODO: Update schedule temperatures
-                                      // TODO: Update schedule mode
 
-                                      if (foundSchedule.humidity !== schedule.humidity) {
-                                          foundSchedule.humidity = schedule.humidity ?? 0;
-                                      }
+                                        // Update schedule mode
+                                        var modeId = (schedule?.mode_id - 1) ?? foundSchedule.systemMode
+                                        if (foundSchedule.systemMode !== modeId) {
+                                            foundSchedule.systemMode = modeId;
+                                        }
 
-                                      if (foundSchedule.dataSource !== schedule.dataSource) {
-                                          foundSchedule.dataSource = schedule.dataSource;
-                                      }
+                                        // Update schedule temperatures
+                                        // Keep the order of temperature updates.
+                                        var autoTempLow = Utils.clampValue(schedule?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp,
+                                                                           AppSpec.autoMinimumTemperatureC, AppSpec.autoMaximumTemperatureC - AppSpec.autoModeDiffrenceC);
+                                        if (Math.abs(foundSchedule.minimumTemperature - autoTempLow) > 0.001) {
+                                            foundSchedule.minimumTemperature = autoTempLow;
+                                        }
 
-                                      var repeats = schedule.weekdays.map(String).join(',');
-                                      if (foundSchedule.repeats !== repeats) {
-                                          foundSchedule.repeats = repeats;
-                                      }
+                                        var autoTempHigh = Utils.clampValue(schedule?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp,
+                                                                            Math.max(foundSchedule.minimumTemperature + AppSpec.autoModeDiffrenceC, AppSpec.minAutoMaxTemp),
+                                                                            AppSpec.autoMaximumTemperatureC);
+                                        if (Math.abs(foundSchedule.maximumTemperature - autoTempHigh) > 0.001) {
+                                            foundSchedule.maximumTemperature = autoTempLow;
+                                        }
+
+                                        // Check: Dont need clamp
+                                        if (foundSchedule.systemMode === AppSpec.Cooling) {
+                                            foundSchedule.maximumTemperature = schedule.temp;
+
+                                        } else if (foundSchedule.systemMode === AppSpec.Heating) {
+                                            foundSchedule.minimumTemperature = schedule.temp;
+                                        }
+
+                                        if (foundSchedule.humidity !== schedule.humidity) {
+                                            foundSchedule.humidity = schedule.humidity ?? 0;
+                                        }
+
+                                        if (foundSchedule.dataSource !== schedule.dataSource) {
+                                            foundSchedule.dataSource = schedule.dataSource;
+                                        }
+
+                                        var repeats = schedule.weekdays.map(String).join(',');
+                                        if (foundSchedule.repeats !== repeats) {
+                                            foundSchedule.repeats = repeats;
+                                        }
 
                                         console.log("Schecule: ", foundSchedule?.id ?? "undefined", " updated.");
-                                  }
-                              });
+                                    }
+                                });
 
         if (isNeedToUpdate) {
             device.schedulesChanged();
@@ -759,10 +795,20 @@ QtObject {
         schedulePacket.type_id    = schedule.type;
         schedulePacket.start_time = convert12HourTo24Hour(schedule.startTime);
         schedulePacket.end_time   = convert12HourTo24Hour(schedule.endTime);
-        schedulePacket.temp       = 18.0;
 
-        // TODO: Update schedule temperatures
-        // TODO: Update schedule mode
+        schedulePacket.mode_id = schedule.systemMode + 1;
+
+        //  Send temp when it is single value mode and auto_temp_low and auto_temp_high when it is auto mode or others.
+        if (schedule.systemMode === AppSpec.Cooling) {
+            schedulePacket.temp = schedule.maximumTemperature;
+
+        } else if (schedule.systemMode === AppSpec.Heating) {
+            schedulePacket.temp = schedule.minimumTemperature;
+
+        } else {
+            schedulePacket.auto_temp_low  = schedule.minimumTemperature;
+            schedulePacket.auto_temp_high = schedule.maximumTemperature;
+        }
 
         schedulePacket.humidity   = schedule.humidity;
         schedulePacket.dataSource = schedule.dataSource;
