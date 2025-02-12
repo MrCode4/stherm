@@ -130,7 +130,7 @@ BasePageView {
             root._canGoToNextPage = false;
 
             if (testMode) {
-                appModel.userPolicyTerms.acceptedTimeTester = system.getCurrentTime();
+                appModel.userPolicyTerms.acceptedTimeTester = DateTimeManager.getCurrentTimeOnlineSyncAsString();
                 appModel.userPolicyTerms.acceptedVersionOnTestMode = appModel.userPolicyTerms.currentVersion;
                 root.StackView.view.push("qrc:/Stherm/View/Test/VersionInformationPage.qml", {
                                              "uiSession": Qt.binding(() => uiSession),
@@ -144,7 +144,7 @@ BasePageView {
                                              "openFromNoWiFiInstallation": true
                                          });
             } else {
-                appModel.userPolicyTerms.acceptedTimeUser = system.getCurrentTime();
+                appModel.userPolicyTerms.acceptedTimeUser = DateTimeManager.getCurrentTimeOnlineSyncAsString();
                 appModel.userPolicyTerms.acceptedVersion = appModel.userPolicyTerms.currentVersion;
                 root.StackView.view.push("qrc:/Stherm/View/SystemSetup/SystemTypePage.qml", {
                                              "uiSession": uiSession,

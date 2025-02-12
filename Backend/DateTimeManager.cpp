@@ -4,7 +4,14 @@
 #include <QSettings>
 #include <QTimeZone>
 
-#include "LogHelper.h"
+#include "LogCategoires.h"
+#include "NetworkInterface.h"
+
+Q_LOGGING_CATEGORY(DateTimeManagerLog, "DateTimeManager")
+#define DTM_LOG TRACE_CATEGORY(DateTimeManagerLog)
+
+// Settings Keys
+const QString UTC_DIFFERENCE_TIME_SETTINGS = QString("utcDifferenceTime");
 
 DateTimeManager* DateTimeManager::mMe = nullptr;
 
@@ -21,9 +28,13 @@ DateTimeManager::DateTimeManager(QObject *parent)
     , mCurrentTimeZone { QTimeZone::systemTimeZone() }
     , mNow { QDateTime::currentDateTime() }
     , mEffectDst { true }
+    , mRetryToGetCurrentTimeTimer { nullptr }
+    , mNeedToSaveTimeDifference { false }
+    , mNeedToCorrectTimeBaseLatest { false }
 {
     QJSEngine::setObjectOwnership(this, QJSEngine::CppOwnership);
 
+    mProcessExecutor = QSharedPointer<ProcessExecutor>::create();
     mProcess.setReadChannel(QProcess::StandardOutput);
 
     QSettings settings;
@@ -42,6 +53,17 @@ DateTimeManager::DateTimeManager(QObject *parent)
         //! Update now
         mNow = QDateTime::currentDateTime();
         emit nowChanged();
+    });
+
+    connect(NetworkInterface::me(), &NetworkInterface::hasInternetChanged, this, [this]() {
+        if (NetworkInterface::me()->hasInternet() && mAutoUpdateTime == false) {
+            if (mNeedToSaveTimeDifference || mNeedToCorrectTimeBaseLatest) {
+                getCurrentTimeFromServerAsync();
+            }
+
+        } else {
+            stopGettingCurrentTime();
+        }
     });
 }
 
@@ -179,15 +201,19 @@ QDateTime DateTimeManager::now() const
     return mNow;
 }
 
-void DateTimeManager::setDateTime(const QDateTime& datetime)
+void DateTimeManager::setDateTime(const QDateTime& datetime, bool calledFromUI)
 {
     if (isRunning() || QDateTime::currentDateTime() == datetime) {
         return;
     }
 
-    connect(&mProcess, &QProcess::finished, this, [this](int exitCode, QProcess::ExitStatus) {
+    connect(&mProcess, &QProcess::finished, this, [this, calledFromUI](int exitCode, QProcess::ExitStatus) {
             //! Call onfinished callback
             callProcessFinished({ exitCode });
+
+            if (calledFromUI && mAutoUpdateTime == false) {
+                updateTimeDiffrenceBasedonServer();
+            }
         }, Qt::SingleShotConnection);
 
     QString newDateTime = datetime.toString("yyyy-MM-dd hh:mm:ss");
@@ -195,6 +221,8 @@ void DateTimeManager::setDateTime(const QDateTime& datetime)
                                     TDC_SET_TIME,
                                     newDateTime,
                                 });
+    // Device DateTime request sent by user or server.
+    stopTimeCorrectionFromLatest();
 }
 
 QVariantList DateTimeManager::timezones() const
@@ -290,9 +318,9 @@ QString DateTimeManager::utcDateTimeToLocalString(const QString& utcDateTime,
 
     QString output = dateTimeObject.toString(outputFormat);
     if (output.isEmpty()) {
-        TRACE << "Conversion error: Date time" << utcDateTime
-              << "inputFormat: "  << inputFormat
-              << "outputFormat: " << outputFormat;
+        DTM_LOG << "Conversion error: Date time" << utcDateTime
+                            << "inputFormat: "  << inputFormat
+                            << "outputFormat: " << outputFormat;
     }
 
     return output;
@@ -342,6 +370,242 @@ void DateTimeManager::setTimezoneTo(const QTimeZone& timezone)
                                     TDC_SET_TIMEZONE,
                                     timezone.id(),
                                 });
+}
+
+void DateTimeManager::getCurrentTimeFromServerAsync() {
+
+    stopGettingCurrentTime();
+
+    if (!NetworkInterface::me()->hasInternet())
+        return;
+
+    auto callback = [this](const QDateTime &serverDateTimeUTC) {
+        QSettings settings;
+        QDateTime serverDateTimeUTCLocalTime = serverDateTimeUTC.toLocalTime();
+        DTM_LOG << " server date time: " << serverDateTimeUTC << serverDateTimeUTCLocalTime;
+
+        // When difference time does not exist, we cannot update the device`s DateTime, becouse it will be corrupted after apdate
+        if (mNeedToCorrectTimeBaseLatest && settings.contains(UTC_DIFFERENCE_TIME_SETTINGS)) {
+
+            qint64 secondsToAdd = settings.value(UTC_DIFFERENCE_TIME_SETTINGS, 0).toInt();
+
+            QDateTime newDateTime = serverDateTimeUTCLocalTime.addSecs(secondsToAdd);
+            setDateTime(newDateTime, false);
+            mNeedToCorrectTimeBaseLatest = false;
+
+            DTM_LOG << " secondsToAdd: " << secondsToAdd << " - newDateTime: " << newDateTime;
+        }
+
+        // If there is no time difference, we cannot update the device's DateTime,
+        // as it may become corrupted after the update. We assume that the device's DateTime
+        // is correct post-update, so we need to add UTC_DIFFERENCE_TIME_SETTINGS to the device settings.
+        if (!settings.contains(UTC_DIFFERENCE_TIME_SETTINGS))
+            mNeedToSaveTimeDifference = true;
+
+        if (mNeedToSaveTimeDifference) {
+            QDateTime datetime = QDateTime::currentDateTime();
+            qint64 diffInSeconds = serverDateTimeUTCLocalTime.secsTo(datetime);
+
+            settings.setValue(UTC_DIFFERENCE_TIME_SETTINGS, diffInSeconds);
+
+            mNeedToSaveTimeDifference = false;
+            DTM_LOG << " Saved diffrence time in seconds: " << diffInSeconds;
+        }
+    };
+
+    auto errorCallback = [this, callback]() { scheduleRetryGetAsync(callback, 0); };
+
+    getCurrentTimeOnlineAsync(callback, errorCallback);
+}
+
+void DateTimeManager::updateTimeDiffrenceBasedonServer()
+{
+    if (mNeedToSaveTimeDifference)
+        return;
+
+    mNeedToSaveTimeDifference = true;
+    getCurrentTimeFromServerAsync();
+}
+
+void DateTimeManager::correctTimeBaseLatestState()
+{
+    if (mNeedToCorrectTimeBaseLatest)
+        return;
+
+    mNeedToCorrectTimeBaseLatest = true;
+    getCurrentTimeFromServerAsync();
+}
+
+void DateTimeManager::stopTimeCorrectionFromLatest() {
+    mNeedToCorrectTimeBaseLatest = false;
+    if (!mNeedToSaveTimeDifference)
+        stopGettingCurrentTime();
+}
+
+bool DateTimeManager::getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
+                                                std::function<void()> onError)
+{
+    if (!NetworkInterface::me()->hasInternet())
+        return false;
+
+    auto callback = [this, onSuccess, onError] (QProcess* process) {
+        if (process->exitCode() == 0) {
+            QString output = process->readAllStandardOutput().trimmed();
+            DTM_LOG << "Raw NIST response:" << output;
+
+            // We can use a QRegularExpression
+            // Expected format: "60717 25-02-11 13:40:25 00 0 0 49.6 UTC(NIST) *"
+            QStringList parts = output.split(" ");
+            if (parts.size() < 3) {
+                qWarning() << "[DateTimeManager] Unexpected time format!";
+
+                if (onError) {
+                    onError();
+                }
+
+                return;
+            }
+
+            // Extract date and time
+            int mjdPart = parts[0].toInt(); // "60717"
+            QString timePart = parts[2]; // "13:40:25"
+
+            // Convert to QDateTime
+            // MJD epoch starts from November 17, 1858
+            QDate mjdEpoch(1858, 11, 17);
+
+            // Add Modified Julian Date(MJD) days to the base date
+            QDate date = mjdEpoch.addDays(mjdPart);
+            QTime time = QTime::fromString(timePart, "HH:mm:ss");
+
+            if (!date.isValid() || !time.isValid()) {
+                qWarning() << "[DateTimeManager] Invalid date/time extracted!";
+                if (onError) {
+                    onError();
+                }
+
+                return;
+            }
+
+            if (onSuccess)
+                onSuccess(QDateTime(date, time, Qt::UTC));
+
+        } else {
+            qWarning() << "[DateTimeManager] process error:" << process->exitCode() << process->errorString();
+            if (onError) {
+                onError();
+            }
+        }
+    };
+
+    mProcessExecutor->execAsync("/bin/bash", QStringList{"-c", "cat </dev/tcp/time.nist.gov/13"}, callback);
+
+    return true;
+}
+
+void DateTimeManager::scheduleRetryGetAsync(std::function<void(const QDateTime &)> callback,
+                                            int retryCount)
+{
+    if (mNeedToSaveTimeDifference == false && mNeedToCorrectTimeBaseLatest == false) {
+        return;
+    }
+
+    const int maxRetry = 5;
+    if (retryCount >= maxRetry) {
+        qWarning() << "[DateTimeManager] Max retries reached. retried due to " << mNeedToSaveTimeDifference << mNeedToCorrectTimeBaseLatest;
+        return;
+    }
+
+    if (mRetryToGetCurrentTimeTimer == nullptr) {
+        mRetryToGetCurrentTimeTimer = new QTimer(this);
+        mRetryToGetCurrentTimeTimer->setSingleShot(true);
+
+    } else {
+        mRetryToGetCurrentTimeTimer->stop();
+        mRetryToGetCurrentTimeTimer->disconnect();
+    }
+
+    int delayMs = calculateDelayTime(retryCount);
+
+    DTM_LOG << " Retrying in" << delayMs / 1000 << "seconds (attempt"
+            << retryCount + 1 << "of" << maxRetry << ")";
+
+    connect(mRetryToGetCurrentTimeTimer, &QTimer::timeout, this, [this, callback, retryCount]() {
+        getCurrentTimeOnlineAsync(callback, [this, callback, retryCount]() {
+                scheduleRetryGetAsync(callback, retryCount + 1);
+        });
+    });
+
+    mRetryToGetCurrentTimeTimer->start(delayMs);
+}
+
+void DateTimeManager::stopGettingCurrentTime()
+{
+    if (mRetryToGetCurrentTimeTimer != nullptr) {
+        mRetryToGetCurrentTimeTimer->stop();
+        delete mRetryToGetCurrentTimeTimer;
+        mRetryToGetCurrentTimeTimer = nullptr;
+    }
+}
+
+int DateTimeManager::calculateDelayTime(int retryCount)
+{
+    const int initialDelay = 1000; // 1 second in milliseconds
+    const int factor = 3;          // Factor to increase time
+    const int maxDelay = 180000;   // Max 180s
+
+    int delay = initialDelay * std::pow(factor, retryCount);
+
+    return qMin(delay, maxDelay);
+}
+
+QDateTime DateTimeManager::getCurrentTimeOnlineSync()
+{
+
+    // Default to system UTC time if network fails
+    QDateTime time = QDateTime::currentDateTimeUtc();
+
+    QEventLoop loop;
+
+    auto callback = [this, &loop, &time](const QDateTime &serverDateTimeUTC) {
+
+        if (serverDateTimeUTC.isValid()) {
+            time = serverDateTimeUTC;
+        } else {
+            qWarning() << "Invalid datetime format in API response (Sync)";
+        }
+
+        DTM_LOG << "getCurrentTime: " << serverDateTimeUTC;
+        loop.quit();
+    };
+
+    auto errorCallback = [this, &loop]() {
+        loop.quit();
+    };
+
+    if (getCurrentTimeOnlineAsync(callback, errorCallback))
+        loop.exec();
+
+    return time;
+}
+
+QString DateTimeManager::getCurrentTimeOnlineSyncAsString()
+{
+    return getCurrentTimeOnlineSync().toString(Qt::ISODate);
+}
+
+void DateTimeManager::setAutoUpdateTimeProperty(bool autoUpdate)
+{
+    if (!autoUpdate) {
+        mNeedToSaveTimeDifference = false;
+        mNeedToCorrectTimeBaseLatest = false;
+        stopGettingCurrentTime();
+    }
+
+    if (mAutoUpdateTime != autoUpdate) {
+        mAutoUpdateTime = autoUpdate;
+        emit autoUpdateTimeChanged();
+    }
 }
 
 bool operator!=(const QJSValue& left, const QJSValue& right)

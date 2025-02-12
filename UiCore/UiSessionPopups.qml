@@ -487,7 +487,7 @@ Item {
 
     function showManualDateTimeWarningPopup() {
         var mdtPopup = manualDateTimeWarningPopup.createObject(root)
-        mdtPopup.open()
+        uiSession.popupLayout.displayPopUp(mdtPopup);
     }
 
     function showInvalidZipCodePopup() : I_PopUp {

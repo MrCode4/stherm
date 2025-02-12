@@ -6,6 +6,7 @@
 #include <QTimeZone>
 #include <QTimer>
 
+#include "ProcessExecutor.h"
 #include "TimezonesDSTMap.h"
 
 #define TDC_COMMAND         "timedatectl"
@@ -67,7 +68,7 @@ public:
      * \param datetime
      * \return
      */
-    Q_INVOKABLE void            setDateTime(const QDateTime& datetime);
+    Q_INVOKABLE void            setDateTime(const QDateTime& datetime, bool calledFromUI = true);
 
     /*!
      * \brief timeZones Returns a list of all the timezones avaialable in the system.
@@ -97,18 +98,20 @@ public:
 
     Q_INVOKABLE void enableTimeSyncdService();
 
+    Q_INVOKABLE void correctTimeBaseLatestState();
+    Q_INVOKABLE void stopTimeCorrectionFromLatest();
+
+    Q_INVOKABLE void stopGettingCurrentTime();
+    Q_INVOKABLE QString getCurrentTimeOnlineSyncAsString();
+
+    Q_INVOKABLE void updateTimeDiffrenceBasedonServer();
+
 private:
     /*!
      * \brief setAutoUpdateTimeProperty Sets mAutoUpdateTime value
      * \param autoUpdate
      */
-    inline void setAutoUpdateTimeProperty(bool autoUpdate)
-    {
-        if (mAutoUpdateTime != autoUpdate) {
-            mAutoUpdateTime = autoUpdate;
-            emit autoUpdateTimeChanged();
-        }
-    }
+    void setAutoUpdateTimeProperty(bool autoUpdate);
 
     /*!
      * \brief callProcessFinished Calls \ref onfinish callback if its a callable
@@ -121,6 +124,16 @@ private:
      * \param timezone
      */
     void setTimezoneTo(const QTimeZone& timezone);
+
+    QDateTime getCurrentTimeOnlineSync();
+    bool getCurrentTimeOnlineAsync(std::function<void(const QDateTime &)> onSuccess,
+                                   std::function<void()> onError);
+
+    void scheduleRetryGetAsync(std::function<void(const QDateTime &)> callback, int retryCount);
+
+    int calculateDelayTime(int retryCount);
+
+    void getCurrentTimeFromServerAsync();
 
 signals:
     void autoUpdateTimeChanged();
@@ -177,6 +190,13 @@ private:
     //! \brief mTzMap
     //!
     TimezonesDSTMap     mTzMap;
+
+    QTimer *mRetryToGetCurrentTimeTimer;
+
+    bool mNeedToSaveTimeDifference;
+    bool mNeedToCorrectTimeBaseLatest;
+
+    QSharedPointer<ProcessExecutor> mProcessExecutor;
 };
 
 /*!

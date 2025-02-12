@@ -102,7 +102,7 @@ public:
      * ****************************************************************************************/
 
     //! Reboot device
-    Q_INVOKABLE void rebootDevice();
+    Q_INVOKABLE void rebootDevice(const bool &isResetFactory = false);
 
     //! Get log by version
     Q_INVOKABLE QString getLogByVersion(const QString version);
@@ -278,8 +278,6 @@ public:
 
     //! Push auto mode settings to server
     void pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high);
-
-    Q_INVOKABLE QString getCurrentTime();
 
     Q_INVOKABLE void fetchServiceTitanInformation();
 

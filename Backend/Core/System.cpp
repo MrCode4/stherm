@@ -966,38 +966,6 @@ void NUVE::System::pushAutoSettingsToServer(const double& auto_temp_low, const d
     mSync->pushAutoSettingsToServer(auto_temp_low, auto_temp_high);
 }
 
-QString NUVE::System::getCurrentTime()
-{
-    // Retrieve utc time from the internet if available; otherwise, use the local system time (UTC).
-    auto time = QDateTime::currentDateTimeUtc();
-
-    QEventLoop* eventLoop = nullptr;
-    auto callback = [this, &eventLoop, &time](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-
-        // Convert string to QDateTime to validate the received time.
-        auto dateTime = QDateTime::fromString(data.value("utc_datetime").toString(), Qt::ISODate);
-
-        if (dateTime.isValid())
-            time = dateTime;
-
-        TRACE << "getCurrentTime: " << data.value("utc_datetime").toString() << dateTime;
-
-        if (eventLoop) {
-            eventLoop->quit();
-        }
-    };
-
-    auto netReply = callGetApi(QString("https://worldtimeapi.org/api/timezone/Etc/UTC"), callback, false);
-
-    if (netReply) {
-        QEventLoop loop;
-        eventLoop = &loop;
-        loop.exec();
-    }
-
-    return time.toString(Qt::ISODate);
-}
-
 void NUVE::System::fetchServiceTitanInformation()
 {
     mSync->fetchServiceTitanInformation();
@@ -1609,6 +1577,7 @@ void NUVE::System::updateAndRestart(const bool isBackdoor, const bool isResetVer
 
     emit lastInstalledUpdateDateChanged();
 
+    setRestartFlag();
     mRestarting = true;
     emit systemUpdating();
 
@@ -1956,10 +1925,13 @@ QString NUVE::System::findForceUpdate(const QJsonObject updateJsonObject)
     return latestVersionKey;
 }
 
-void NUVE::System::rebootDevice()
+void NUVE::System::rebootDevice(const bool &isResetFactory)
 {
+    // In order to avoid writing to settings that have already been cleared in the reset to factory process.
+    if (!isResetFactory)
+        setRestartFlag();
+
 #ifdef __unix__
-    setRestartFlag();
     QProcess process;
     QString command = "reboot";
 

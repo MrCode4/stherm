@@ -1138,6 +1138,8 @@ I_DeviceController {
 
     Component.onCompleted: {
 
+        checkToUpdateDeviceDateTime();
+
         // To update the minimum and maximum when model completed
         device.systemSetup.systemModeChanged();
 
@@ -2349,7 +2351,7 @@ I_DeviceController {
         deviceControllerCPP.resetToFactorySetting();
 
         if (system) {
-            system.rebootDevice();
+            system.rebootDevice(true);
         }
     }
 
@@ -2581,5 +2583,22 @@ I_DeviceController {
         }
 
         return deviceObj;
+    }
+
+    //! Check the device date time and try to update it from server.
+    function checkToUpdateDeviceDateTime() {
+        let rebootFlag = root.system.getRestartFlag()
+
+        if (DateTimeManager.autoUpdateTime === false && rebootFlag === false) {
+            uiSession.popUps.showManualDateTimeWarningPopup();
+
+        } else if (DateTimeManager.autoUpdateTime === false) {
+            // To Save the time difference after update/restart.
+            DateTimeManager.updateTimeDiffrenceBasedonServer();
+        }
+
+        if (rebootFlag) {
+            root.system.removeRestartFlag()
+        }
     }
 }
