@@ -381,14 +381,12 @@ BasePageView {
                 }
             }
 
-            //! Connect/Disconnect button
+            //! Next button
             ButtonInverted {
-                id: connectBtn
-
                 anchors.right: parent.right
                 anchors.rightMargin: 8
 
-                visible: nextButtonEnabled
+                visible: nextButtonEnabled && !skipButton.visible
                 enabled: initialSetupReady
                 text: "Next"
 
@@ -399,11 +397,13 @@ BasePageView {
 
             //! Skip, No wifi installation
             ButtonInverted {
+                id: skipButton
+
                 anchors.right: parent.right
                 anchors.rightMargin: 8
 
                 visible: root.initialSetup && !root.openFromNoWiFiInstallation && !NetworkInterface.connectedWifi &&
-                         (deviceController.limitedModeRemainigTime > 0) && !connectBtn.visible
+                         (deviceController.limitedModeRemainigTime > 0)
                 text: "  Skip  "
 
                 onClicked: {
