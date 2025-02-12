@@ -288,6 +288,47 @@ void ProtoDataManager::setCurrentFanStatus(const bool &fanStatus)
 #endif
 }
 
+void ProtoDataManager::setSystemType(const AppSpecCPP::SystemType &systemSetup)
+{
+#ifdef PROTOBUF_ENABLED
+    const auto sysTypeStr = AppSpecCPP::systemTypeString(systemSetup, true).toStdString();
+    if (mLateastDataPoint->has_system_type() &&
+        mLateastDataPoint->system_type() == sysTypeStr) {
+        return;
+    }
+
+    mLateastDataPoint->set_system_type(sysTypeStr);
+    updateChangeMode(CMSystemType);
+#endif
+}
+
+void ProtoDataManager::setRunningMode(const AppSpecCPP::SystemMode &runningMode)
+{
+#ifdef PROTOBUF_ENABLED
+    const auto runningModeStr = AppSpecCPP::systemModeToString(runningMode, false).toStdString();
+    if (mLateastDataPoint->has_running_mode() &&
+        mLateastDataPoint->running_mode() == runningModeStr) {
+        return;
+    }
+
+    mLateastDataPoint->set_running_mode(runningModeStr);
+    updateChangeMode(CMRunningMode);
+#endif
+}
+
+void ProtoDataManager::setOnlineStatus(const bool &onlineStatus)
+{
+#ifdef PROTOBUF_ENABLED
+    if (mLateastDataPoint->has_online_status() &&
+        mLateastDataPoint->online_status() == onlineStatus) {
+        return;
+    }
+
+    mLateastDataPoint->set_online_status(onlineStatus);
+    updateChangeMode(CMOnlineStatus);
+#endif
+}
+
 void ProtoDataManager::setLedStatus(const bool &ledStatus)
 {
 #ifdef PROTOBUF_ENABLED
@@ -361,6 +402,15 @@ void ProtoDataManager::logStashData()
         }
         if (mChangeMode & CMLedStatus) {
             newPoint->set_led_status(mLateastDataPoint->led_status());
+        }
+        if (mChangeMode & CMSystemType) {
+            newPoint->set_system_type(mLateastDataPoint->system_type());
+        }
+        if (mChangeMode & CMRunningMode) {
+            newPoint->set_running_mode(mLateastDataPoint->running_mode());
+        }
+        if (mChangeMode & CMOnlineStatus) {
+            newPoint->set_online_status(mLateastDataPoint->online_status());
         }
 
         newPoint->set_is_sync(mChangeMode == CMAll);

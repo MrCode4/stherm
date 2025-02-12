@@ -69,28 +69,28 @@ double AppSpecCPP::defaultHumidity()
     return 45.0;
 }
 
-QString AppSpecCPP::systemTypeString(SystemType systemType) {
+QString AppSpecCPP::systemTypeString(SystemType systemType, bool camelCase) {
     switch (systemType) {
     case Conventional:
-        return "traditional";
+        return camelCase ? "Traditional" : "traditional";
 
     case HeatPump:
-        return "heat_pump";
+        return camelCase ? "HeatPump" : "heat_pump";
 
     case CoolingOnly:
-        return "cooling";
+        return camelCase ? "Cooling" : "cooling";
 
     case HeatingOnly:
-        return "heating";
+        return camelCase ? "Heating" : "heating";
 
     case DualFuelHeating:
-        return "dual_fuel_heating";
+        return camelCase ? "DualFuelHeating" : "dual_fuel_heating";
 
     default:
         break;
     }
 
-    return QString("traditional");
+    return camelCase ? "Traditional" : "traditional";
 }
 
 AppSpecCPP::SystemType AppSpecCPP::systemTypeToEnum(QString systemTypeStr) {
@@ -242,19 +242,19 @@ QVariant AppSpecCPP::readFromFile(const QString& fileUrl)
     return QVariant();
 }
 
-QString AppSpecCPP::systemModeToString(SystemMode systemMode) {
+QString AppSpecCPP::systemModeToString(SystemMode systemMode, bool camelCase) {
     switch(systemMode) {
     case AppSpecCPP::Heating:
-        return "Heating";
+        return camelCase ? "Heating" : "heating";
     case AppSpecCPP::Cooling:
-        return "Cooling";
+        return camelCase ? "Cooling" : "cooling";
     case AppSpecCPP::Vacation:
-        return "Vacation";
+        return camelCase ? "Vacation" : "vacation";
     case AppSpecCPP::Auto:
-        return "Auto";
+        return camelCase ? "Auto" : "auto";
 
     case AppSpecCPP::EmergencyHeat:
-        return "Emergency Heat";
+        return camelCase ? "Emergency Heat" : "emergency_heat";
 
     case AppSpecCPP::Off:
     case AppSpecCPP::Emergency:
@@ -263,7 +263,7 @@ QString AppSpecCPP::systemModeToString(SystemMode systemMode) {
         break;
     }
 
-    return "Off";
+    return camelCase ? "Off" : "off";
 }
 
 QString AppSpecCPP::apiBaseServerUrl() {

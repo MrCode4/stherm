@@ -111,8 +111,8 @@ public:
     Q_ENUM(DualFuelManualHeating)
 
 
-    Q_INVOKABLE QString systemTypeString(SystemType systemType);
-    Q_INVOKABLE SystemType systemTypeToEnum(QString systemTypeStr);
+    Q_INVOKABLE static QString systemTypeString(SystemType systemType, bool camelCase = false);
+    Q_INVOKABLE static SystemType systemTypeToEnum(QString systemTypeStr);
 
     enum AccessoriesType
     {
@@ -222,7 +222,7 @@ public:
 
     Q_INVOKABLE QVariant readFromFile(const QString &fileUrl);
 
-    Q_INVOKABLE QString systemModeToString(SystemMode systemMode);
+    Q_INVOKABLE static QString systemModeToString(SystemMode systemMode, bool camelCase = true);
 
     QString apiBaseServerUrl();
 
