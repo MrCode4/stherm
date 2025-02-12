@@ -1908,14 +1908,21 @@ I_DeviceController {
             return;
         }
 
+        var isNeedToPush = false;
+
         var auto_temp_low = AppSpec.defaultAutoMinReqTemp;
-        var auto_temp_high = AppSpec.defaultAutoMaxReqTemp;
+
+        // Add 0.001 to AppSpec.defaultAutoMaxReqTemp to prevent the temperature from being floored to 73F, the correct value is 74F.
+        var auto_temp_high = AppSpec.defaultAutoMaxReqTemp + 0.001;
 
         // If both auto_temp_low and auto_temp_high are zero, use default values.
         // If auto_temp_low or auto_temp_high is undefined, keep default values.
-        if (settings?.auto_temp_low !== 0 || settings?.auto_temp_high !== 0) {
-            auto_temp_low = settings?.auto_temp_low ?? AppSpec.defaultAutoMinReqTemp;
-            auto_temp_high = settings?.auto_temp_high ?? AppSpec.defaultAutoMaxReqTemp;
+        if ((settings?.auto_temp_low ?? 0) !== 0 || (settings?.auto_temp_high ?? 0) !== 0) {
+            auto_temp_low = settings?.auto_temp_low ?? auto_temp_low;
+            auto_temp_high = settings?.auto_temp_high ?? auto_temp_high;
+
+        } else {
+            isNeedToPush = true;
         }
 
          // the data will be clamped on ui and if changed it will call setAutoMinReqTemp and setAutoMaxReqTemp for updating truncated version
@@ -1926,6 +1933,10 @@ I_DeviceController {
 
         if (Math.abs(auto_temp_high - device.autoMaxReqTemp) > 0.1) {
             device.autoMaxReqTemp = auto_temp_high;
+        }
+
+        if (isNeedToPush) {
+            Qt.callLater(updateEditMode, AppSpec.EMAutoMode);
         }
     }
 

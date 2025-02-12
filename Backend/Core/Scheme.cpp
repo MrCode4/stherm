@@ -75,9 +75,8 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
 
     mLogTimer.setInterval(30000);
     mLogTimer.connect(&mLogTimer, &QTimer::timeout, this, [=]() {
-
-        auto sys = mDataProvider.data()->systemSetup();
-        bool dualFuelLog = mDataProvider->systemSetup()->systemType == AppSpecCPP::SystemType::DualFuelHeating;
+        auto sys = mDataProvider->systemSetup();
+        bool dualFuelLog = sys ? sys->systemType == AppSpecCPP::SystemType::DualFuelHeating : false;
 
         SCHEME_LOG << "App Version: " << QCoreApplication::applicationVersion();
         LOG_CHECK_SCHEME(isRunning()) << "Scheme Running with these parameters: -------------------------------" << mTiming->totUptime.elapsed();
@@ -88,6 +87,7 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK_SCHEME(isRunning() && mDataProvider->isPerfTestRunning())<< "Perf test actual isVacation: "<<  sys->isVacation;
         LOG_CHECK_SCHEME(isRunning() && sys) << "heatStage: "  << sys->heatStage << "coolStage: " <<sys->coolStage;
         LOG_CHECK_SCHEME(isRunning() && sys) << "auxiliaryHeating: "  << sys->auxiliaryHeating << ", heatPumpOBState: " << (sys->heatPumpOBState == 0 ? "cooling" : "heating");
+        LOG_CHECK_SCHEME(isRunning() && sys) << "emergencyMinimumTime: " << sys->emergencyMinimumTime;
         LOG_CHECK_SCHEME(isRunning() && sys) << "useAuxiliaryParallelHeatPump: "  << sys->useAuxiliaryParallelHeatPump << ", driveAux1AndETogether: " << sys->driveAux1AndETogether << ", driveAuxAsEmergency: " << sys->driveAuxAsEmergency;
         LOG_CHECK_SCHEME(isRunning() && sys) << "systemAccessories (wire, typ): " << sys->systemAccessories->property("accessoriesWireType") <<  sys->systemAccessories->property("accessoriesType");
         LOG_CHECK_SCHEME(isRunning() && mRelay) << "getOb_state: "  << mRelay->getOb_state() << "relays: " << mRelay->relays().printStr();
@@ -99,11 +99,18 @@ Scheme::Scheme(DeviceAPI* deviceAPI, QSharedPointer<SchemeDataProvider> schemeDa
         LOG_CHECK_SCHEME(isRunning() && mFanWPHTimer.isActive()) << "fan on stage finishes in " << mFanWPHTimer.remainingTime() / 60000 << "minutes";
         LOG_CHECK_SCHEME(isRunning()) << "Current Temperature : " << effectiveCurrentTemperature() << "Effective Set Temperature: " << effectiveTemperature();
         LOG_CHECK_SCHEME(isRunning()) << "Current Humidity : " << mDataProvider->currentHumidity() << "Effective Set Humidity: " << mDataProvider->effectiveSetHumidity();
-        LOG_CHECK_SCHEME(isRunning() && dualFuelLog) << "Current Outdoor temperature : " << mDataProvider.data()->outdoorTemperatureF();
+
+        LOG_CHECK_SCHEME(isRunning() && dualFuelLog) << "Current Outdoor temperature: " << mDataProvider->outdoorTemperatureF()
+                                                     << "dualFuelManualHeating: " << sys->dualFuelManualHeating
+                                                     << "dualFuelHeatingModeDefault: " << sys->dualFuelHeatingModeDefault;
+
+        LOG_CHECK_SCHEME(isRunning() && dualFuelLog) << "isAUXAuto: " << sys->isAUXAuto
+                                                     << "runFanWithAuxiliary: " << sys->runFanWithAuxiliary
+                                                     << "dualFuelThreshold: " << sys->dualFuelThreshold;
+
         LOG_CHECK_SCHEME(!isRunning()) << "-----------------------------Scheme is stopped ---------------------";
         LOG_CHECK_SCHEME(isRunning())  << "-----------------------------Scheme Log Ended  ---------------------";
     });
-
 
     connect(mDataProvider.get(), &SchemeDataProvider::outdoorTemperatureReady, this, [this] () {
         SCHEME_LOG << "outdoorTemperatureReady" << mActiveSysTypeHeating << mDataProvider->systemSetup()->systemMode << mSwitchDFHActiveSysTypeTo;
