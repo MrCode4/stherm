@@ -10,12 +10,14 @@ set(CMAKE_AUTOUIC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_STANDARD 17)
+# Set CMP0071 policy
+cmake_policy(SET CMP0071 NEW)
 
 # Temperature scheme version and update date.
 set(TEMPERATURE_SCHEME_VERSION_C "V.3.1.1 (31.12.2024)")
 set(FAKE_UID "" CACHE STRING "The fake UID used for testing purposes")
 set(FAKE_SERIALID "" CACHE STRING "The fake SERIAL ID used for testing purposes")
-set(SERIAL_TEST_DELAY_COUNTER 3 CACHE INT 3 "Delay counter for serial test")
+set(SERIAL_TEST_DELAY_COUNTER 3 CACHE STRING "Delay counter for serial test")
 
 # Enable (ON) / Disable (OFF) debug mode to write log file in run time.
 option (DEBUG_MODE "Debug mode" OFF)
