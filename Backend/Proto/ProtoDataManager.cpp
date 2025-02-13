@@ -4,6 +4,7 @@
 #include "LogHelper.h"
 #include "AppUtilities.h"
 #include "DeviceInfo.h"
+#include "NetworkInterface.h"
 
 #ifdef PROTOBUF_ENABLED
 #include <ctime>
@@ -66,6 +67,12 @@ ProtoDataManager::ProtoDataManager(QObject *parent)
 
     mChangeMode = CMNone;
 
+    connect(NetworkInterface::me(), &NetworkInterface::hasInternetChanged, this, [this]() {
+        if (NetworkInterface::me()->hasInternet()) {
+            sendDataToServer();
+        }
+    });
+
     // Send the old data to server.
     sendDataToServer();
 #endif
@@ -90,6 +97,10 @@ ProtoDataManager::~ProtoDataManager()
 
 void ProtoDataManager::sendDataToServer()
 {
+    if (!NetworkInterface::me()->hasInternet()) {
+        return;
+    }
+
     if (Device->serialNumber().isEmpty()) {
         return;
     }
