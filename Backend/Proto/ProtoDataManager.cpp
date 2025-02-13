@@ -38,6 +38,7 @@ ProtoDataManager* ProtoDataManager::me()
 
 ProtoDataManager::ProtoDataManager(QObject *parent)
     : mSendingToServer{false}
+    , mIsMemoryChecking{false}
     , DevApiExecutor{parent}
 {
 #ifdef PROTOBUF_ENABLED
@@ -106,8 +107,8 @@ void ProtoDataManager::sendDataToServer()
         return;
     }
 
-    auto protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
-    bool existValidBinaryFile = protoFoldersize > 0;
+    QDir dir(m_binaryFilesPath);
+    bool existValidBinaryFile = !dir.isEmpty();
 
     if (mLiveDataPointList.data_points_size() < 1 && !existValidBinaryFile) {
         PROTO_LOG << "No data for sending.";
@@ -119,13 +120,18 @@ void ProtoDataManager::sendDataToServer()
         generateBinaryFile();
 
     } else {
-        PROTO_LOG << "Sending old data points in the file with size (Bytes): " << protoFoldersize;
+        PROTO_LOG << "Sending old data points in the files: ";
     }
 
     mSendingToServer = true;
     mDataPointLogger.stop();
 
     QByteArray serializedData = readBinaryFiles();
+
+    if (serializedData.isEmpty()) {
+        PROTO_LOG << "No data for sending.";
+        return;
+    }
 
     auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
     auto callback = [this] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
@@ -230,39 +236,53 @@ void ProtoDataManager::generateBinaryFile()
 
 void ProtoDataManager::checkMemoryAndCleanup()
 {
-    auto protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
-    QDir protoDir(m_binaryFilesPath);
-    QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
+    if (mIsMemoryChecking)
+        return;
 
-    if (protoFoldersize > m_maximumProtoFolderSize) {
-        PROTO_LOG << m_binaryFilesPath << " size (Bytes): " <<  protoFoldersize;
+    mIsMemoryChecking = true;
+    QFuture<qint64> future = AppUtilities::getFolderUsedBytesAsync(m_binaryFilesPath);
 
-        qint64 clearedSize = 0;
+    QFutureWatcher<qint64> *watcher = new QFutureWatcher<qint64>();
 
-        // When the maximum size is reached, we need to free up at least 5MB of space.
-        while (!fileList.isEmpty()) {
-            auto file = fileList.last();
+    connect(watcher, &QFutureWatcher<qint64>::finished, this, [this, watcher]() {
+        qint64 protoFoldersize = watcher->result();
+        if (protoFoldersize > m_maximumProtoFolderSize) {
+            PROTO_LOG << m_binaryFilesPath << " size (Bytes): " <<  protoFoldersize;
 
-            auto fileToRemove = file.absoluteFilePath();
-            if (QFile::remove(fileToRemove)) {
-                clearedSize += file.size();
+            qint64 clearedSize = 0;
 
-            } else {
-                PROTO_LOG << QString("Error removing file %1.").arg(fileToRemove);
+            QDir protoDir(m_binaryFilesPath);
+            QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
+
+            // When the maximum size is reached, we need to free up at least 5MB of space.
+            while (!fileList.isEmpty()) {
+                auto file = fileList.last();
+
+                auto fileToRemove = file.absoluteFilePath();
+                if (QFile::remove(fileToRemove)) {
+                    clearedSize += file.size();
+
+                } else {
+                    PROTO_LOG << QString("Error removing file %1.").arg(fileToRemove);
+                }
+
+                if (clearedSize >= m_minFileSizeToRemove) {
+                    break;
+                }
+
+                fileList.removeLast();
             }
 
-            if (clearedSize >= m_minFileSizeToRemove) {
-                break;
-            }
-
-            fileList.removeLast();
+            PROTO_LOG << QString("Removed some files due to memory limitation (cleared size: %0 Bytes)").arg(QString::number(clearedSize));
+            PROTO_LOG << m_binaryFilesPath << "  size after cleanUp (Bytes): " <<  (protoFoldersize - clearedSize);
         }
 
-        PROTO_LOG << QString("Removed some files due to memory limitation (cleared size: %0 Bytes)").arg(QString::number(clearedSize));
+        mIsMemoryChecking = false;
+        watcher->deleteLater();
+    });
 
-        protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
-        PROTO_LOG << m_binaryFilesPath << "  size after cleanUp (Bytes): " <<  protoFoldersize;
-    }
+    watcher->setFuture(future);
+
 }
 
 void ProtoDataManager::setSetTemperature(const double &tempratureC)
