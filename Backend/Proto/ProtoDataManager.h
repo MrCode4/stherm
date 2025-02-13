@@ -86,7 +86,7 @@ private:
 
     void checkMemoryAndCleanup();
 
-    QByteArray readBinaryFiles();
+    QFuture<QByteArray> readBinaryFilesAsync();
 
 private:
         /*
