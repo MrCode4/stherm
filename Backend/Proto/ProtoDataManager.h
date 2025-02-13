@@ -86,6 +86,8 @@ private:
 
     void checkMemoryAndCleanup();
 
+    QByteArray readBinaryFiles();
+
 private:
         /*
          * Array of points:

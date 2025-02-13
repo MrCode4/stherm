@@ -97,6 +97,7 @@ ProtoDataManager::~ProtoDataManager()
 
 void ProtoDataManager::sendDataToServer()
 {
+#ifdef PROTOBUF_ENABLED
     if (!NetworkInterface::me()->hasInternet()) {
         return;
     }
@@ -105,7 +106,6 @@ void ProtoDataManager::sendDataToServer()
         return;
     }
 
-#ifdef PROTOBUF_ENABLED
     auto protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
     bool existValidBinaryFile = protoFoldersize > 0;
 
@@ -122,32 +122,10 @@ void ProtoDataManager::sendDataToServer()
         PROTO_LOG << "Sending old data points in the file with size (Bytes): " << protoFoldersize;
     }
 
-    QByteArray serializedData;
+    mSendingToServer = true;
+    mDataPointLogger.stop();
 
-    // Collecting the file data
-    {
-        QDir protoDir(m_binaryFilesPath);
-        QFileInfoList fileList = protoDir.entryInfoList({"*.bin"}, QDir::Files, QDir::Time);
-
-        if (fileList.isEmpty()) {
-            PROTO_LOG << "File list is empty!";
-            return;
-        }
-
-        while (!fileList.isEmpty()) {
-            QString fileToOpen = fileList.last().absoluteFilePath();
-            QFile file(fileToOpen);
-            if (file.exists() && file.open(QIODevice::ReadOnly)) {
-                serializedData += file.readAll();
-                file.close();
-
-            } else {
-                qWarning() << "Error opening file: " << file.errorString() << " - Remove: "
-                           << QFile::remove(fileToOpen);
-            }
-            fileList.removeLast();
-        }
-    }
+    QByteArray serializedData = readBinaryFiles();
 
     auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
     auto callback = [this] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
@@ -163,10 +141,54 @@ void ProtoDataManager::sendDataToServer()
         mDataPointLogger.start();
     };
 
-    mSendingToServer = true;
-    mDataPointLogger.stop();
     callPostApi(url, serializedData, callback, true, "application/x-protobuf");
 #endif
+}
+
+QByteArray ProtoDataManager::readBinaryFiles() {
+    QByteArray serializedData;
+
+    QDir protoDir(m_binaryFilesPath);
+    QFileInfoList fileList = protoDir.entryInfoList({"*.bin"}, QDir::Files, QDir::Time);
+
+    if (fileList.isEmpty()) {
+        PROTO_LOG << "File list is empty!";
+        return serializedData;
+    }
+
+    while (!fileList.isEmpty()) {
+        QFile file(fileList.last().absoluteFilePath());
+        if (file.exists() && file.open(QIODevice::ReadOnly)) {
+            serializedData += file.readAll();
+            file.close();
+
+        } else {
+            qWarning() << "Error opening file: " << file.errorString() << " - Remove: "
+                       <<file.remove();
+        }
+
+        fileList.removeLast();
+    }
+
+    QString fileName = QString("%0/%1.bin").arg(m_binaryFilesPath, QString::number(QDateTime::currentDateTime().currentMSecsSinceEpoch()));
+    QFile newFile(fileName);
+    if (newFile.open(QIODevice::WriteOnly)) {
+        auto writtenDataSize = newFile.write(serializedData);
+        if (writtenDataSize == serializedData.size()) {
+            PROTO_LOG << " files sent, remove files due to file accumulation: " << AppUtilities::removeContentDirectory(m_binaryFilesPath);
+
+        } else {
+            newFile.remove();
+        }
+
+        newFile.close();
+    } else {
+        qWarning() << "[ProtoDataManager] could not accumulate the files.";
+        newFile.remove();
+    }
+
+
+    return serializedData;
 }
 
 void ProtoDataManager::sendFullDataPacketToServer()
