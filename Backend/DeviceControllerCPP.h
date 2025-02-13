@@ -408,7 +408,7 @@ private:
     double mTEMPERATURE_COMPENSATION_T1 = 0.2;
 
     //! Temperature correction parameters
-    double mDeltaTemperatureIntegrator;
+    double mDeltaTemperatureIntegrator = 0;
     const double TEMPERATURE_INTEGRATOR_DECAY_CONSTANT = 0.99721916;
     // TW - remove the doubled up offset and update the 1F
     // const double TEMPERATURE_COMPENSATION_OFFSET = 0.25 + 2.0 / 1.8;
@@ -423,6 +423,7 @@ private:
     }
 
     QTimer mSaveTemperatureTimer;
+    QTimer mLoadTemperatureTimer;
 
     // Testing
     std::map<QString, bool> mAllTestsResults;

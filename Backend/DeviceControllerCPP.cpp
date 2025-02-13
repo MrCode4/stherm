@@ -215,14 +215,14 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
 
     connect(mTempScheme, &Scheme::auxiliaryStatusChanged, this, &DeviceControllerCPP::auxiliaryStatusChanged);
 
-    // TODO should be loaded later for accounting previous session
 
-    loadTempratures();
-    connect(&mSaveTemperatureTimer,&QTimer::timeout,this,&DeviceControllerCPP::saveTempratures);
     connect(m_system, &NUVE::System::systemAboutToBeShutDown,this,&DeviceControllerCPP::saveTempratures);
-
+    connect(&mSaveTemperatureTimer,&QTimer::timeout,this,&DeviceControllerCPP::saveTempratures);
+    connect(&mLoadTemperatureTimer, &QTimer::timeout, this, &DeviceControllerCPP::loadTempratures);
     mSaveTemperatureTimer.setInterval(10 * 1000);
-    mSaveTemperatureTimer.start();
+    mLoadTemperatureTimer.setInterval(10 * 1000);
+    mLoadTemperatureTimer.start();
+    loadTempratures();
 
     // Default value
     mFanSpeed = 16;
@@ -841,17 +841,34 @@ void DeviceControllerCPP::checkForOutdoorTemperature() {
 
 void DeviceControllerCPP::loadTempratures()
 {
+    if (mSaveTemperatureTimer.isActive())
+        return;
+
+    static QElapsedTimer timer;
+    static bool first = true;
+    if (first) {
+        timer.start();
+        first = false;
+    }
+
     QSettings settings;
     quint64 currentUinxTime = QDateTime::currentDateTime().currentSecsSinceEpoch();
     quint64 lastUnixTime = settings.value(m_UnixTime , 0).toUInt();
-    auto offUnixTime = currentUinxTime - lastUnixTime;
+    quint64 elapsedSecsAfterStart = timer.elapsed() / 1000;
 
-    if(offUnixTime > 0){
-        mDeltaTemperatureIntegrator = pow(TEMPERATURE_INTEGRATOR_DECAY_CONSTANT , offUnixTime);
-        mTEMPERATURE_COMPENSATION_T1 = settings.value(m_TEMPERATURE_COMPENSATION_T1 , 0.2).toDouble();
-    }else{
-        mDeltaTemperatureIntegrator = 0;
+    qint64 offUnixTime = currentUinxTime - lastUnixTime - elapsedSecsAfterStart;
+
+    if (offUnixTime > 0) {
+        auto decayIntegratorLast = settings.value(m_DeltaTemperatureIntegrator).toDouble() *
+                                   pow(TEMPERATURE_INTEGRATOR_DECAY_CONSTANT , offUnixTime);
+        mDeltaTemperatureIntegrator += decayIntegratorLast;
+        mTEMPERATURE_COMPENSATION_T1 += settings.value(m_TEMPERATURE_COMPENSATION_T1 , 0.2).toDouble() - 0.2;
+
+    } else if (elapsedSecsAfterStart < 120) {
+        return;
     }
+    mLoadTemperatureTimer.stop();
+    mSaveTemperatureTimer.start();
 }
 
 void DeviceControllerCPP::setMainData(QVariantMap mainData, bool addToData)
