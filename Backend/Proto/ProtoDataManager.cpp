@@ -190,15 +190,16 @@ QFuture<QByteArray> ProtoDataManager::readBinaryFilesAsync() {
             fileList.removeLast();
         }
 
+        PROTO_LOG << " Remove files due to file accumulation: " << AppUtilities::removeContentDirectory(m_binaryFilesPath);
         QString fileName = QString("%0/%1.bin").arg(m_binaryFilesPath, QString::number(QDateTime::currentDateTime().currentMSecsSinceEpoch()));
         QFile newFile(fileName);
         if (newFile.open(QIODevice::WriteOnly)) {
             auto writtenDataSize = newFile.write(serializedData);
             if (writtenDataSize == serializedData.size()) {
-                PROTO_LOG << " files sent, remove files due to file accumulation: " << AppUtilities::removeContentDirectory(m_binaryFilesPath);
-
+                PROTO_LOG << "File replaced.";
             } else {
                 newFile.remove();
+                PROTO_LOG << "Could not replace file successfully.";
             }
 
             newFile.close();
