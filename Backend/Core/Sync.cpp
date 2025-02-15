@@ -496,6 +496,12 @@ void Sync::requestJob(QString type)
 
 void Sync::pushSettingsToServer(const QVariantMap &settings)
 {
+    if (mSerialNumber.isEmpty()) {
+        SYNC_LOG <<"Push failed, Sn is not ready!";
+        emit pushFailed();
+        return;
+    }
+
     QJsonObject reqData = QJsonObject::fromVariantMap(settings);
     reqData["sn"] = mSerialNumber;
 
@@ -528,6 +534,12 @@ void Sync::pushSettingsToServer(const QVariantMap &settings)
 
 void Sync::pushAutoSettingsToServer(const double &auto_temp_low, const double &auto_temp_high)
 {
+    if (mSerialNumber.isEmpty()) {
+        SYNC_LOG <<"Push auto settings failed, Sn is not ready!";
+        emit autoModePush(false);
+        return;
+    }
+
     QJsonObject reqData;
     reqData["auto_temp_low"] = auto_temp_low;
     reqData["auto_temp_high"] = auto_temp_high;
@@ -950,85 +962,39 @@ void Sync::reportCommandResponse(ReportCommandCallback callback, const QString& 
     callPostApi(baseUrl() + QString("api/monitor/report?sn=%0").arg(mSerialNumber), QJsonDocument(body).toJson(), apiCallback);
 }
 
-void Sync::pushSensorTemperatureC(const double &temperatureC)
+void Sync::pushSensorValues(const double &temperatureC, const int &humidity, const int &co2id)
 {
     if (mSerialNumber.isEmpty()) {
         SYNC_LOG <<"Sn is not ready!";
+        emit sensorValuesPushed(false);
         return;
     }
 
-    auto callback = [this, temperatureC](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
+    auto callback = [this, temperatureC, humidity, co2id](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         bool success = reply->error() == QNetworkReply::NoError;
 
         // To handle the network errors.
-        TRACE_CHECK(!success) << "Push device temperature error: " << reply->errorString();
+        TRACE_CHECK(!success) << "Push sensor values error: " << reply->errorString();
+
+
+        auto pushedHumidity = data.value("current_humidity").toInt();
+        auto pushedTemp = data.value("current_temp").toDouble();
+        auto pushedCo2id = data.value("co2_id").toInt();
+
+        TRACE_CHECK(pushedHumidity != humidity) << "Push sensor values response: humidity  is different: " << humidity << pushedHumidity;;
+        TRACE_CHECK(qAbs(pushedTemp - temperatureC) > 0.001) << "Push sensor values response: temperature is different: " << temperatureC << pushedTemp;;
+        TRACE_CHECK(pushedCo2id != co2id) << "Push sensor values response: co2id is different: " << co2id << pushedCo2id;;
 
         // Check the responce for the temperature validation:
-        emit sensorTemperaturePushed(success, temperatureC);
-
-        auto pushedTemp = data.value("temperature").toDouble();
-        TRACE_CHECK(pushedTemp != temperatureC) << "The push device temperature response is different: " << temperatureC << pushedTemp;;
-
+        emit sensorValuesPushed(success, pushedTemp, pushedHumidity, pushedCo2id);
     };
 
     QJsonObject requestDataObj;
-    requestDataObj["temp"] = temperatureC;
+    requestDataObj["current_humidity"] = QString::number(humidity);
+    requestDataObj["current_temp"] = temperatureC;
+    requestDataObj["co2_id"] = co2id;
 
-    callPostApi(baseUrl() + QString("api/device/temperature?sn=%0").arg(mSerialNumber), QJsonDocument(requestDataObj).toJson(), callback);
-}
-
-void Sync::pushSensorHumidity(const int &humidity)
-{
-    if (mSerialNumber.isEmpty()) {
-        SYNC_LOG <<"Sn is not ready!";
-        return;
-    }
-
-    auto callback = [this, humidity](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        bool success = reply->error() == QNetworkReply::NoError;
-
-        // To handle the network errors.
-        TRACE_CHECK(!success) << "Push device humidity error: " << reply->errorString();
-
-        // Check the responce for the humidity validation:
-        auto pushedhumidity = data.value("humidity").toInt();
-        emit sensorHumidityPushed(success, pushedhumidity);
-
-        TRACE_CHECK(pushedhumidity != humidity) << "The push device humidity response is different: " << humidity << pushedhumidity;;
-
-    };
-
-    QJsonObject requestDataObj;
-    requestDataObj["humidity"] = humidity;
-
-    callPostApi(baseUrl() + QString("api/device/humidity?sn=%0").arg(mSerialNumber), QJsonDocument(requestDataObj).toJson(), callback);
-}
-
-void Sync::pushSensorCo2ID(const int &co2ID)
-{
-    if (mSerialNumber.isEmpty()) {
-        SYNC_LOG <<"Sn is not ready!";
-        return;
-    }
-
-    auto callback = [this, co2ID](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
-        bool success = reply->error() == QNetworkReply::NoError;
-
-        // To handle the network errors.
-        TRACE_CHECK(!success) << "Push device co2 error: " << reply->errorString();
-
-        // Check the responce for the co2 id validation:
-        auto pushedCo2ID = data.value("co2_id").toInt();
-        emit sensorCo2Pushed(success, pushedCo2ID);
-
-        TRACE_CHECK(pushedCo2ID != co2ID) << "The push device temperature response is different: " << co2ID << pushedCo2ID;;
-
-    };
-
-    QJsonObject requestDataObj;
-    requestDataObj["co2_id"] = co2ID;
-
-    callPostApi(baseUrl() + QString("api/device/co2?sn=%0").arg(mSerialNumber), QJsonDocument(requestDataObj).toJson(), callback);
+    callPostApi(baseUrl() + QString("api/device/current-sensors?sn=%0").arg(mSerialNumber), QJsonDocument(requestDataObj).toJson(), callback);
 }
 
 } // namespace NUVE

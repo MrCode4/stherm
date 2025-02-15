@@ -85,9 +85,7 @@ public:
 
     QJsonObject lastSettingsResponseData() const;
 
-    Q_INVOKABLE void pushSensorTemperatureC(const double &temperatureC);
-    Q_INVOKABLE void pushSensorHumidity(const int &humidity);
-    Q_INVOKABLE void pushSensorCo2ID(const int &co2ID);
+    Q_INVOKABLE void pushSensorValues(const double &temperatureC, const int &humidity, const int &co2id);
 
     Q_INVOKABLE void updateAddressInformationManual(const QVariantMap &data);
 
@@ -161,9 +159,7 @@ signals:
     void alertPushed(QString alertUid, bool success, QVariantMap alert = QVariantMap());
     void resetFactoryFinished(bool ok, const QString &message = "");
 
-    void sensorTemperaturePushed(bool success, double pushedTemperatureC);
-    void sensorHumidityPushed(bool success, int pushedHumidity);
-    void sensorCo2Pushed(bool success, int pushedCo2Id);
+    void sensorValuesPushed(bool success, double pushedTemperatureC = -1, int pushedHumidity = -1, int pushedCo2id = -1);
 
     void clientAddressUpdatingFinished(bool success, const QString &err = "", bool needToRetry = false);
 
