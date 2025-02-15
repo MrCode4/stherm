@@ -1901,7 +1901,7 @@ I_DeviceController {
         var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
         if (device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType)
             hasChangeParams.push("accessoriesWireType");
-        if (device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold)
+        if (Math.abs(device.systemSetup.dualFuelThreshold - settings.dualFuelThreshold) > 0.001)
             hasChangeParams.push("dualFuelThreshold");
         if (device.systemSetup.isAUXAuto != settings.isAUXAuto)
             hasChangeParams.push("isAUXAuto");
