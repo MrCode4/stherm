@@ -466,6 +466,7 @@ DeviceControllerCPP::DeviceControllerCPP(QObject *parent)
         LOG_CHECK_DC(false) << "Operations took by :" << elapsed;
         if (elapsed - mSaveSensorDataTimer.interval() > 3000) {
             LOG_DC << "Operations delayed by :" << elapsed << mSaveSensorDataTimer.interval();
+            m_system->rebootDevice();
         }
         writeSensorData(_mainData);
     });
