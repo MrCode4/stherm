@@ -91,8 +91,15 @@ bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::Pa
     // prepare request
     QByteArray packet = parser.preparePacket(cmd, packetType);
 
+    // No data for sending
+    if (packet.isEmpty()) {
+        return false;
+    }
+
     // write request
-    sendRequest(packet);
+    if (!sendRequest(packet)) {
+        return false;
+    }
 
     // wait for response to be ready
 // TODO this is blocking, does it sleep?  Worst case push this off to a low priority thread and come back when there is a response (note 10 bytes will take 10ms)
@@ -115,8 +122,8 @@ bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::Pa
             return false;
         }
     } else {
-        TRACE_CHECK(m_debug) << QString("Wait write request timeout %1")
-                                                   .arg(QTime::currentTime().toString());
+        TRACE << QString("Wait write request timeout %1")
+                     .arg(QTime::currentTime().toString());
         return false;
     }
 
