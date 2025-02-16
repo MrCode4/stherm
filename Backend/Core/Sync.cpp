@@ -976,7 +976,6 @@ void Sync::pushSensorValues(const double &temperatureC, const int &humidity, con
         // To handle the network errors.
         TRACE_CHECK(!success) << "Push sensor values error: " << reply->errorString();
 
-
         auto pushedHumidity = data.value("current_humidity").toInt();
         auto pushedTemp = data.value("current_temp").toDouble();
         auto pushedCo2id = data.value("co2_id").toInt();
@@ -985,7 +984,7 @@ void Sync::pushSensorValues(const double &temperatureC, const int &humidity, con
         TRACE_CHECK(qAbs(pushedTemp - temperatureC) > 0.001) << "Push sensor values response: temperature is different: " << temperatureC << pushedTemp;;
         TRACE_CHECK(pushedCo2id != co2id) << "Push sensor values response: co2id is different: " << co2id << pushedCo2id;;
 
-        // Check the responce for the temperature validation:
+        // Check the response for validation:
         emit sensorValuesPushed(success, pushedTemp, pushedHumidity, pushedCo2id);
     };
 
