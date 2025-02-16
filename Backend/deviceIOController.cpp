@@ -187,6 +187,11 @@ DeviceIOController::~DeviceIOController()
     stopReading();
     qWarning() << "Stopped Hvac";
 
+    delete m_nRfConnection;
+    delete m_gpioHandler4;
+    delete m_gpioHandler5;
+    delete m_tiConnection;
+
     delete m_p;
 }
 
