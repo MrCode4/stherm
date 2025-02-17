@@ -127,7 +127,7 @@ int AppUtilities::getStorageAvailableBytes(const QString path) {
     return storageInfo.bytesAvailable();
 }
 
-int AppUtilities::getFolderUsedBytes(const QString path) {
+qint64 AppUtilities::getFolderUsedBytes(const QString path) {
     int totalSize = 0;
     QDir dir(path);
 
@@ -146,6 +146,10 @@ int AppUtilities::getFolderUsedBytes(const QString path) {
     }
 
     return totalSize;
+}
+
+QFuture<qint64> AppUtilities::getFolderUsedBytesAsync(const QString& path) {
+    return QtConcurrent::run(getFolderUsedBytes, path);
 }
 
 int AppUtilities::getFileSizeBytes(const QString file) {

@@ -2,6 +2,7 @@
 
 #include <QObject>
 #include <QQmlEngine>
+#include <QtConcurrent>
 
 class AppUtilities : public QObject
 {
@@ -27,11 +28,12 @@ public:
     Q_INVOKABLE static int getStorageFreeBytes(const QString path);
     Q_INVOKABLE static int getStorageTotalBytes(const QString path);
     Q_INVOKABLE static int getStorageAvailableBytes(const QString path);
-    Q_INVOKABLE static int getFolderUsedBytes(const QString path);
+    Q_INVOKABLE static qint64 getFolderUsedBytes(const QString path);
     Q_INVOKABLE static int getFileSizeBytes(const QString file);
 
     //! Convert bytes to the nearest big unit.
     Q_INVOKABLE  static QString bytesToNearestBigUnit(int bytes);
 
     Q_INVOKABLE static QString userVersion(const QString &fullVersion);
+    static QFuture<qint64> getFolderUsedBytesAsync(const QString &path);
 };

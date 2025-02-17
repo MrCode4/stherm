@@ -86,6 +86,8 @@ private:
 
     void checkMemoryAndCleanup();
 
+    QFuture<QByteArray> readBinaryFilesAsync();
+
 private:
         /*
          * Array of points:
@@ -122,5 +124,7 @@ private:
 
     //! Use to avoid create new file when sender is busy.
     bool mSendingToServer;
+
+    bool mIsMemoryChecking;
 };
 

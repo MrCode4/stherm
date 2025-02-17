@@ -144,7 +144,6 @@ BasePageView {
         function onZipCodeInfoReady(error, isNeedRetry) {
             root.isBusyZip = isNeedRetry && error.length > 0;
 
-            console.log("MAK sdf", error)
             if (error.length > 0) {
                 errorPopup.errorMessage = "ZIP code information is not ready, " + error;
 
@@ -187,7 +186,7 @@ BasePageView {
                 }
 
             } else {
-               goBack();
+                goBack();
             }
         }
     }
@@ -202,9 +201,11 @@ BasePageView {
         property int retryCounter: 0
 
         onTriggered: {
-            retryCounter++;
-            root.isBusyZip = true;
-            deviceController.getZipCodeJobInformationManual(zipCodeTf.text.toUpperCase());
+            if (checkHasInternet) {
+                retryCounter++;
+                root.isBusyZip = true;
+                deviceController.getZipCodeJobInformationManual(zipCodeTf.text.toUpperCase());
+            }
         }
     }
 
@@ -218,9 +219,11 @@ BasePageView {
         property int retryCounter: 0
 
         onTriggered: {
-            root.isBusyUpdatingAddress = true;
-            retryCounter++;
-            deviceController.updateAddressInformation();
+            if (checkHasInternet()) {
+                root.isBusyUpdatingAddress = true;
+                retryCounter++;
+                deviceController.updateAddressInformation();
+            }
         }
     }
 
@@ -253,6 +256,15 @@ BasePageView {
 
     /* Functions
      * ****************************************************************************************/
+
+    function checkHasInternet() : bool {
+        if (!NetworkInterface.hasInternet) {
+            errorPopup.errorMessage = deviceController.deviceInternetError();
+            errorPopup.open();
+        }
+
+        return NetworkInterface.hasInternet;
+    }
 
     //! This method is used to go back
     function goBack()

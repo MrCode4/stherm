@@ -458,6 +458,8 @@ void NmcliInterface::setupObserver()
                     wifi->setIsSaved(true);
                 }
                 emit wifiNeedAuthentication(wifi);
+
+                setBusy(false);
                 return;
             }
         }
@@ -492,6 +494,7 @@ void NmcliInterface::setupObserver()
         for (WifiInfo* wifi : mWifis) {
             if (wifi->ssid() == ssid || wifi->incorrectSsid() == ssid) {
                 wifi->setIsConnecting(true);
+                setBusy(true);
                 return;
             }
         }
@@ -526,6 +529,7 @@ void NmcliInterface::onWifiConnected(const QString& ssid)
 
             //! Also remove it from the list of mWifis
             mWifis.remove(i);
+            setBusy(false);
 
             return;
         }
@@ -542,6 +546,7 @@ void NmcliInterface::onWifiDisconnected()
     for (auto wifi : mWifis) {
         if (wifi->isConnecting()) {
             wifi->setIsConnecting(false);
+            setBusy(false);
         }
     }
 }

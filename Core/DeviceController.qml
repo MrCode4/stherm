@@ -873,25 +873,11 @@ I_DeviceController {
             fetchContractorInfoTimer.restart();
         }
 
-        function onSensorTemperaturePushed(success: bool, pushedTemperatureC: real) {
-            if (success && Math.abs(pushedTemperatureC - root.displayCurrentTemp) < 0.001) {
-                stageMode &= ~AppSpec.EMSensorTemperature;
-            }
-
-            settingsPush.isPushing = false;
-        }
-
-        function onSensorHumidityPushed(success: bool, pushedHumidity: int) {
-            if (success && (pushedHumidity === device.currentHum)) {
-                stageMode &= ~AppSpec.EMSensorHumidity;
-            }
-
-            settingsPush.isPushing = false;
-        }
-
-        function onSensorCo2Pushed(success: bool, pushedCo2Id: int) {
-            if (success && (pushedCo2Id === (device._co2_id + 1))) {
-                stageMode &= ~AppSpec.EMSensorCO2;
+        function onSensorValuesPushed(success: bool, pushedTemperatureC: real, pushedHumidity: int, pushedCo2id: int) {
+            if (success && (Math.abs(pushedTemperatureC - root.displayCurrentTemp) < 0.001) &&
+                    (pushedHumidity === device.currentHum) &&
+                    (pushedCo2id === (device._co2_id + 1))) {
+                stageMode &= ~AppSpec.EMSensorValues;
             }
 
             settingsPush.isPushing = false;
@@ -959,12 +945,10 @@ I_DeviceController {
 
             // deprioritize if only sensorValues there to push auto mode api sooner
             var priorityMode = root.stageMode &
-                    ~AppSpec.EMSensorTemperature &
-                    ~AppSpec.EMSensorHumidity &
-                    ~AppSpec.EMSensorCO2;
+                    ~AppSpec.EMSensorValues;
 
             // Start push process if stage mode is available
-            // push auto mode first if nothing else is staged except sensor related events like EMSensorTemperature, EMSensorHumidity, EMSensorCO2
+            // push auto mode first if nothing else is staged except sensor related events like EMSensorValues
             // need some delay here between two api pushes so if another one exist we push the other first!
             // then, this will be called after success push
             //! this can be delayed too much if never push success or too much edits
@@ -981,14 +965,11 @@ I_DeviceController {
                         isPushing = false;
                     }
 
-                } else if ((root.stageMode & AppSpec.EMSensorTemperature) === AppSpec.EMSensorTemperature) {
-                    sync.pushSensorTemperatureC(root.displayCurrentTemp);
+                } else if ((root.stageMode & AppSpec.EMSensorValues) === AppSpec.EMSensorValues) {
+                    sync.pushSensorValues(root.displayCurrentTemp, device.currentHum, (device._co2_id + 1));
 
-                } else if ((root.stageMode & AppSpec.EMSensorHumidity) === AppSpec.EMSensorHumidity) {
-                    sync.pushSensorHumidity(device.currentHum);
-
-                } else if ((root.stageMode & AppSpec.EMSensorCO2) === AppSpec.EMSensorCO2) {
-                    sync.pushSensorCo2ID(device._co2_id + 1);
+                } else {
+                    isPushing = false;
                 }
             } else {
                 isPushing = false;
@@ -1920,7 +1901,7 @@ I_DeviceController {
         var accessoriesWireType = AppSpec.accessoriesWireTypeToEnum(settings.systemAccessories.wire);
         if (device.systemSetup.systemAccessories.accessoriesWireType != accessoriesWireType)
             hasChangeParams.push("accessoriesWireType");
-        if (device.systemSetup.dualFuelThreshold != settings.dualFuelThreshold)
+        if (Math.abs(device.systemSetup.dualFuelThreshold - settings.dualFuelThreshold) > 0.001)
             hasChangeParams.push("dualFuelThreshold");
         if (device.systemSetup.isAUXAuto != settings.isAUXAuto)
             hasChangeParams.push("isAUXAuto");
@@ -2160,16 +2141,8 @@ I_DeviceController {
         ProtoDataManager.setCurrentHumidity(device.currentHum);
         ProtoDataManager.setCurrentAirQuality(device._co2_id);
 
-        if (isRoundedTempChanged) {
-            updateEditMode(AppSpec.EMSensorTemperature);
-        }
-
-        if (isVisualHumChanged) {
-            updateEditMode(AppSpec.EMSensorHumidity);
-        }
-
-        if (isCo2IdChanged) {
-            updateEditMode(AppSpec.EMSensorCO2);
+        if (isRoundedTempChanged || isVisualHumChanged || isCo2IdChanged) {
+            updateEditMode(AppSpec.EMSensorValues);
         }
 
         //        console.log("--------------- End: updateInformation -------------------")

@@ -261,6 +261,10 @@ void NetworkInterface::forgetWifi(WifiInfo* wifiInfo)
         return;
     }
 
+    if (wifiInfo->connected()) {
+        setIsWifiDisconnectedManually(true);
+    }
+
     mNmcliInterface->forgetWifi(wifiInfo);
 }
 

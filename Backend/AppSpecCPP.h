@@ -173,14 +173,10 @@ public:
         EMSystemMode         = 1 << 10,
         EMDateTime           = 1 << 11,
         EMAutoMode           = 1 << 12,
-        EMSensorValues       = 1 << 13, // Depricated
+        EMSensorValues       = 1 << 13,
         EMMessages           = 1 << 14,
         EMGeneral            = 1 << 15,
         EMWiFi               = 1 << 16,
-
-        EMSensorTemperature  = 1 << 17, // Do not add to EMAll:
-        EMSensorHumidity     = 1 << 18, // Do not add to EMAll:
-        EMSensorCO2          = 1 << 19, // Do not add to EMAll:
 
         EMAll                = EMHold | EMFan | EMVacation | EMRequestedHumidity |
                                EMDesiredTemperature | EMSettings | EMBacklight | EMSystemSetup |

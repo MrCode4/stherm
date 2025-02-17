@@ -2834,7 +2834,7 @@ NUVE::StorageMonitor::StorageMonitor(QObject *parent)
     // Set up a timer to check storage periodically
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &StorageMonitor::checkStorageSpace);
-    timer->start(10000); // Check every 10 seconds
+    timer->start(5 * 60 * 1000); // Check every 5 minutes
 }
 
 void NUVE::StorageMonitor::checkStorageSpace()

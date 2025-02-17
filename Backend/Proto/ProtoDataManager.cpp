@@ -4,6 +4,7 @@
 #include "LogHelper.h"
 #include "AppUtilities.h"
 #include "DeviceInfo.h"
+#include "NetworkInterface.h"
 
 #ifdef PROTOBUF_ENABLED
 #include <ctime>
@@ -37,6 +38,7 @@ ProtoDataManager* ProtoDataManager::me()
 
 ProtoDataManager::ProtoDataManager(QObject *parent)
     : mSendingToServer{false}
+    , mIsMemoryChecking{false}
     , DevApiExecutor{parent}
 {
 #ifdef PROTOBUF_ENABLED
@@ -66,6 +68,12 @@ ProtoDataManager::ProtoDataManager(QObject *parent)
 
     mChangeMode = CMNone;
 
+    connect(NetworkInterface::me(), &NetworkInterface::hasInternetChanged, this, [this]() {
+        if (NetworkInterface::me()->hasInternet()) {
+            sendDataToServer();
+        }
+    });
+
     // Send the old data to server.
     sendDataToServer();
 #endif
@@ -90,13 +98,22 @@ ProtoDataManager::~ProtoDataManager()
 
 void ProtoDataManager::sendDataToServer()
 {
+#ifdef PROTOBUF_ENABLED
+    if (mSendingToServer) {
+        PROTO_LOG << "Sender is busy...";
+        return;
+    }
+
+    if (!NetworkInterface::me()->hasInternet()) {
+        return;
+    }
+
     if (Device->serialNumber().isEmpty()) {
         return;
     }
 
-#ifdef PROTOBUF_ENABLED
-    auto protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
-    bool existValidBinaryFile = protoFoldersize > 0;
+    QDir dir(m_binaryFilesPath);
+    bool existValidBinaryFile = !dir.isEmpty();
 
     if (mLiveDataPointList.data_points_size() < 1 && !existValidBinaryFile) {
         PROTO_LOG << "No data for sending.";
@@ -108,54 +125,92 @@ void ProtoDataManager::sendDataToServer()
         generateBinaryFile();
 
     } else {
-        PROTO_LOG << "Sending old data points in the file with size (Bytes): " << protoFoldersize;
+        PROTO_LOG << "Sending old data points in the files: ";
     }
 
-    QByteArray serializedData;
+    mSendingToServer = true;
+    mDataPointLogger.stop();
 
-    // Collecting the file data
-    {
+    auto serializedDataFuture = readBinaryFilesAsync();
+
+    QFutureWatcher<QByteArray> *watcher = new QFutureWatcher<QByteArray>();
+
+    connect(watcher, &QFutureWatcher<QByteArray>::finished, this, [this, watcher]() {
+        auto serializedData = watcher->result();
+        if (serializedData.isEmpty()) {
+            PROTO_LOG << "No data for sending.";
+            return;
+        }
+
+        auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
+        auto callback = [this] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
+            // ServiceUnavailableError: 403
+            if (reply->error() == QNetworkReply::NoError || reply->error() == QNetworkReply::ServiceUnavailableError) {
+                PROTO_LOG << " files sent, remove: " << AppUtilities::removeContentDirectory(m_binaryFilesPath);
+
+            } else {
+                qWarning() << reply->url() << " - ERROR: " << reply->errorString();
+            }
+
+            mSendingToServer = false;
+            mDataPointLogger.start();
+        };
+
+        callPostApi(url, serializedData, callback, true, "application/x-protobuf");
+
+        watcher->deleteLater();
+    });
+    watcher->setFuture(serializedDataFuture);
+#endif
+}
+
+QFuture<QByteArray> ProtoDataManager::readBinaryFilesAsync() {
+    return QtConcurrent::run([]() {
+        QByteArray serializedData;
+
         QDir protoDir(m_binaryFilesPath);
         QFileInfoList fileList = protoDir.entryInfoList({"*.bin"}, QDir::Files, QDir::Time);
 
         if (fileList.isEmpty()) {
             PROTO_LOG << "File list is empty!";
-            return;
+            return serializedData;
         }
 
         while (!fileList.isEmpty()) {
-            QString fileToOpen = fileList.last().absoluteFilePath();
-            QFile file(fileToOpen);
+            QFile file(fileList.last().absoluteFilePath());
             if (file.exists() && file.open(QIODevice::ReadOnly)) {
                 serializedData += file.readAll();
                 file.close();
 
             } else {
                 qWarning() << "Error opening file: " << file.errorString() << " - Remove: "
-                           << QFile::remove(fileToOpen);
+                           <<file.remove();
             }
+
             fileList.removeLast();
         }
-    }
 
-    auto url = baseUrl() + QString("api/monitor/data?sn=%0").arg(Device->serialNumber());
-    auto callback = [this] (QNetworkReply* reply, const QByteArray &rawData, QJsonObject &data) {
-        // ServiceUnavailableError: 403
-        if (reply->error() == QNetworkReply::NoError || reply->error() == QNetworkReply::ServiceUnavailableError) {
-            PROTO_LOG << " files sent, remove: " << AppUtilities::removeContentDirectory(m_binaryFilesPath);
+        PROTO_LOG << " Remove files due to file accumulation: " << AppUtilities::removeContentDirectory(m_binaryFilesPath);
+        QString fileName = QString("%0/%1.bin").arg(m_binaryFilesPath, QString::number(QDateTime::currentDateTime().currentMSecsSinceEpoch()));
+        QFile newFile(fileName);
+        if (newFile.open(QIODevice::WriteOnly)) {
+            auto writtenDataSize = newFile.write(serializedData);
+            if (writtenDataSize == serializedData.size()) {
+                PROTO_LOG << "File replaced.";
+            } else {
+                newFile.remove();
+                PROTO_LOG << "Could not replace file successfully.";
+            }
 
+            newFile.close();
         } else {
-            qWarning() << reply->url() << " - ERROR: " << reply->errorString();
+            qWarning() << "[ProtoDataManager] could not accumulate the files.";
+            newFile.remove();
         }
 
-        mSendingToServer = false;
-        mDataPointLogger.start();
-    };
 
-    mSendingToServer = true;
-    mDataPointLogger.stop();
-    callPostApi(url, serializedData, callback, true, "application/x-protobuf");
-#endif
+        return serializedData;
+    });
 }
 
 void ProtoDataManager::sendFullDataPacketToServer()
@@ -197,39 +252,53 @@ void ProtoDataManager::generateBinaryFile()
 
 void ProtoDataManager::checkMemoryAndCleanup()
 {
-    auto protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
-    QDir protoDir(m_binaryFilesPath);
-    QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
+    if (mIsMemoryChecking)
+        return;
 
-    if (protoFoldersize > m_maximumProtoFolderSize) {
-        PROTO_LOG << m_binaryFilesPath << " size (Bytes): " <<  protoFoldersize;
+    mIsMemoryChecking = true;
+    QFuture<qint64> future = AppUtilities::getFolderUsedBytesAsync(m_binaryFilesPath);
 
-        qint64 clearedSize = 0;
+    QFutureWatcher<qint64> *watcher = new QFutureWatcher<qint64>();
 
-        // When the maximum size is reached, we need to free up at least 5MB of space.
-        while (!fileList.isEmpty()) {
-            auto file = fileList.last();
+    connect(watcher, &QFutureWatcher<qint64>::finished, this, [this, watcher]() {
+        qint64 protoFoldersize = watcher->result();
+        if (protoFoldersize > m_maximumProtoFolderSize) {
+            PROTO_LOG << m_binaryFilesPath << " size (Bytes): " <<  protoFoldersize;
 
-            auto fileToRemove = file.absoluteFilePath();
-            if (QFile::remove(fileToRemove)) {
-                clearedSize += file.size();
+            qint64 clearedSize = 0;
 
-            } else {
-                PROTO_LOG << QString("Error removing file %1.").arg(fileToRemove);
+            QDir protoDir(m_binaryFilesPath);
+            QFileInfoList fileList = protoDir.entryInfoList(QDir::Files, QDir::Time);
+
+            // When the maximum size is reached, we need to free up at least 5MB of space.
+            while (!fileList.isEmpty()) {
+                auto file = fileList.last();
+
+                auto fileToRemove = file.absoluteFilePath();
+                if (QFile::remove(fileToRemove)) {
+                    clearedSize += file.size();
+
+                } else {
+                    PROTO_LOG << QString("Error removing file %1.").arg(fileToRemove);
+                }
+
+                if (clearedSize >= m_minFileSizeToRemove) {
+                    break;
+                }
+
+                fileList.removeLast();
             }
 
-            if (clearedSize >= m_minFileSizeToRemove) {
-                break;
-            }
-
-            fileList.removeLast();
+            PROTO_LOG << QString("Removed some files due to memory limitation (cleared size: %0 Bytes)").arg(QString::number(clearedSize));
+            PROTO_LOG << m_binaryFilesPath << "  size after cleanUp (Bytes): " <<  (protoFoldersize - clearedSize);
         }
 
-        PROTO_LOG << QString("Removed some files due to memory limitation (cleared size: %0 Bytes)").arg(QString::number(clearedSize));
+        mIsMemoryChecking = false;
+        watcher->deleteLater();
+    });
 
-        protoFoldersize = AppUtilities::getFolderUsedBytes(m_binaryFilesPath);
-        PROTO_LOG << m_binaryFilesPath << "  size after cleanUp (Bytes): " <<  protoFoldersize;
-    }
+    watcher->setFuture(future);
+
 }
 
 void ProtoDataManager::setSetTemperature(const double &tempratureC)
