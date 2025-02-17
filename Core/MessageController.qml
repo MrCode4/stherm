@@ -508,6 +508,7 @@ QtObject {
 
             case AppSpec.Alert_iaq_high:
             case AppSpec.Alert_iaq_low:
+            case AppSpec.Alert_c02_high:
             case AppSpec.Alert_c02_low: {
                 messageType = Message.Type.SystemAlert;
                 retriggerInterval = weeklyAlertInterval;

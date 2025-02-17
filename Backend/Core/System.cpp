@@ -138,6 +138,7 @@ NUVE::System::System(NUVE::Sync *sync, QObject *parent)
     , mIsInitialSetup(false)
     , mControlAlertEnabled(false)
     , mTestMode(false)
+    , mFactoryTestMode(false)
     , mIsNightModeRunning(false)
     , mRestarting(false)
     , sshpassInstallCounter(0)
@@ -1044,6 +1045,7 @@ void NUVE::System::setRestartFlag()
 {
     QSettings settings;
     settings.setValue("RestartFlag", true);
+    emit systemAboutToBeShutDown();
 }
 
 void NUVE::System::removeRestartFlag()
@@ -1934,7 +1936,6 @@ void NUVE::System::rebootDevice(const bool &isResetFactory)
 #ifdef __unix__
     QProcess process;
     QString command = "reboot";
-    emit systemAboutToBeShutDown();
 
     mRestarting = true;
 
