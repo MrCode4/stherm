@@ -187,6 +187,11 @@ DeviceIOController::~DeviceIOController()
     stopReading();
     qWarning() << "Stopped Hvac";
 
+    delete m_nRfConnection;
+    delete m_gpioHandler4;
+    delete m_gpioHandler5;
+    delete m_tiConnection;
+
     delete m_p;
 }
 
@@ -361,6 +366,8 @@ inline bool sendRequestWithReply(UARTConnection *connection,
     QTimer timer;
     timer.setSingleShot(true);
     loop.connect(&timer, &QTimer::timeout, &loop, [&loop]() {
+        LOG_IO << QString("Wait read response timeout %1")
+                     .arg(QTime::currentTime().toString());
         loop.setProperty("error", "timeout");
         loop.quit();
     });

@@ -5,10 +5,14 @@
 #include "LogHelper.h"
 
 UARTConnection::UARTConnection(const QString &portName, bool debug, QObject *parent)
-    : QObject(parent)
-    , mSerial(new QSerialPort(this))
-    , m_debug(debug)
+    : mSerial(new QSerialPort(this))
+    , QObject(parent)
 {
+    m_debug = debug;
+    #ifdef DEBUG_MODE
+        // m_debug = true;
+    #endif
+
     mSerial->setPortName(portName);
 }
 
@@ -21,7 +25,7 @@ bool UARTConnection::startConnection(const qint32 &baudRate)
                      && mSerial->setFlowControl(QSerialPort::NoFlowControl); // Set non-blocking I/O
 
     if (!isSuccess) {
-        TRACE_CHECK(m_debug) << "Configuration failed, port name: " << mSerial->portName();
+        TRACE << "Configuration failed, port name: " << mSerial->portName();
         return false;
     }
 
@@ -31,8 +35,8 @@ bool UARTConnection::startConnection(const qint32 &baudRate)
 
     // Open Serial port & send beacon, ping packets to bring device into connected state
     if (!isOpen) {
-        TRACE_CHECK(m_debug) << "Serial port is not open, Port name:   " << mSerial->portName();
-        TRACE_CHECK(m_debug) << "Try to open, Port name:   " << mSerial->portName();
+        TRACE << "Serial port is not open, Port name:   " << mSerial->portName();
+        TRACE << "Try to open, Port name:   " << mSerial->portName();
         isOpen = mSerial->open(QIODevice::ReadWrite);
         if (isOpen) {
             TRACE_CHECK(m_debug) << "Opened, Port name:   " << mSerial->portName();
@@ -41,15 +45,15 @@ bool UARTConnection::startConnection(const qint32 &baudRate)
             connect(mSerial, &QSerialPort::errorOccurred, this, &UARTConnection::onError);
         } else {
             // If open fails then return with an error
-            TRACE_CHECK(m_debug) << (QString("Can't open %1,%2 error code %3")
-                             .arg(mSerial->portName())
-                             .arg(mSerial->baudRate())
-                             .arg(mSerial->error()));
+            TRACE << (QString("Can't open %1,%2 error code %3")
+                          .arg(mSerial->portName())
+                          .arg(mSerial->baudRate())
+                          .arg(mSerial->error()));
         }
     } else {
         TRACE_CHECK(m_debug) << (QString("Already open, Port name: %1, baud rate: %2")
-                         .arg(mSerial->portName())
-                         .arg(mSerial->baudRate()));
+                                     .arg(mSerial->portName())
+                                     .arg(mSerial->baudRate()));
     }
 
     return isOpen;
@@ -86,18 +90,24 @@ bool UARTConnection::sendRequest(const char *data, qint64 len)
 
 bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::PacketType &packetType)
 {
-    DataParser parser;
-
     // prepare request
-    QByteArray packet = parser.preparePacket(cmd, packetType);
+    QByteArray packet = DataParser::preparePacket(cmd, packetType);
+
+    // No data for sending
+    if (packet.isEmpty()) {
+        return false;
+    }
 
     // write request
-    sendRequest(packet);
+    if (!sendRequest(packet)) {
+        return false;
+    }
 
     // wait for response to be ready
 // TODO this is blocking, does it sleep?  Worst case push this off to a low priority thread and come back when there is a response (note 10 bytes will take 10ms)
-    if (mSerial->waitForBytesWritten()) {
+    if (mSerial->waitForBytesWritten(500)) {
         // read response
+        // This is blocking,
         if (mSerial->waitForReadyRead()) {
             QByteArray responseData = mSerial->readAll();
             while (mSerial->waitForReadyRead())
@@ -110,13 +120,13 @@ bool UARTConnection::sendRequest(const STHERM::SIOCommand &cmd, const STHERM::Pa
             return true;
 
         } else {
-            TRACE_CHECK(m_debug) << QString("Wait read response timeout %1")
-                                                       .arg(QTime::currentTime().toString());
+            TRACE << QString("Wait read response timeout %1")
+                         .arg(QTime::currentTime().toString());
             return false;
         }
     } else {
-        TRACE_CHECK(m_debug) << QString("Wait write request timeout %1")
-                                                   .arg(QTime::currentTime().toString());
+        TRACE << QString("Wait write request timeout %1")
+                     .arg(QTime::currentTime().toString());
         return false;
     }
 
@@ -140,7 +150,7 @@ void UARTConnection::onReadyRead()
 void UARTConnection::onError(QSerialPort::SerialPortError error)
 {
     QString errorMessage = mSerial->errorString();
-    TRACE_CHECK(m_debug) << "Port name:   " << mSerial->portName()
-             << "Error:   " << error << errorMessage;
+    TRACE << "Port name:   " << mSerial->portName()
+          << "Error:   " << error << errorMessage;
     emit connectionError(errorMessage);
 }
