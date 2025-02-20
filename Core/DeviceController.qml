@@ -896,7 +896,30 @@ I_DeviceController {
     property Connections currentScheduleConnection: Connections {
         target: currentSchedule
 
+
+        function onIdChanged() {
+            if (!currentSchedule.isSyncedWithServer()) {
+                return;
+            }
+
+            // Send the new id of current schedule
+            updateEditMode(AppSpec.EMSchedule);
+            if (device.systemSetup.systemMode === AppSpec.Auto) {
+                setAutoLowTemperatureToMonitoring();
+                setAutoHighTemperatureToMonitoring();
+
+                updateEditMode(AppSpec.EMAutoMode);
+
+            } else if (device.systemSetup.systemMode !== AppSpec.Off) {
+                updateEditMode(AppSpec.EMDesiredTemperature);
+            }
+        }
+
         function onSystemModeChanged() {
+            if (!currentSchedule.isSyncedWithServer()) {
+                return;
+            }
+
             if (device.systemSetup.systemMode === AppSpec.Auto) {
                 updateEditMode(AppSpec.EMAutoMode);
                 setAutoLowTemperatureToMonitoring();
@@ -908,6 +931,10 @@ I_DeviceController {
         }
 
         function onMaximumTemperatureChanged() {
+            if (!currentSchedule.isSyncedWithServer()) {
+                return;
+            }
+
             if (device.systemSetup.systemMode === AppSpec.Auto) {
                 updateEditMode(AppSpec.EMAutoMode);
                 setAutoHighTemperatureToMonitoring();
@@ -918,6 +945,10 @@ I_DeviceController {
         }
 
         function onMinimumTemperatureChanged() {
+            if (!currentSchedule.isSyncedWithServer()) {
+                return;
+            }
+
             if (device.systemSetup.systemMode === AppSpec.Auto) {
                 updateEditMode(AppSpec.EMAutoMode);
                 setAutoLowTemperatureToMonitoring();
@@ -1589,7 +1620,7 @@ I_DeviceController {
         } else if (device.systemSetup.isVacation) {
             temperature = (device.vacation.temp_min + device.vacation.temp_max) / 2;
 
-        } else if (currentSchedule) {
+        } else if (currentSchedule && currentSchedule.isSyncedWithServer()) {
             if (currentSchedule.systemMode === AppSpec.Cooling) {
                 temperature = currentSchedule.maximumTemperature;
 
@@ -1674,7 +1705,7 @@ I_DeviceController {
             }
         }
 
-        if (root.currentSchedule) {
+        if (root.currentSchedule && root.currentSchedule.isSyncedWithServer()) {
             send_data.running_schedule_id = root.currentSchedule.id;
         }
 
@@ -2251,7 +2282,7 @@ I_DeviceController {
         setAutoHighTemperatureToMonitoring();
 
         // Update the server when currentSchedule is null or changed to a valid schedule with valid id.
-        if (!root.currentSchedule || root.currentSchedule.id > -1) {
+        if (!root.currentSchedule || root.currentSchedule.isSyncedWithServer()) {
             var editMode = AppSpec.EMSchedule;
 
             if (root.currentSchedule || previousSchedule) {
@@ -2634,7 +2665,8 @@ I_DeviceController {
         } else if (device.systemSetup.systemMode === AppSpec.Auto) {
             var autoLowTemperature = temperatureC;
 
-            if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
+            // The schedule should exists in the server
+            if (currentSchedule && currentSchedule.isSyncedWithServer() && currentSchedule.systemMode === AppSpec.Auto) {
                 autoLowTemperature = currentSchedule.minimumTemperature;
             }
 
@@ -2649,7 +2681,8 @@ I_DeviceController {
         } else if (device.systemSetup.systemMode === AppSpec.Auto) {
             var autoHighTemperature = temperatureC;
 
-            if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
+            // The schedule should exists in the server
+            if (currentSchedule && currentSchedule.isSyncedWithServer() && currentSchedule.systemMode === AppSpec.Auto) {
                 autoHighTemperature = currentSchedule.maximumTemperature;
             }
 

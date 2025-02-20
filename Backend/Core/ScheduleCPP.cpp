@@ -26,6 +26,10 @@ ScheduleCPP::ScheduleCPP(QSObjectCpp *parent) :
     systemMode = AppSpecCPP::SystemMode::Auto;
 }
 
+bool ScheduleCPP::isSyncedWithServer() {
+    return id > 0;
+}
+
 double ScheduleCPP::effectiveTemperature(const AppSpecCPP::SystemMode &sysMode) {
     double eff = minimumTemperature;
 

@@ -74,6 +74,7 @@ public:
     //! The return value is original and do not convert to truncated value.
     Q_INVOKABLE double effectiveTemperature(const AppSpecCPP::SystemMode& sysMode);
 
+    Q_INVOKABLE bool isSyncedWithServer();
 signals:
     void nameChanged();
     void typeChanged();

@@ -46,7 +46,7 @@ QtObject {
 
         // Send schedules to the server that have not been sent previously.
         device.schedules.forEach(sch => {
-                                     if (sch.id < 0) {
+                                     if (!sch.isSyncedWithServer()) {
                                          addScheduleToServer(sch);
                                      }
                                  });
@@ -766,7 +766,7 @@ QtObject {
     }
 
     function editScheduleInServer(schedule: ScheduleCPP) {
-        if (schedule.id < 0) {
+        if (!schedule.isSyncedWithServer()) {
             console.log("Edit schedule: The schedule is not exists in the server (unknown ID)");
             return
         }
@@ -784,7 +784,7 @@ QtObject {
     }
 
     function addScheduleToServer(schedule: ScheduleCPP) {
-        if (schedule.id >= 0) {
+        if (schedule.isSyncedWithServer()) {
             console.log("This schedule exists in the server with id: ", schedule.id, " Trying to edit it...");
             editScheduleInServer(schedule);
             return;
@@ -931,12 +931,6 @@ QtObject {
         function onEnableChanged() {
             deviceController.setActivatedSchedule(null);
             updateCurrentSchedules();
-        }
-
-        function onIdChanged() {
-            // Send the new id of current schedule
-            if (deviceController.currentSchedule.id > -1)
-                deviceController.updateEditMode(AppSpec.EMSchedule);
         }
     }
 
