@@ -435,10 +435,14 @@ void ProtoDataManager::setCurrentFanStatus(const bool &fanStatus)
 #endif
 }
 
-void ProtoDataManager::setSystemType(const AppSpecCPP::SystemType &systemSetup)
+void ProtoDataManager::setSystemType(const AppSpecCPP::SystemType &systemType)
 {
 #ifdef PROTOBUF_ENABLED
-    const auto sysTypeStr = AppSpecCPP::systemTypeString(systemSetup, true).toStdString();
+    auto sysTypeStr = SystemType(systemType + 1);
+    if (systemType == AppSpecCPP::SysTUnknown) {
+        sysTypeStr = SystemType::SYSTEM_TYPE_NONE;
+    }
+
     if (mLateastDataPoint->has_system_type() &&
         mLateastDataPoint->system_type() == sysTypeStr) {
         return;
@@ -452,13 +456,20 @@ void ProtoDataManager::setSystemType(const AppSpecCPP::SystemType &systemSetup)
 void ProtoDataManager::setRunningMode(const AppSpecCPP::SystemMode &runningMode)
 {
 #ifdef PROTOBUF_ENABLED
-    const auto runningModeStr = AppSpecCPP::systemModeToString(runningMode, false).toStdString();
+    auto protoRunningMode = RunningMode(runningMode + 1);
+    if (runningMode == AppSpecCPP::SMUnknown) {
+        protoRunningMode = RunningMode::RUNNING_MODE_NONE;
+
+    } else if (runningMode == AppSpecCPP::Emergency) {
+        protoRunningMode = RunningMode::RUNNING_MODE_EMERGENCY_HEAT;
+    }
+
     if (mLateastDataPoint->has_running_mode() &&
-        mLateastDataPoint->running_mode() == runningModeStr) {
+        mLateastDataPoint->running_mode() == protoRunningMode) {
         return;
     }
 
-    mLateastDataPoint->set_running_mode(runningModeStr);
+    mLateastDataPoint->set_running_mode(protoRunningMode);
     updateChangeMode(CMRunningMode);
 #endif
 }
@@ -487,6 +498,32 @@ void ProtoDataManager::setLedStatus(const bool &ledStatus)
 
     mLateastDataPoint->set_led_status(ledStatusE);
     updateChangeMode(CMLedStatus);
+#endif
+}
+
+void ProtoDataManager::setAutoLow(const double &autoLow)
+{
+#ifdef PROTOBUF_ENABLED
+    if (mLateastDataPoint->has_auto_low() &&
+        qAbs(mLateastDataPoint->auto_low() - autoLow) < m_temperatureThreshold) {
+        return;
+    }
+
+    mLateastDataPoint->set_auto_low(autoLow);
+    updateChangeMode(CMAutoLow);
+#endif
+}
+
+void ProtoDataManager::setAutoHigh(const double &autoHight)
+{
+#ifdef PROTOBUF_ENABLED
+    if (mLateastDataPoint->has_auto_high() &&
+        qAbs(mLateastDataPoint->auto_high() - autoHight) < m_temperatureThreshold) {
+        return;
+    }
+
+    mLateastDataPoint->set_auto_low(autoHight);
+    updateChangeMode(CMAutoHigh);
 #endif
 }
 
@@ -559,6 +596,14 @@ void ProtoDataManager::logStashData()
         if (mChangeMode & CMOnlineStatus) {
             newPoint->set_online_status(mLateastDataPoint->online_status());
         }
+        if (mChangeMode & CMAutoLow) {
+            newPoint->set_auto_low(mLateastDataPoint->auto_low());
+        }
+
+        if (mChangeMode & CMAutoHigh) {
+            newPoint->set_auto_high(mLateastDataPoint->auto_high());
+        }
+
 
         newPoint->set_is_sync(mChangeMode == CMAll);
 

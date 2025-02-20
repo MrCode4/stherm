@@ -42,10 +42,12 @@ private:
         CMSystemType          = 1 << 11,
         CMRunningMode         = 1 << 12,
         CMOnlineStatus        = 1 << 13,
+        CMAutoLow             = 1 << 14,
+        CMAutoHigh            = 1 << 15,
         CMAll                 = CMSetTemperature | CMSetHumidity | CMCurrentTemperature | CMCurrentHumidity |
                                 CMMCUTemperature | CMAirPressure | CMCurrentAirQuality | CMCurrentCoolingStage |
                                 CMCurrentHeatingStage | CMCurrentFanStatus | CMLedStatus | CMSystemType |
-                                CMRunningMode | CMOnlineStatus
+                                CMRunningMode | CMOnlineStatus | CMAutoLow | CMAutoHigh
     };
 
 public:
@@ -61,10 +63,12 @@ public:
     Q_INVOKABLE void setCurrentCoolingStage(const int &coolingStage);
     Q_INVOKABLE void setCurrentHeatingStage(const int &heatingStage);
     Q_INVOKABLE void setCurrentFanStatus(const bool &fanStatus);
-    Q_INVOKABLE void setSystemType(const AppSpecCPP::SystemType &systemSetup);
+    Q_INVOKABLE void setSystemType(const AppSpecCPP::SystemType &systemType);
     Q_INVOKABLE void setRunningMode(const AppSpecCPP::SystemMode &runningMode);
     Q_INVOKABLE void setOnlineStatus(const bool &onlineStatus);
     Q_INVOKABLE void setLedStatus(const bool &ledStatus);
+    Q_INVOKABLE void setAutoLow(const double &autoLow);
+    Q_INVOKABLE void setAutoHigh(const double &autoHight);
     //! Send the binary data to server
     Q_INVOKABLE void sendDataToServer();
 
