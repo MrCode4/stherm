@@ -904,10 +904,8 @@ I_DeviceController {
 
             // Send the new id of current schedule
             updateEditMode(AppSpec.EMSchedule);
-            if (device.systemSetup.systemMode === AppSpec.Auto) {
-                setAutoLowTemperatureToMonitoring();
-                setAutoHighTemperatureToMonitoring();
 
+            if (device.systemSetup.systemMode === AppSpec.Auto) {
                 updateEditMode(AppSpec.EMAutoMode);
 
             } else if (device.systemSetup.systemMode !== AppSpec.Off) {
@@ -916,45 +914,43 @@ I_DeviceController {
         }
 
         function onSystemModeChanged() {
-            if (!currentSchedule.isSyncedWithServer()) {
-                return;
-            }
-
             if (device.systemSetup.systemMode === AppSpec.Auto) {
-                updateEditMode(AppSpec.EMAutoMode);
+                if (currentSchedule.isSyncedWithServer())
+                    updateEditMode(AppSpec.EMAutoMode);
+
                 setAutoLowTemperatureToMonitoring();
                 setAutoHighTemperatureToMonitoring();
 
             } else if (device.systemSetup.systemMode !== AppSpec.Off) {
-                updateEditMode(AppSpec.EMDesiredTemperature);
+                if (currentSchedule.isSyncedWithServer())
+                    updateEditMode(AppSpec.EMDesiredTemperature);
             }
         }
 
         function onMaximumTemperatureChanged() {
-            if (!currentSchedule.isSyncedWithServer()) {
-                return;
-            }
 
             if (device.systemSetup.systemMode === AppSpec.Auto) {
-                updateEditMode(AppSpec.EMAutoMode);
+                if (currentSchedule.isSyncedWithServer())
+                    updateEditMode(AppSpec.EMAutoMode);
+
                 setAutoHighTemperatureToMonitoring();
 
             } else if (device.systemSetup.systemMode !== AppSpec.Off) {
-                updateEditMode(AppSpec.EMDesiredTemperature);
+                if (currentSchedule.isSyncedWithServer())
+                    updateEditMode(AppSpec.EMDesiredTemperature);
             }
         }
 
         function onMinimumTemperatureChanged() {
-            if (!currentSchedule.isSyncedWithServer()) {
-                return;
-            }
-
             if (device.systemSetup.systemMode === AppSpec.Auto) {
-                updateEditMode(AppSpec.EMAutoMode);
+                if (currentSchedule.isSyncedWithServer())
+                    updateEditMode(AppSpec.EMAutoMode);
+
                 setAutoLowTemperatureToMonitoring();
 
             } else if (device.systemSetup.systemMode !== AppSpec.Off) {
-                updateEditMode(AppSpec.EMDesiredTemperature);
+                if (currentSchedule.isSyncedWithServer())
+                    updateEditMode(AppSpec.EMDesiredTemperature);
             }
         }
     }
@@ -2666,7 +2662,7 @@ I_DeviceController {
             var autoLowTemperature = temperatureC;
 
             // The schedule should exists in the server
-            if (currentSchedule && currentSchedule.isSyncedWithServer() && currentSchedule.systemMode === AppSpec.Auto) {
+            if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
                 autoLowTemperature = currentSchedule.minimumTemperature;
             }
 
@@ -2681,8 +2677,7 @@ I_DeviceController {
         } else if (device.systemSetup.systemMode === AppSpec.Auto) {
             var autoHighTemperature = temperatureC;
 
-            // The schedule should exists in the server
-            if (currentSchedule && currentSchedule.isSyncedWithServer() && currentSchedule.systemMode === AppSpec.Auto) {
+            if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
                 autoHighTemperature = currentSchedule.maximumTemperature;
             }
 

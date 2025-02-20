@@ -43,13 +43,6 @@ QtObject {
 
     Component.onCompleted: {
         device.schedulesChanged();
-
-        // Send schedules to the server that have not been sent previously.
-        device.schedules.forEach(sch => {
-                                     if (!sch.isSyncedWithServer()) {
-                                         addScheduleToServer(sch);
-                                     }
-                                 });
     }
 
 
@@ -762,7 +755,8 @@ QtObject {
             deletingSchedulesChanged();
         }
 
-        deviceController.sync.clearSchedule(id);
+        if (NetworkInterface.hasInternet)
+            deviceController.sync.clearSchedule(id);
     }
 
     function editScheduleInServer(schedule: ScheduleCPP) {
@@ -777,7 +771,7 @@ QtObject {
             editingSchedulesChanged();
         }
 
-        if (schedule) {
+        if (NetworkInterface.hasInternet && schedule) {
             var schedulePacket = schedulePacketServer(schedule);
             deviceController.sync.editSchedule(schedule.id, schedulePacket);
         }
@@ -796,7 +790,7 @@ QtObject {
             addingSchedulesChanged();
         }
 
-        if (schedule) {
+        if (NetworkInterface.hasInternet && schedule) {
             var schedulePacket = schedulePacketServer(schedule);
             deviceController.sync.addSchedule(schedule._qsUuid, schedulePacket);
         }
@@ -967,19 +961,12 @@ QtObject {
                 return;
             }
 
-            var schId = deletingSchedules.findIndex(elem => elem === id);
             if (success) {
+                var schId = deletingSchedules.findIndex(elem => elem === id);
                 console.log("Schedule cleared: ", id, schId);
 
                 if (schId !== -1) {
                     deletingSchedules.splice(schId, 1);
-                    deletingSchedulesChanged();
-                }
-
-            } else {
-                // Schedule deleting failed, retry
-                if (schId !== -1) {
-                    deletingSchedules.push(schId);
                     deletingSchedulesChanged();
                 }
             }
@@ -994,19 +981,12 @@ QtObject {
                 return;
             }
 
-            var schId = editingSchedules.findIndex(elem => elem.id === id);
             if (success) {
+                var schId = editingSchedules.findIndex(elem => elem.id === id);
                 console.log("Schedule edited: ", id, schId);
 
                 if (schId !== -1) {
                     editingSchedules.splice(schId, 1);
-                    editingSchedulesChanged();
-                }
-
-            } else {
-                // Schedule deleting failed, retry
-                if (schId !== -1) {
-                    editingSchedules.push(id);
                     editingSchedulesChanged();
                 }
             }
@@ -1034,11 +1014,23 @@ QtObject {
         }
     }
 
+    property bool _modelCheckedForSyncing: false
     property Connections networkConnections: Connections {
         target: NetworkInterface
 
         function onHasInternetChanged() {
             if (NetworkInterface.hasInternet) {
+                if (!_modelCheckedForSyncing) {
+                    // Send schedules to the server that have not been sent previously.
+                    device.schedules.forEach(sch => {
+                                                 if (!sch.isSyncedWithServer()) {
+                                                     addScheduleToServer(sch);
+                                                 }
+                                             });
+
+                    _modelCheckedForSyncing = true;
+                }
+
                 retryScheduleDeleting();
                 retryScheduleEditing();
                 retryScheduleAdding();
@@ -1090,17 +1082,17 @@ QtObject {
     /* Functions
      * ****************************************************************************************/
     function retryScheduleDeleting() {
-        if (deletingSchedules.length > 0)
+        if (NetworkInterface.hasInternet && deletingSchedules.length > 0)
             retryScheduleDeletingTimer.start();
     }
 
     function retryScheduleEditing() {
-        if (editingSchedules.length > 0)
+        if (NetworkInterface.hasInternet && editingSchedules.length > 0)
             retryScheduleEditingTimer.start();
     }
 
     function retryScheduleAdding() {
-        if (addingSchedules.length > 0)
+        if (NetworkInterface.hasInternet && addingSchedules.length > 0)
             retryScheduleAddingTimer.start();
     }
 }
