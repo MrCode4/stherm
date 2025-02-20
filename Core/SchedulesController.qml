@@ -41,7 +41,17 @@ QtObject {
     /* Object properties
      * ****************************************************************************************/
 
-    Component.onCompleted: device.schedulesChanged();
+    Component.onCompleted: {
+        device.schedulesChanged();
+
+        // Send schedules to the server that have not been sent previously.
+        device.schedules.forEach(sch => {
+                                     if (sch.id < 0) {
+                                         addScheduleToServer(sch);
+                                     }
+                                 });
+    }
+
 
     /* Methods
      * ****************************************************************************************/
@@ -774,6 +784,12 @@ QtObject {
     }
 
     function addScheduleToServer(schedule: ScheduleCPP) {
+        if (schedule.id >= 0) {
+            console.log("This schedule exists in the server with id: ", schedule.id, " Trying to edit it...");
+            editScheduleInServer(schedule);
+            return;
+        }
+
         var schId = addingSchedules.findIndex(elem => elem._qsUuid === schedule._qsUuid);
         if (schId === -1) {
             addingSchedules.unshift(schedule);
@@ -784,7 +800,6 @@ QtObject {
             var schedulePacket = schedulePacketServer(schedule);
             deviceController.sync.addSchedule(schedule._qsUuid, schedulePacket);
         }
-
     }
 
     //! Prepare schedule packet for server
@@ -948,10 +963,16 @@ QtObject {
         }
     }
 
-    property Connections syncController: Connections {
+    property Connections syncConnections: Connections {
         target: deviceController.sync
 
         function onScheduleCleared(id: int, success: bool) {
+            if (id < 0) {
+                console.log("Wrong schedule id.");
+                retryScheduleDeleting();
+                return;
+            }
+
             var schId = deletingSchedules.findIndex(elem => elem === id);
             if (success) {
                 console.log("Schedule cleared: ", id, schId);
@@ -967,12 +988,18 @@ QtObject {
                     deletingSchedules.push(schId);
                     deletingSchedulesChanged();
                 }
-
-                retryScheduleDeleting.start();
             }
+
+            retryScheduleDeleting();
         }
 
         function onScheduleEdited(id: int, success: bool) {
+            if (id < 0) {
+                console.log("Wrong schedule id.");
+                retryScheduleEditing()
+                return;
+            }
+
             var schId = editingSchedules.findIndex(elem => elem.id === id);
             if (success) {
                 console.log("Schedule edited: ", id, schId);
@@ -988,9 +1015,9 @@ QtObject {
                     editingSchedules.push(id);
                     editingSchedulesChanged();
                 }
-
-                retryScheduleEditing.start();
             }
+
+            retryScheduleEditing()
         }
 
         function onScheduleAdded(scheduleUid, success: bool, schedule: var) {
@@ -1007,16 +1034,31 @@ QtObject {
                     addingSchedules.splice(schId, 1);
                     addingSchedulesChanged();
                 }
-
-            } else {
-                retryScheduleAdding.start();
             }
 
+            retryScheduleAdding();
+        }
+    }
+
+    property Connections networkConnections: Connections {
+        target: NetworkInterface
+
+        function onHasInternetChanged() {
+            if (NetworkInterface.hasInternet) {
+                retryScheduleDeleting();
+                retryScheduleEditing();
+                retryScheduleAdding();
+
+            } else {
+                retryScheduleDeletingTimer.stop();
+                retryScheduleEditingTimer.stop();
+                retryScheduleAddingTimer.stop();
+            }
         }
     }
 
     //! Retry to delete schedule
-    property Timer retryScheduleDeleting: Timer {
+    property Timer retryScheduleDeletingTimer: Timer {
         interval: 3000
         running: false
         repeat: false
@@ -1028,7 +1070,7 @@ QtObject {
     }
 
     //! Retry to edit schedule
-    property Timer retryScheduleEditing: Timer {
+    property Timer retryScheduleEditingTimer: Timer {
         interval: 4000
         running: false
         repeat: false
@@ -1040,7 +1082,7 @@ QtObject {
     }
 
     //! Retry to add schedule
-    property Timer retryScheduleAdding: Timer {
+    property Timer retryScheduleAddingTimer: Timer {
         interval: 2000
         running: false
         repeat: false
@@ -1049,5 +1091,22 @@ QtObject {
             if (addingSchedules.length > 0)
                 addScheduleToServer(addingSchedules[0]);
         }
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+    function retryScheduleDeleting() {
+        if (deletingSchedules.length > 0)
+            retryScheduleDeletingTimer.start();
+    }
+
+    function retryScheduleEditing() {
+        if (editingSchedules.length > 0)
+            retryScheduleEditingTimer.start();
+    }
+
+    function retryScheduleAdding() {
+        if (addingSchedules.length > 0)
+            retryScheduleAddingTimer.start();
     }
 }
