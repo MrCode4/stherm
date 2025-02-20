@@ -1144,14 +1144,12 @@ I_DeviceController {
         //! Set default 101325 kPa
         ProtoDataManager.setAirPressure(101325);
 
+        ProtoDataManager.setAutoLow(device.autoMinReqTemp);
+        ProtoDataManager.setAutoHigh(device.autoMaxReqTemp);
+
         ProtoDataManager.setSystemType(device.systemSetup.systemType);
         setSystemModeToMonitoring();
         ProtoDataManager.setOnlineStatus(false);
-
-        ProtoDataManager.setAutoLow(device.autoMinReqTemp);
-        ProtoDataManager.setAutoHigh(device.autoMaxReqTemp);
-        setAutoLowTemperatureToMonitoring();
-        setAutoHighTemperatureToMonitoring();
     }
 
     onStopDeviceRequested: {
@@ -2634,13 +2632,13 @@ I_DeviceController {
             ProtoDataManager.setAutoLow(device.vacation.temp_min);
 
         } else if (device.systemSetup.systemMode === AppSpec.Auto) {
-            var autoLowTemperatre = temperatureC;
+            var autoLowTemperature = temperatureC;
 
             if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
-                autoLowTemperatre = currentSchedule.minimumTemperature;
+                autoLowTemperature = currentSchedule.minimumTemperature;
             }
 
-            ProtoDataManager.setAutoLow(autoLowTemperatre);
+            ProtoDataManager.setAutoLow(autoLowTemperature);
         }
     }
 
@@ -2649,13 +2647,13 @@ I_DeviceController {
             ProtoDataManager.setAutoHigh(device.vacation.temp_max);
 
         } else if (device.systemSetup.systemMode === AppSpec.Auto) {
-            var autoHighTemperatre = temperatureC;
+            var autoHighTemperature = temperatureC;
 
             if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
-                autoHighTemperatre = currentSchedule.maximumTemperature;
+                autoHighTemperature = currentSchedule.maximumTemperature;
             }
 
-            ProtoDataManager.setAutoHigh(autoHighTemperatre);
+            ProtoDataManager.setAutoHigh(autoHighTemperature);
         }
     }
 }
