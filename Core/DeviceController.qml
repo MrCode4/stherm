@@ -901,6 +901,9 @@ I_DeviceController {
                 updateEditMode(AppSpec.EMAutoMode);
                 setAutoLowTemperatureToMonitoring();
                 setAutoHighTemperatureToMonitoring();
+
+            } else if (device.systemSetup.systemMode !== AppSpec.Off) {
+                updateEditMode(AppSpec.EMDesiredTemperature);
             }
         }
 
@@ -908,6 +911,9 @@ I_DeviceController {
             if (device.systemSetup.systemMode === AppSpec.Auto) {
                 updateEditMode(AppSpec.EMAutoMode);
                 setAutoHighTemperatureToMonitoring();
+
+            } else if (device.systemSetup.systemMode !== AppSpec.Off) {
+                updateEditMode(AppSpec.EMDesiredTemperature);
             }
         }
 
@@ -915,6 +921,9 @@ I_DeviceController {
             if (device.systemSetup.systemMode === AppSpec.Auto) {
                 updateEditMode(AppSpec.EMAutoMode);
                 setAutoLowTemperatureToMonitoring();
+
+            } else if (device.systemSetup.systemMode !== AppSpec.Off) {
+                updateEditMode(AppSpec.EMDesiredTemperature);
             }
         }
     }
