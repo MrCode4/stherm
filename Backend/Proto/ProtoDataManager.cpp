@@ -438,17 +438,17 @@ void ProtoDataManager::setCurrentFanStatus(const bool &fanStatus)
 void ProtoDataManager::setSystemType(const AppSpecCPP::SystemType &systemType)
 {
 #ifdef PROTOBUF_ENABLED
-    auto sysTypeStr = SystemType(systemType + 1);
+    auto protoSysType = SystemType(systemType + 1);
     if (systemType == AppSpecCPP::SysTUnknown) {
-        sysTypeStr = SystemType::SYSTEM_TYPE_NONE;
+        protoSysType = SystemType::SYSTEM_TYPE_NONE;
     }
 
     if (mLateastDataPoint->has_system_type() &&
-        mLateastDataPoint->system_type() == sysTypeStr) {
+        mLateastDataPoint->system_type() == protoSysType) {
         return;
     }
 
-    mLateastDataPoint->set_system_type(sysTypeStr);
+    mLateastDataPoint->set_system_type(protoSysType);
     updateChangeMode(CMSystemType);
 #endif
 }
