@@ -25,8 +25,27 @@ private slots:
 private:
     bool initializeSharedMemory();
     double calculateMemoryUsage() const;
+
+    //!
+    //! \brief createWatchdogReport
+    //! Function to create a watchdog report log in /mnt/log/.
+    //! \param reason
+    //!
+    void createWatchdogReport(const QString &reason);
+
+    //!
+    //! \brief executeProcess
+    //! Helper function to execute a process with error handling.
+    //! \param command
+    //! \param arguments
+    //! \param output
+    //! \param errorOutput
+    //! \param timeout
+    //! \return true on success, false otherwise. Outputs are captured in 'output' and 'errorOutput'.
+    //!
+    bool executeProcess(const QString &command, const QStringList &arguments, QString &output, QString &errorOutput, int timeout = 10000);
     void rebootSystem();
-    void setupConnections();
+    void setupConnections();    
 
     QSharedMemory* sharedMemory_;
     QTimer* heartbeatTimer_;

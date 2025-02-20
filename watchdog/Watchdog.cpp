@@ -101,7 +101,9 @@ void Watchdog::onMemoryCheckTimeout()
     if (memoryUsage >= 95.0) {
         TRACE << "Memory usage is critical! Rebooting system...";
         memoryTimer_->stop();
-        rebootSystem();
+
+        createWatchdogReport("Memory usage is critical!");
+        //rebootSystem();
     }
 }
 
@@ -128,8 +130,10 @@ void Watchdog::onHeartbeatTimeout()
                           << (laggyThreshold_ * 1.5)
                           << " seconds threshold reached). Rebooting system.";
                     heartbeatTimer_->stop();
-                    rebootSystem();
                     sharedMemory_->unlock();
+
+                    createWatchdogReport("Persistent delayed heartbeat detected!");
+                    //rebootSystem();
                     return;
                 }
             } else {
@@ -143,18 +147,106 @@ void Watchdog::onHeartbeatTimeout()
 
         // Clear the heartbeat by writing a null terminator.
         data[0] = '\0';
+        sharedMemory_->unlock();
+
     } else {
+        sharedMemory_->unlock();
+
         ++timeoutCounter_;
         qDebug() << "No heartbeat received. Timeout count:" << timeoutCounter_;
         if (timeoutCounter_ >= timeoutThreshold_) {
             TRACE << "No heartbeat received for " << timeoutThreshold_
                   << " seconds. Rebooting system.";
             heartbeatTimer_->stop();
-            rebootSystem();
+
+            createWatchdogReport("No heartbeat received!");
+            //rebootSystem();
+
+            return;
         }
     }
 
-    sharedMemory_->unlock();
+}
+
+bool Watchdog::executeProcess(const QString &command, const QStringList &arguments,
+                    QString &output, QString &errorOutput, int timeout)
+{
+    QProcess process;
+    process.start(command, arguments);
+
+    if (!process.waitForStarted()) {
+        errorOutput = QString("Failed to start process '%1'.").arg(command);
+        return false;
+    }
+    if (!process.waitForFinished(timeout)) {
+        errorOutput = QString("Process '%1' did not finish in the allotted time.").arg(command);
+        return false;
+    }
+
+    output = process.readAllStandardOutput();
+    errorOutput = process.readAllStandardError();
+
+    // Check if the process ended normally with a zero exit code.
+    if (process.exitStatus() != QProcess::NormalExit || process.exitCode() != 0) {
+        errorOutput.append(QString(" Process '%1' exited abnormally with exit code %2.").arg(command).arg(process.exitCode()));
+        return false;
+    }
+
+    return true;
+}
+
+void Watchdog::createWatchdogReport(const QString &reason)
+{
+#ifdef __unix__
+    QString timestamp = QDateTime::currentDateTime().toString("yyyyMMdd_HHmmss");//(watchdog_report_20250220_153045.log)
+    QString filePath = QString("/mnt/log/watchdog_report_%1.log").arg(timestamp);
+
+    QFile file(filePath);
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+        qWarning() << "Could not open log file:"
+                   << filePath << ", error:" << file.errorString();
+        return;
+    }
+
+    QTextStream out(&file);
+
+    // Write header report generation time and the restart reason.
+    out << "Watchdog Report generated at "
+        << QDateTime::currentDateTime().toString(Qt::ISODate) << "\n\n";
+    out << "Restart Reason:\n" << reason << "\n\n";
+
+    // Append CPU and Memory usage using the 'top' command.
+    out << "CPU and Memory Usage:\n";
+    QString topOutput, topError;
+    bool topSuccess =
+        executeProcess("top", QStringList() << "-b" << "-n1", topOutput, topError, 5000);
+    if (!topSuccess) {
+        out << "Error executing 'top': " << topError << "\n";
+    } else {
+        const QStringList topLines = topOutput.split('\n');
+        for (const QString &line : topLines) {
+            if (line.contains("Cpu(s):") || line.contains("Mem :"))
+                out << line << "\n";
+        }
+    }
+    out << "\n";
+
+    // Append journalctl logs from the last 5 minutes.
+    out << "Journalctl Logs (last 5 minutes):\n";
+    QString journalOutput, journalError;
+    bool journalSuccess = executeProcess("journalctl", QStringList() << "--no-pager" << "--since" << "5 minutes ago",
+                                         journalOutput, journalError, 10000);
+    if (!journalSuccess) {
+        out << "Error executing 'journalctl': " << journalError << "\n";
+    } else {
+        out << journalOutput;
+    }
+
+    file.close();
+    qDebug() << "Watchdog report saved to" << filePath;
+#else
+    //TODO::should be implemented for other OSs...
+#endif
 }
 
 void Watchdog::rebootSystem()

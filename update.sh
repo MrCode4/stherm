@@ -44,6 +44,10 @@ unzip "update.zip" -d "content"
 cd "content"
 gunzip *
 
+echo "stopping watchdog process"
+pkill watchdog_stherm
+echo "watchdog process stopped"
+
 echo "stopping service"
 systemctl stop appStherm.service
 echo "service stopped"
