@@ -2599,13 +2599,13 @@ I_DeviceController {
             ProtoDataManager.setAutoLow(device.vacation.temp_min);
 
         } else if (device.systemSetup.systemMode === AppSpec.Auto) {
-            var autoHighTemperatre = temperatureC;
+            var autoLowTemperatre = temperatureC;
 
             if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
-                autoHighTemperatre = currentSchedule.minimumTemperature;
+                autoLowTemperatre = currentSchedule.minimumTemperature;
             }
 
-            ProtoDataManager.setAutoLow(autoHighTemperatre);
+            ProtoDataManager.setAutoLow(autoLowTemperatre);
         }
     }
 
@@ -2614,13 +2614,13 @@ I_DeviceController {
             ProtoDataManager.setAutoHigh(device.vacation.temp_max);
 
         } else if (device.systemSetup.systemMode === AppSpec.Auto) {
-            var autoLowTemperatre = temperatureC;
+            var autoHighTemperatre = temperatureC;
 
             if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
-                autoLowTemperatre = currentSchedule.maximumTemperature;
+                autoHighTemperatre = currentSchedule.maximumTemperature;
             }
 
-            ProtoDataManager.setAutoHigh(autoLowTemperatre);
+            ProtoDataManager.setAutoHigh(autoHighTemperatre);
         }
     }
 }

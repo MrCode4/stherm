@@ -522,7 +522,7 @@ void ProtoDataManager::setAutoHigh(const double &autoHight)
         return;
     }
 
-    mLateastDataPoint->set_auto_low(autoHight);
+    mLateastDataPoint->set_auto_high(autoHight);
     updateChangeMode(CMAutoHigh);
 #endif
 }
