@@ -472,6 +472,7 @@ I_DeviceController {
             dfhSystemType = activeSystemType;
         }
 
+        //! Update the setTemperature in monitoring when device mode is cooling/heating or performance test is running.
         function onMonitoringTemperatureUpdated(monitoringTempratureC: real) {
             ProtoDataManager.setSetTemperature(monitoringTempratureC);
         }
@@ -892,6 +893,41 @@ I_DeviceController {
         }
     }
 
+    property Connections currentScheduleConnection: Connections {
+        target: currentSchedule
+
+        function onSystemModeChanged() {
+            if (device.systemSetup.systemMode === AppSpec.Auto) {
+                updateEditMode(AppSpec.EMAutoMode);
+                setAutoLowTemperatureToMonitoring();
+                setAutoHighTemperatureToMonitoring();
+
+            } else if (device.systemSetup.systemMode !== AppSpec.Off) {
+                updateEditMode(AppSpec.EMDesiredTemperature);
+            }
+        }
+
+        function onMaximumTemperatureChanged() {
+            if (device.systemSetup.systemMode === AppSpec.Auto) {
+                updateEditMode(AppSpec.EMAutoMode);
+                setAutoHighTemperatureToMonitoring();
+
+            } else if (device.systemSetup.systemMode !== AppSpec.Off) {
+                updateEditMode(AppSpec.EMDesiredTemperature);
+            }
+        }
+
+        function onMinimumTemperatureChanged() {
+            if (device.systemSetup.systemMode === AppSpec.Auto) {
+                updateEditMode(AppSpec.EMAutoMode);
+                setAutoLowTemperatureToMonitoring();
+
+            } else if (device.systemSetup.systemMode !== AppSpec.Off) {
+                updateEditMode(AppSpec.EMDesiredTemperature);
+            }
+        }
+    }
+
     property Timer initialSetupDataPushTimer: Timer {
         property int retryCounter: 0
 
@@ -1108,8 +1144,11 @@ I_DeviceController {
         //! Set default 101325 kPa
         ProtoDataManager.setAirPressure(101325);
 
+        ProtoDataManager.setAutoLow(device.autoMinReqTemp);
+        ProtoDataManager.setAutoHigh(device.autoMaxReqTemp);
+
         ProtoDataManager.setSystemType(device.systemSetup.systemType);
-        setSystemModeToProto();
+        setSystemModeToMonitoring();
         ProtoDataManager.setOnlineStatus(false);
     }
 
@@ -1325,14 +1364,13 @@ I_DeviceController {
                 device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
 
             setVacationOn(true);
-            setSystemModeToProto();
 
         } else if (systemMode >= AppSpec.Cooling && systemMode < AppSpec.SMUnknown) {
             //! TODo required actions if any
 
             if (checkToUpdateSystemMode(systemMode, force)) {
                 device.systemSetup.dualFuelManualHeating = dualFuelManualHeating;
-                setSystemModeToProto();
+                setSystemModeToMonitoring();
 
                 if (save) {
                     updateEditMode(AppSpec.EMSystemMode);
@@ -1375,7 +1413,7 @@ I_DeviceController {
 
     //! On/off the vacation from server.
     function setVacationOnFromServer(on: bool) {
-        setVacationOn(on, false)
+        setVacationOn(on, false);
     }
 
     //! On/off the vacation.
@@ -1394,6 +1432,8 @@ I_DeviceController {
             // We need to send the desired temperature to the server
             updateEditMode(AppSpec.EMDesiredTemperature);
         }
+
+        setSystemModeToMonitoring();
     }
 
     //! Set time format
@@ -2023,10 +2063,12 @@ I_DeviceController {
          // as well as updating clamped version! it will push again if clamped version differs
         if (Math.abs(auto_temp_low - device.autoMinReqTemp) > 0.1) {
             device.autoMinReqTemp = auto_temp_low;
+            setAutoLowTemperatureToMonitoring();
         }
 
         if (Math.abs(auto_temp_high - device.autoMaxReqTemp) > 0.1) {
             device.autoMaxReqTemp = auto_temp_high;
+            setAutoHighTemperatureToMonitoring();
         }
 
         if (isNeedToPush) {
@@ -2041,6 +2083,8 @@ I_DeviceController {
                           ? Utils.fahrenheitToCelsius(truncatedValue)
                           : truncatedValue);
         deviceControllerCPP.setAutoMinReqTemp(truncatedValue);
+        // Sent the scheme temperature to the monitoring.
+        setAutoLowTemperatureToMonitoring(truncatedValue);
 
         var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
                 ? Utils.fahrenheitToCelsius(minTemperature)
@@ -2059,6 +2103,8 @@ I_DeviceController {
                           ? Utils.fahrenheitToCelsius(truncatedValue)
                           : truncatedValue);
         deviceControllerCPP.setAutoMaxReqTemp(truncatedValue);
+        // Sent the scheme temperature to the monitoring.
+        setAutoHighTemperatureToMonitoring(truncatedValue);
 
         var value = (temperatureUnit === AppSpec.TempratureUnit.Fah
                 ? Utils.fahrenheitToCelsius(maxTemperature)
@@ -2200,6 +2246,9 @@ I_DeviceController {
         var previousSchedule = root.currentSchedule;
         root.currentSchedule = schedule;
         deviceControllerCPP.setActivatedSchedule(schedule);
+
+        setAutoLowTemperatureToMonitoring();
+        setAutoHighTemperatureToMonitoring();
 
         // Update the server when currentSchedule is null or changed to a valid schedule with valid id.
         if (!root.currentSchedule || root.currentSchedule.id > -1) {
@@ -2503,7 +2552,7 @@ I_DeviceController {
             limitedModeTimer.stop();
     }
 
-    function setSystemModeToProto() {
+    function setSystemModeToMonitoring() {
         var sysMode = device.systemSetup.systemMode;
 
         if (device.systemSetup.isVacation) {
@@ -2511,6 +2560,9 @@ I_DeviceController {
         }
 
         ProtoDataManager.setRunningMode(sysMode);
+
+        setAutoHighTemperatureToMonitoring();
+        setAutoLowTemperatureToMonitoring();
     }
 
     function getConnectedWiFiName() : string {
@@ -2572,6 +2624,36 @@ I_DeviceController {
 
         if (rebootFlag) {
             root.system.removeRestartFlag()
+        }
+    }
+
+    function setAutoLowTemperatureToMonitoring(temperatureC = device.autoMinReqTemp) {
+        if (device.systemSetup.isVacation) {
+            ProtoDataManager.setAutoLow(device.vacation.temp_min);
+
+        } else if (device.systemSetup.systemMode === AppSpec.Auto) {
+            var autoLowTemperature = temperatureC;
+
+            if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
+                autoLowTemperature = currentSchedule.minimumTemperature;
+            }
+
+            ProtoDataManager.setAutoLow(autoLowTemperature);
+        }
+    }
+
+    function setAutoHighTemperatureToMonitoring(temperatureC = device.autoMaxReqTemp) {
+        if (device.systemSetup.isVacation) {
+            ProtoDataManager.setAutoHigh(device.vacation.temp_max);
+
+        } else if (device.systemSetup.systemMode === AppSpec.Auto) {
+            var autoHighTemperature = temperatureC;
+
+            if (currentSchedule && currentSchedule.systemMode === AppSpec.Auto) {
+                autoHighTemperature = currentSchedule.maximumTemperature;
+            }
+
+            ProtoDataManager.setAutoHigh(autoHighTemperature);
         }
     }
 }

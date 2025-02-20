@@ -87,6 +87,8 @@ double SchemeDataProvider::effectiveTemperature() const
         effTemperature = UtilityHelper::toFahrenheit(PerfTestService::me()->perfTestTemperatureC());
         monitoringTemprature = effTemperature;
 
+        emit monitoringTemperatureUpdated(UtilityHelper::toCelsius(monitoringTemprature));
+
     } else if (isVacationEffective()) {
         //! Vacation properites (Fahrenheit)
         double minimumTemperature = UtilityHelper::toFahrenheit(mVacation.minimumTemperature);
@@ -99,18 +101,13 @@ double SchemeDataProvider::effectiveTemperature() const
             effTemperature = maximumTemperature;
         }
 
-        // The TemperatureScheme does not utilize this value, as it has its own logic for controlling the temperature.
-        // This value is only used for monitoring,
-        // In the Update API, we follow the same logic..
-        monitoringTemprature = (minimumTemperature + maximumTemperature) / 2;
-
     } else if (schedule() || effectiveSystemMode() == AppSpecCPP::SystemMode::Auto) {
 
         // The mode can be heating or cooling
         // In off mode schedule() is null
         if (schedule() && effectiveSystemMode() != AppSpecCPP::SystemMode::Auto) {
             effTemperature = UtilityHelper::toFahrenheit(schedule()->effectiveTemperature(effectiveSystemMode()));
-            monitoringTemprature = effTemperature;
+            emit monitoringTemperatureUpdated(UtilityHelper::toCelsius(effTemperature));
 
         } else {
 
@@ -123,8 +120,6 @@ double SchemeDataProvider::effectiveTemperature() const
                 minReqTemp = UtilityHelper::toFahrenheit(schedule()->minimumTemperature);
                 maxReqTemp = UtilityHelper::toFahrenheit(schedule()->maximumTemperature);
             }
-
-            monitoringTemprature = (minReqTemp + maxReqTemp) / 2;
 
             if ((minReqTemp - currentTemperature()) > 0.001) {
                 effTemperature = minReqTemp;
@@ -145,9 +140,10 @@ double SchemeDataProvider::effectiveTemperature() const
                     effTemperature = currentTemperature();
             }
         }
-    }
 
-    emit monitoringTemperatureUpdated(UtilityHelper::toCelsius(monitoringTemprature));
+    } else {
+        emit monitoringTemperatureUpdated(UtilityHelper::toCelsius(monitoringTemprature));
+    }
 
     return effTemperature;
 }
