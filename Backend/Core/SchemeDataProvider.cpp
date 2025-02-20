@@ -107,6 +107,7 @@ double SchemeDataProvider::effectiveTemperature() const
         // In off mode schedule() is null
         if (schedule() && effectiveSystemMode() != AppSpecCPP::SystemMode::Auto) {
             effTemperature = UtilityHelper::toFahrenheit(schedule()->effectiveTemperature(effectiveSystemMode()));
+            emit monitoringTemperatureUpdated(UtilityHelper::toCelsius(effTemperature));
 
         } else {
 

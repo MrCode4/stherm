@@ -893,6 +893,23 @@ I_DeviceController {
         }
     }
 
+    property Connections currentScheduleConnection: Connections {
+        target: currentSchedule
+
+        function onSystemModeChanged() {
+            setAutoLowTemperatureToMonitoring();
+            setAutoHighTemperatureToMonitoring();
+        }
+
+        function onMaximumTemperatureChanged() {
+            setAutoHighTemperatureToMonitoring();
+        }
+
+        function onMinimumTemperatureChanged() {
+            setAutoLowTemperatureToMonitoring();
+        }
+    }
+
     property Timer initialSetupDataPushTimer: Timer {
         property int retryCounter: 0
 
