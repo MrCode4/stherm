@@ -801,6 +801,11 @@ void Sync::forgetDevice()
 
 void Sync::clearSchedule(const int &scheduleID)
 {
+    if (mSerialNumber.isEmpty()) {
+        emit scheduleCleared(scheduleID, false);
+        return;
+    }
+
     auto callback = [this, scheduleID](QNetworkReply *reply, const QByteArray &rawData, QJsonObject &data) {
         bool success = reply->error() == QNetworkReply::NoError;
 
@@ -823,6 +828,11 @@ void Sync::clearSchedule(const int &scheduleID)
 
 void Sync::editSchedule(const int &scheduleID, const QVariantMap &schedule)
 {
+    if (mSerialNumber.isEmpty()) {
+        emit scheduleEdited(scheduleID, false);
+        return;
+    }
+
     QJsonObject reqData = QJsonObject::fromVariantMap(schedule);
     reqData["sn"] = mSerialNumber;
 
@@ -844,6 +854,11 @@ void Sync::editSchedule(const int &scheduleID, const QVariantMap &schedule)
 
 void Sync::addSchedule(const QString &scheduleUid, const QVariantMap &schedule)
 {
+    if (mSerialNumber.isEmpty()) {
+        emit scheduleAdded(scheduleUid, false);
+        return;
+    }
+
     QJsonObject reqData = QJsonObject::fromVariantMap(schedule);
     reqData["sn"] = mSerialNumber;
 

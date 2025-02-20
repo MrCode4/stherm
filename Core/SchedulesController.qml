@@ -41,7 +41,10 @@ QtObject {
     /* Object properties
      * ****************************************************************************************/
 
-    Component.onCompleted: device.schedulesChanged();
+    Component.onCompleted: {
+        device.schedulesChanged();
+    }
+
 
     /* Methods
      * ****************************************************************************************/
@@ -752,11 +755,12 @@ QtObject {
             deletingSchedulesChanged();
         }
 
-        deviceController.sync.clearSchedule(id);
+        if (NetworkInterface.hasInternet)
+            deviceController.sync.clearSchedule(id);
     }
 
     function editScheduleInServer(schedule: ScheduleCPP) {
-        if (schedule.id < 0) {
+        if (!schedule.isSyncedWithServer()) {
             console.log("Edit schedule: The schedule is not exists in the server (unknown ID)");
             return
         }
@@ -767,24 +771,29 @@ QtObject {
             editingSchedulesChanged();
         }
 
-        if (schedule) {
+        if (NetworkInterface.hasInternet && schedule) {
             var schedulePacket = schedulePacketServer(schedule);
             deviceController.sync.editSchedule(schedule.id, schedulePacket);
         }
     }
 
     function addScheduleToServer(schedule: ScheduleCPP) {
+        if (schedule.isSyncedWithServer()) {
+            console.log("This schedule exists in the server with id: ", schedule.id, " Trying to edit it...");
+            editScheduleInServer(schedule);
+            return;
+        }
+
         var schId = addingSchedules.findIndex(elem => elem._qsUuid === schedule._qsUuid);
         if (schId === -1) {
             addingSchedules.unshift(schedule);
             addingSchedulesChanged();
         }
 
-        if (schedule) {
+        if (NetworkInterface.hasInternet && schedule) {
             var schedulePacket = schedulePacketServer(schedule);
             deviceController.sync.addSchedule(schedule._qsUuid, schedulePacket);
         }
-
     }
 
     //! Prepare schedule packet for server
@@ -917,12 +926,6 @@ QtObject {
             deviceController.setActivatedSchedule(null);
             updateCurrentSchedules();
         }
-
-        function onIdChanged() {
-            // Send the new id of current schedule
-            if (deviceController.currentSchedule.id > -1)
-                deviceController.updateEditMode(AppSpec.EMSchedule);
-        }
     }
 
 
@@ -948,49 +951,47 @@ QtObject {
         }
     }
 
-    property Connections syncController: Connections {
+    property Connections syncConnections: Connections {
         target: deviceController.sync
 
         function onScheduleCleared(id: int, success: bool) {
-            var schId = deletingSchedules.findIndex(elem => elem === id);
+            if (id < 0) {
+                console.log("Wrong schedule id.");
+                retryScheduleDeleting();
+                return;
+            }
+
             if (success) {
+                var schId = deletingSchedules.findIndex(elem => elem === id);
                 console.log("Schedule cleared: ", id, schId);
 
                 if (schId !== -1) {
                     deletingSchedules.splice(schId, 1);
                     deletingSchedulesChanged();
                 }
-
-            } else {
-                // Schedule deleting failed, retry
-                if (schId !== -1) {
-                    deletingSchedules.push(schId);
-                    deletingSchedulesChanged();
-                }
-
-                retryScheduleDeleting.start();
             }
+
+            retryScheduleDeleting();
         }
 
         function onScheduleEdited(id: int, success: bool) {
-            var schId = editingSchedules.findIndex(elem => elem.id === id);
+            if (id < 0) {
+                console.log("Wrong schedule id.");
+                retryScheduleEditing()
+                return;
+            }
+
             if (success) {
+                var schId = editingSchedules.findIndex(elem => elem.id === id);
                 console.log("Schedule edited: ", id, schId);
 
                 if (schId !== -1) {
                     editingSchedules.splice(schId, 1);
                     editingSchedulesChanged();
                 }
-
-            } else {
-                // Schedule deleting failed, retry
-                if (schId !== -1) {
-                    editingSchedules.push(id);
-                    editingSchedulesChanged();
-                }
-
-                retryScheduleEditing.start();
             }
+
+            retryScheduleEditing()
         }
 
         function onScheduleAdded(scheduleUid, success: bool, schedule: var) {
@@ -1007,16 +1008,43 @@ QtObject {
                     addingSchedules.splice(schId, 1);
                     addingSchedulesChanged();
                 }
-
-            } else {
-                retryScheduleAdding.start();
             }
 
+            retryScheduleAdding();
+        }
+    }
+
+    property bool _modelCheckedForSyncing: false
+    property Connections networkConnections: Connections {
+        target: NetworkInterface
+
+        function onHasInternetChanged() {
+            if (NetworkInterface.hasInternet) {
+                if (!_modelCheckedForSyncing) {
+                    // Send schedules to the server that have not been sent previously.
+                    device.schedules.forEach(sch => {
+                                                 if (!sch.isSyncedWithServer()) {
+                                                     addScheduleToServer(sch);
+                                                 }
+                                             });
+
+                    _modelCheckedForSyncing = true;
+                }
+
+                retryScheduleDeleting();
+                retryScheduleEditing();
+                retryScheduleAdding();
+
+            } else {
+                retryScheduleDeletingTimer.stop();
+                retryScheduleEditingTimer.stop();
+                retryScheduleAddingTimer.stop();
+            }
         }
     }
 
     //! Retry to delete schedule
-    property Timer retryScheduleDeleting: Timer {
+    property Timer retryScheduleDeletingTimer: Timer {
         interval: 3000
         running: false
         repeat: false
@@ -1028,7 +1056,7 @@ QtObject {
     }
 
     //! Retry to edit schedule
-    property Timer retryScheduleEditing: Timer {
+    property Timer retryScheduleEditingTimer: Timer {
         interval: 4000
         running: false
         repeat: false
@@ -1040,7 +1068,7 @@ QtObject {
     }
 
     //! Retry to add schedule
-    property Timer retryScheduleAdding: Timer {
+    property Timer retryScheduleAddingTimer: Timer {
         interval: 2000
         running: false
         repeat: false
@@ -1049,5 +1077,22 @@ QtObject {
             if (addingSchedules.length > 0)
                 addScheduleToServer(addingSchedules[0]);
         }
+    }
+
+    /* Functions
+     * ****************************************************************************************/
+    function retryScheduleDeleting() {
+        if (NetworkInterface.hasInternet && deletingSchedules.length > 0)
+            retryScheduleDeletingTimer.start();
+    }
+
+    function retryScheduleEditing() {
+        if (NetworkInterface.hasInternet && editingSchedules.length > 0)
+            retryScheduleEditingTimer.start();
+    }
+
+    function retryScheduleAdding() {
+        if (NetworkInterface.hasInternet && addingSchedules.length > 0)
+            retryScheduleAddingTimer.start();
     }
 }
