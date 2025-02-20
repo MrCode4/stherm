@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option java_package = "com.nuvehvac.device.rest.protobuf";
+option java_outer_classname = "LiveDataPointProto";
+
+enum AirQuality {
+  AIR_QUALITY_VALUE_NONE = 0;
+  AIR_QUALITY_VALUE_0 = 1;
+  AIR_QUALITY_VALUE_1 = 2;
+  AIR_QUALITY_VALUE_2 = 3;
+}
+
+enum CoolingStage {
+  COOLING_STAGE_VALUE_0 = 0;
+  COOLING_STAGE_VALUE_1 = 1;
+  COOLING_STAGE_VALUE_2 = 2;
+}
+
+enum HeatingStage {
+  HEATING_STAGE_VALUE_0 = 0;
+  HEATING_STAGE_VALUE_1 = 1;
+  HEATING_STAGE_VALUE_2 = 2;
+  HEATING_STAGE_VALUE_3 = 3;
+}
+
+enum FanStatus {
+  FAN_STATUS_VALUE_0 = 0;
+  FAN_STATUS_VALUE_1 = 1;
+}
+
+enum LedStatus {
+  LED_STATUS_VALUE_0 = 0;
+  LED_STATUS_VALUE_1 = 1;
+}
+
+enum SystemType {
+  SYSTEM_TYPE_NONE = 0;
+  SYSTEM_TYPE_TRADITIONAL = 1;
+  SYSTEM_TYPE_HEAT_PUMP = 2;
+  SYSTEM_TYPE_COOLING = 3;
+  SYSTEM_TYPE_HEATING = 4;
+  SYSTEM_TYPE_DUAL_FUEL_HEATING = 5;
+}
+
+enum RunningMode {
+  RUNNING_MODE_NONE = 0;
+  RUNNING_MODE_COOLING = 1;
+  RUNNING_MODE_HEATING = 2;
+  RUNNING_MODE_AUTO = 3;
+  RUNNING_MODE_VACATION = 4;
+  RUNNING_MODE_OFF = 5;
+  RUNNING_MODE_EMERGENCY_HEAT = 6;
+}
+
+message LiveDataPoint {
+  google.protobuf.Timestamp time = 1; // Required field
+  optional float set_temperature = 2; // Optional
+  optional float set_humidity = 3; // Optional
+  optional float current_temperature_embedded = 4; // Optional
+  optional float current_humidity_embedded = 5; // Optional
+  optional float current_temperature_MCU = 6; // Optional
+  optional float air_pressure_embedded = 7; // Optional
+  optional AirQuality current_air_quality = 8; // Optional
+  optional CoolingStage current_cooling_stage = 9; // Optional
+  optional HeatingStage current_heating_stage = 10; // Optional
+  optional FanStatus current_fan_status = 11; // Optional
+  optional LedStatus led_status = 12; // Optional
+  bool is_sync = 13;
+  optional SystemType system_type = 14; // Optional
+  optional RunningMode running_mode = 15; // Optional
+  optional bool online_status = 16;
+  optional float auto_low = 17; // Optional
+  optional float auto_high = 18; // Optional
+}
+
+message LiveDataPointList {
+  repeated LiveDataPoint data_points = 1;
+}
