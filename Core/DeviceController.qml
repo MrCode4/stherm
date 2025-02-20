@@ -897,16 +897,25 @@ I_DeviceController {
         target: currentSchedule
 
         function onSystemModeChanged() {
-            setAutoLowTemperatureToMonitoring();
-            setAutoHighTemperatureToMonitoring();
+            if (device.systemSetup.systemMode === AppSpec.Auto) {
+                updateEditMode(AppSpec.EMAutoMode);
+                setAutoLowTemperatureToMonitoring();
+                setAutoHighTemperatureToMonitoring();
+            }
         }
 
         function onMaximumTemperatureChanged() {
-            setAutoHighTemperatureToMonitoring();
+            if (device.systemSetup.systemMode === AppSpec.Auto) {
+                updateEditMode(AppSpec.EMAutoMode);
+                setAutoHighTemperatureToMonitoring();
+            }
         }
 
         function onMinimumTemperatureChanged() {
-            setAutoLowTemperatureToMonitoring();
+            if (device.systemSetup.systemMode === AppSpec.Auto) {
+                updateEditMode(AppSpec.EMAutoMode);
+                setAutoLowTemperatureToMonitoring();
+            }
         }
     }
 
