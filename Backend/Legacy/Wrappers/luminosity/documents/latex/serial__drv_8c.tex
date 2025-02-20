@@ -1,0 +1,68 @@
+\doxysection{serial\+\_\+drv.\+c File Reference}
+\hypertarget{serial__drv_8c}{}\label{serial__drv_8c}\index{serial\_drv.c@{serial\_drv.c}}
+
+
+Implementation of serial data receive and transmit functions.  
+
+
+{\ttfamily \#include \"{}serial\+\_\+drv.\+h\"{}}\newline
+{\ttfamily \#include \"{}crc.\+h\"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{serial__drv_8c_acd6e20d4d40add5d0e9eda541c5b5c28}{Serial\+Data\+Rx}} (uint8\+\_\+t Rx\+Data, \mbox{\hyperlink{serial__drv_8h_a7735b7fdf5c771a06f6848a7907022b2}{Serial\+\_\+\+Rx\+Data\+\_\+t}} \texorpdfstring{$\ast$}{*}Rx\+Data\+Cfg)
+\begin{DoxyCompactList}\small\item\em Processes a received byte of serial data. \end{DoxyCompactList}\item 
+uint16\+\_\+t \mbox{\hyperlink{serial__drv_8c_aa7bf253ba533d87ef4c4eeeea14430a9}{Set\+\_\+\+SIO\+\_\+\+Tx\+Packet}} (uint8\+\_\+t \texorpdfstring{$\ast$}{*}Tx\+Data\+Buf, \mbox{\hyperlink{serial__drv_8h_a8c497a22014c5c6a04ec9f810c28b861}{SIO\+\_\+\+Packet\+\_\+t}} Tx\+Packet)
+\begin{DoxyCompactList}\small\item\em Prepares a serial packet for transmission. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Implementation of serial data receive and transmit functions. 
+
+This file contains functions for receiving and transmitting serial data, including handling of special characters and calculating the CRC. 
+
+\doxysubsection{Function Documentation}
+\Hypertarget{serial__drv_8c_acd6e20d4d40add5d0e9eda541c5b5c28}\label{serial__drv_8c_acd6e20d4d40add5d0e9eda541c5b5c28} 
+\index{serial\_drv.c@{serial\_drv.c}!SerialDataRx@{SerialDataRx}}
+\index{SerialDataRx@{SerialDataRx}!serial\_drv.c@{serial\_drv.c}}
+\doxysubsubsection{\texorpdfstring{SerialDataRx()}{SerialDataRx()}}
+{\footnotesize\ttfamily bool Serial\+Data\+Rx (\begin{DoxyParamCaption}\item[{uint8\+\_\+t}]{Rx\+Data,  }\item[{\mbox{\hyperlink{serial__drv_8h_a7735b7fdf5c771a06f6848a7907022b2}{Serial\+\_\+\+Rx\+Data\+\_\+t}} \texorpdfstring{$\ast$}{*}}]{Rx\+Data\+Cfg }\end{DoxyParamCaption})}
+
+
+
+Processes a received byte of serial data. 
+
+This function handles the received serial data, managing the escape sequences and constructing the received packet.
+
+
+\begin{DoxyParams}[1]{Parameters}
+ & {\em Rx\+Data} & The received data byte. \\
+\hline
+\mbox{\texttt{ out}}  & {\em Rx\+Data\+Cfg} & The Serial\+\_\+\+Rx\+Data\+\_\+t configuration struct containing the current state of the received packet. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+True if the packet is successfully received and has a valid length, false otherwise. 
+\end{DoxyReturn}
+\Hypertarget{serial__drv_8c_aa7bf253ba533d87ef4c4eeeea14430a9}\label{serial__drv_8c_aa7bf253ba533d87ef4c4eeeea14430a9} 
+\index{serial\_drv.c@{serial\_drv.c}!Set\_SIO\_TxPacket@{Set\_SIO\_TxPacket}}
+\index{Set\_SIO\_TxPacket@{Set\_SIO\_TxPacket}!serial\_drv.c@{serial\_drv.c}}
+\doxysubsubsection{\texorpdfstring{Set\_SIO\_TxPacket()}{Set\_SIO\_TxPacket()}}
+{\footnotesize\ttfamily uint16\+\_\+t Set\+\_\+\+SIO\+\_\+\+Tx\+Packet (\begin{DoxyParamCaption}\item[{uint8\+\_\+t \texorpdfstring{$\ast$}{*}}]{Tx\+Data\+Buf,  }\item[{\mbox{\hyperlink{serial__drv_8h_a8c497a22014c5c6a04ec9f810c28b861}{SIO\+\_\+\+Packet\+\_\+t}}}]{Tx\+Packet }\end{DoxyParamCaption})}
+
+
+
+Prepares a serial packet for transmission. 
+
+This function takes a packet of data and processes it for transmission, including calculating the CRC and adding escape sequences for special characters.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ out}}  & {\em Tx\+Data\+Buf} & The buffer containing the processed packet to be transmitted. \\
+\hline
+ & {\em Tx\+Packet} & The SIO\+\_\+\+Packet\+\_\+t struct containing the original packet data. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The length of the processed packet in bytes. 
+\end{DoxyReturn}

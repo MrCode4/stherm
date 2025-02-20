@@ -1,0 +1,15 @@
+/**
+
+@file test.json
+@brief Contains JSON data with information about Wi-Fi networks.
+This file contains a JSON string with information about Wi-Fi networks. The data is organized as an array of objects,
+where each object represents a single Wi-Fi network. Each object contains the following properties:
+essid: The name of the Wi-Fi network
+unique_name: A unique identifier for the network (usually the MAC address)
+connected: A boolean value indicating whether the device is currently connected to the network
+secret: A boolean value indicating whether the network requires a password to connect
+signal: The strength of the Wi-Fi signal (measured in decibels)
+This file is used by the WifiManager class to retrieve information about available Wi-Fi networks and to display
+information about the currently connected network.
+*/
+'{"data":[{"essid":"LanAr_Guest","unique_name":"04:18:D6:1F:38:60","connected":false,"secret":true,"signal":77},{"essid":"LanAr","unique_name":"04:18:D6:1F:38:61","connected":false,"secret":true,"signal":77},{"essid":"LanTekIV","unique_name":"04:18:D6:1F:38:62","connected":true,"secret":true,"signal":79},{"essid":"LanAr_Guest","unique_name":"04:18:D6:B8:46:20","connected":false,"secret":true,"signal":49},{"essid":"LanAr","unique_name":"04:18:D6:B8:46:21","connected":false,"secret":true,"signal":45},{"essid":"LanTekIV","unique_name":"04:18:D6:B8:46:22","connected":false,"secret":true,"signal":49},{"essid":"LanAr_Guest","unique_name":"44:D9:E7:86:FA:E0","connected":false,"secret":true,"signal":32},{"essid":"LanAr","unique_name":"44:D9:E7:86:FA:E1","connected":false,"secret":true,"signal":40},{"essid":"LanTekIV","unique_name":"44:D9:E7:86:FA:E2","connected":false,"secret":true,"signal":39},{"essid":"HVAC","unique_name":"6C:72:20:F3:4C:D8","connected":false,"secret":false,"signal":100},{"essid":"HP-Print-70-LaserJet 1102","unique_name":"BC:85:56:0C:2D:70","connected":false,"secret":false,"signal":59}]}'

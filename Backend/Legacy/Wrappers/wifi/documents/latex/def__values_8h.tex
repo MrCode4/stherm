@@ -1,0 +1,136 @@
+\doxysection{def\+\_\+values.\+h File Reference}
+\hypertarget{def__values_8h}{}\label{def__values_8h}\index{def\_values.h@{def\_values.h}}
+
+
+Contains constants and default values used in the \doxylink{class_input_parametrs}{Input\+Parametrs} class for managing Wi-\/\+Fi connections.  
+
+
+{\ttfamily \#include $<$iostream$>$}\newline
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{def__values_8h_a5cbc436b285bbd660ec2c151c22947e0}{ARGUMENT\+\_\+\+MIN\+\_\+\+COUNT}}~2
+\item 
+\#define \mbox{\hyperlink{def__values_8h_ae870535f2fbaf026d63caf07c6d3e09c}{ARGUMENT\+\_\+\+MAX\+\_\+\+COUNT}}~10
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aa}{COMMANDS}} \{ \newline
+\mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaae632e034f0e0f24df29cb4502326f905}{COMMAND\+\_\+\+SEARCH}} =100
+, \mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa32c65618324e254bde22218da6789ad3}{COMMAND\+\_\+\+MANUAL}}
+, \mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa5dc59f40ce77d4d2de3323e5167f8dbf}{COMMAND\+\_\+\+CONNECT}}
+, \mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa0c32be477bcfbdc0dd6f6cc108474105}{COMMAND\+\_\+\+DISCONNECT}}
+, \newline
+\mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa7724e2f443b45bfef9160b23733a0e7b}{COMMAND\+\_\+\+FORGET}}
+, \mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa2e93d85f9245e6c3d027c0ed441ca88b}{COMMAND\+\_\+\+SHOW\+\_\+\+ACTIVE\+\_\+\+CONNECTIONS}}
+, \mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaaa70755d4d95e9fc0011da162908f696f}{COMMAND\+\_\+\+SHOW\+\_\+\+CONNECTIONS}}
+, \mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaaa66a94b953985435949834d0ec98224e}{COMMAND\+\_\+\+DELETE\+\_\+\+ALL}}
+ \}
+\begin{DoxyCompactList}\small\item\em The available Wi-\/\+Fi management commands as enumerated values. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+std\+::string \mbox{\hyperlink{def__values_8h_a5c0ab853e6a30eddea2d99170d3c6235}{my\+\_\+cmd\+\_\+array}} \mbox{[}$\,$\mbox{]} = \{ \"{}search\"{},\"{}manual\"{},\"{}connect\"{},\"{}disconnect\"{},\"{}forget\"{},\"{}active\"{},\"{}connections\"{},\"{}secret\+\_\+delete\+\_\+all\"{}\}
+\item 
+int \mbox{\hyperlink{def__values_8h_aa48092da58e408f7c494391206a06953}{my\+\_\+arr\+\_\+size}} = 8
+\item 
+std\+::string \mbox{\hyperlink{def__values_8h_ad1f977e33f17a8666d02657032a6be40}{wifi\+\_\+manual}} = \"{}essid\+:\+Lan\+Tek\+IV ip\+:172.\+16.\+0.\+227 subnet\+:255.\+255.\+255.\+0 gtw\+:172.\+16.\+0.\+1 dns\+:8.\+8.\+8.\+8 dns2\+:4.\+4.\+4.\+4 pass\+:\+Ideal\+Networks123\texorpdfstring{$\ast$}{*}\"{}
+\begin{DoxyCompactList}\small\item\em The default values for Wi-\/\+Fi manual connection parameters. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains constants and default values used in the \doxylink{class_input_parametrs}{Input\+Parametrs} class for managing Wi-\/\+Fi connections. 
+
+This file defines constants such as the minimum and maximum number of command-\/line arguments accepted, the available Wi-\/\+Fi management commands, and default values for Wi-\/\+Fi manual connection parameters. \begin{DoxyAuthor}{Author}
+Gor Danielyan 
+
+Contact \href{https://t.me/Gorynych_DuO}{\texttt{ https\+://t.\+me/\+Gorynych\+\_\+\+DuO}} 
+\end{DoxyAuthor}
+
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{def__values_8h_ae870535f2fbaf026d63caf07c6d3e09c}\label{def__values_8h_ae870535f2fbaf026d63caf07c6d3e09c} 
+\index{def\_values.h@{def\_values.h}!ARGUMENT\_MAX\_COUNT@{ARGUMENT\_MAX\_COUNT}}
+\index{ARGUMENT\_MAX\_COUNT@{ARGUMENT\_MAX\_COUNT}!def\_values.h@{def\_values.h}}
+\doxysubsubsection{\texorpdfstring{ARGUMENT\_MAX\_COUNT}{ARGUMENT\_MAX\_COUNT}}
+{\footnotesize\ttfamily \#define ARGUMENT\+\_\+\+MAX\+\_\+\+COUNT~10}
+
+The maximum number of command-\/line arguments accepted for a command \Hypertarget{def__values_8h_a5cbc436b285bbd660ec2c151c22947e0}\label{def__values_8h_a5cbc436b285bbd660ec2c151c22947e0} 
+\index{def\_values.h@{def\_values.h}!ARGUMENT\_MIN\_COUNT@{ARGUMENT\_MIN\_COUNT}}
+\index{ARGUMENT\_MIN\_COUNT@{ARGUMENT\_MIN\_COUNT}!def\_values.h@{def\_values.h}}
+\doxysubsubsection{\texorpdfstring{ARGUMENT\_MIN\_COUNT}{ARGUMENT\_MIN\_COUNT}}
+{\footnotesize\ttfamily \#define ARGUMENT\+\_\+\+MIN\+\_\+\+COUNT~2}
+
+The minimum number of command-\/line arguments required for a valid command 
+
+\doxysubsection{Enumeration Type Documentation}
+\Hypertarget{def__values_8h_a73b52bb10772a6ec22fce9998c6549aa}\label{def__values_8h_a73b52bb10772a6ec22fce9998c6549aa} 
+\index{def\_values.h@{def\_values.h}!COMMANDS@{COMMANDS}}
+\index{COMMANDS@{COMMANDS}!def\_values.h@{def\_values.h}}
+\doxysubsubsection{\texorpdfstring{COMMANDS}{COMMANDS}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{def__values_8h_a73b52bb10772a6ec22fce9998c6549aa}{COMMANDS}}}
+
+
+
+The available Wi-\/\+Fi management commands as enumerated values. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMMAND\_SEARCH@{COMMAND\_SEARCH}!def\_values.h@{def\_values.h}}\index{def\_values.h@{def\_values.h}!COMMAND\_SEARCH@{COMMAND\_SEARCH}}}\Hypertarget{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaae632e034f0e0f24df29cb4502326f905}\label{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaae632e034f0e0f24df29cb4502326f905} 
+COMMAND\+\_\+\+SEARCH&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMMAND\_MANUAL@{COMMAND\_MANUAL}!def\_values.h@{def\_values.h}}\index{def\_values.h@{def\_values.h}!COMMAND\_MANUAL@{COMMAND\_MANUAL}}}\Hypertarget{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa32c65618324e254bde22218da6789ad3}\label{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa32c65618324e254bde22218da6789ad3} 
+COMMAND\+\_\+\+MANUAL&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMMAND\_CONNECT@{COMMAND\_CONNECT}!def\_values.h@{def\_values.h}}\index{def\_values.h@{def\_values.h}!COMMAND\_CONNECT@{COMMAND\_CONNECT}}}\Hypertarget{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa5dc59f40ce77d4d2de3323e5167f8dbf}\label{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa5dc59f40ce77d4d2de3323e5167f8dbf} 
+COMMAND\+\_\+\+CONNECT&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMMAND\_DISCONNECT@{COMMAND\_DISCONNECT}!def\_values.h@{def\_values.h}}\index{def\_values.h@{def\_values.h}!COMMAND\_DISCONNECT@{COMMAND\_DISCONNECT}}}\Hypertarget{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa0c32be477bcfbdc0dd6f6cc108474105}\label{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa0c32be477bcfbdc0dd6f6cc108474105} 
+COMMAND\+\_\+\+DISCONNECT&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMMAND\_FORGET@{COMMAND\_FORGET}!def\_values.h@{def\_values.h}}\index{def\_values.h@{def\_values.h}!COMMAND\_FORGET@{COMMAND\_FORGET}}}\Hypertarget{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa7724e2f443b45bfef9160b23733a0e7b}\label{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa7724e2f443b45bfef9160b23733a0e7b} 
+COMMAND\+\_\+\+FORGET&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMMAND\_SHOW\_ACTIVE\_CONNECTIONS@{COMMAND\_SHOW\_ACTIVE\_CONNECTIONS}!def\_values.h@{def\_values.h}}\index{def\_values.h@{def\_values.h}!COMMAND\_SHOW\_ACTIVE\_CONNECTIONS@{COMMAND\_SHOW\_ACTIVE\_CONNECTIONS}}}\Hypertarget{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa2e93d85f9245e6c3d027c0ed441ca88b}\label{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaa2e93d85f9245e6c3d027c0ed441ca88b} 
+COMMAND\+\_\+\+SHOW\+\_\+\+ACTIVE\+\_\+\+CONNECTIONS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMMAND\_SHOW\_CONNECTIONS@{COMMAND\_SHOW\_CONNECTIONS}!def\_values.h@{def\_values.h}}\index{def\_values.h@{def\_values.h}!COMMAND\_SHOW\_CONNECTIONS@{COMMAND\_SHOW\_CONNECTIONS}}}\Hypertarget{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaaa70755d4d95e9fc0011da162908f696f}\label{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaaa70755d4d95e9fc0011da162908f696f} 
+COMMAND\+\_\+\+SHOW\+\_\+\+CONNECTIONS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{COMMAND\_DELETE\_ALL@{COMMAND\_DELETE\_ALL}!def\_values.h@{def\_values.h}}\index{def\_values.h@{def\_values.h}!COMMAND\_DELETE\_ALL@{COMMAND\_DELETE\_ALL}}}\Hypertarget{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaaa66a94b953985435949834d0ec98224e}\label{def__values_8h_a73b52bb10772a6ec22fce9998c6549aaaa66a94b953985435949834d0ec98224e} 
+COMMAND\+\_\+\+DELETE\+\_\+\+ALL&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Variable Documentation}
+\Hypertarget{def__values_8h_aa48092da58e408f7c494391206a06953}\label{def__values_8h_aa48092da58e408f7c494391206a06953} 
+\index{def\_values.h@{def\_values.h}!my\_arr\_size@{my\_arr\_size}}
+\index{my\_arr\_size@{my\_arr\_size}!def\_values.h@{def\_values.h}}
+\doxysubsubsection{\texorpdfstring{my\_arr\_size}{my\_arr\_size}}
+{\footnotesize\ttfamily int my\+\_\+arr\+\_\+size = 8}
+
+\Hypertarget{def__values_8h_a5c0ab853e6a30eddea2d99170d3c6235}\label{def__values_8h_a5c0ab853e6a30eddea2d99170d3c6235} 
+\index{def\_values.h@{def\_values.h}!my\_cmd\_array@{my\_cmd\_array}}
+\index{my\_cmd\_array@{my\_cmd\_array}!def\_values.h@{def\_values.h}}
+\doxysubsubsection{\texorpdfstring{my\_cmd\_array}{my\_cmd\_array}}
+{\footnotesize\ttfamily std\+::string my\+\_\+cmd\+\_\+array\mbox{[}$\,$\mbox{]} = \{ \"{}search\"{},\"{}manual\"{},\"{}connect\"{},\"{}disconnect\"{},\"{}forget\"{},\"{}active\"{},\"{}connections\"{},\"{}secret\+\_\+delete\+\_\+all\"{}\}}
+
+The aviable list of command that \doxylink{}{Input\+Parametrs } can wotk with \Hypertarget{def__values_8h_ad1f977e33f17a8666d02657032a6be40}\label{def__values_8h_ad1f977e33f17a8666d02657032a6be40} 
+\index{def\_values.h@{def\_values.h}!wifi\_manual@{wifi\_manual}}
+\index{wifi\_manual@{wifi\_manual}!def\_values.h@{def\_values.h}}
+\doxysubsubsection{\texorpdfstring{wifi\_manual}{wifi\_manual}}
+{\footnotesize\ttfamily std\+::string wifi\+\_\+manual = \"{}essid\+:\+Lan\+Tek\+IV ip\+:172.\+16.\+0.\+227 subnet\+:255.\+255.\+255.\+0 gtw\+:172.\+16.\+0.\+1 dns\+:8.\+8.\+8.\+8 dns2\+:4.\+4.\+4.\+4 pass\+:\+Ideal\+Networks123\texorpdfstring{$\ast$}{*}\"{}}
+
+
+
+The default values for Wi-\/\+Fi manual connection parameters. 
+

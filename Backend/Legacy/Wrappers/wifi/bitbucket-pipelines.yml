@@ -1,0 +1,21 @@
+image: atlassian/default-image:3
+
+pipelines:
+  branches:
+    master:
+      - step: 
+          name: Install software
+          script:
+            - apt update && apt install -y g++-arm-linux-gnueabihf
+            - cd src
+            - arm-linux-gnueabihf-g++ main.cpp InputParametrs.cpp WifiManager.cpp -o wifi.out
+          artifacts:
+            - src/wifi.out
+      - step:
+          name: Artifactory connection
+          script:
+            - pipe: jfrog/jfrog-setup-cli:2.0.0
+            - source ./jfrog-setup-cli.sh
+            - jf rt ping
+            - jf rt u src/wifi.out nuve1-wifi/v${BITBUCKET_BUILD_NUMBER}/wifi.out
+            - jf rt u src/wifi.out nuve1-wifi/latest/wifi.out

@@ -1,0 +1,177 @@
+\doxysection{old vers.\+cpp File Reference}
+\hypertarget{old_01vers_8cpp}{}\label{old_01vers_8cpp}\index{old vers.cpp@{old vers.cpp}}
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+\doxysubsubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef enum \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dc}{SIO\+\_\+\+Errors}} \mbox{\hyperlink{old_01vers_8cpp_ad5b7a96255a990ccbef7f7b2065b1897}{SIO\+\_\+\+Errors\+\_\+t}}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dc}{SIO\+\_\+\+Errors}} \{ \newline
+\mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca18bbd975653ed24f2333c30c9f7f7386}{ERROR\+\_\+\+NO}} = 0x00
+, \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcad72fa90dba5570304cd5b3a84f50c1ae}{ERROR\+\_\+01}}
+, \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca22d6c6941824c64153e763d87c3dfab1}{ERROR\+\_\+02}}
+, \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcacccb923bfec6f6cc4ba96f00d4183eea}{ERROR\+\_\+\+GPIO\+\_\+\+INIT}}
+, \newline
+\mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca42498341943a91e1ca862ed65d90eb3a}{ERROR\+\_\+\+UNKNOWN\+\_\+\+COMMAND}}
+, \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca47a6be599d7b86d6078e5e150674a206}{ERROR\+\_\+\+CRC}}
+, \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca9d17c253865c9710657678184c797906}{ERROR\+\_\+\+RELAY\+\_\+\+NOT\+\_\+\+FOUND}}
+, \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcac0cc91a9cc383c6ff98e9b311b8acf8f}{USAGE\+\_\+\+ERROR}}
+, \newline
+\mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca49ccf277a69dd938c591928aa27c66cc}{ARGUMENT\+\_\+\+ERROR}}
+, \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcac3958e7f70de9a0bfb39499d8edbd376}{RESOURCE\+\_\+\+BUSY\+\_\+\+ERROR}}
+, \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcaa6160da3d147c897d800efe3a69c941e}{INTERNAL\+\_\+\+ERROR}}
+, \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcae0952253ee25621baf8a985cc5562974}{WRONG\+\_\+\+ESSID}}
+, \newline
+\mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca7bdbbb61ad55ab29d66443526141d46e}{WRONG\+\_\+\+PASSWORD}}
+ \}
+\item 
+enum \mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38}{IP}} \{ \newline
+\mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a21e8a8615e2f17464c1d3630ac3b0c52}{IP0}} = 0
+, \mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a2e35d27edcbe8634913943cba8a0a2a4}{IP128}} = 128
+, \mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a43a29111c34c23a891143e025a3e76bb}{IP192}} = 192
+, \mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38adefe65056ca8084bdf682ae182f41fc1}{IP224}} = 224
+, \newline
+\mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38afa958b184b1d2b2af77df6366f9e3890}{IP240}} = 240
+, \mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38af23db5c4af676d855a475735b4aa8cbd}{IP248}} = 248
+, \mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a731b001d42421ad060b4a2a4344c2c43}{IP252}} = 252
+, \mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a51db5d4ca6fb58d49ade96b02a99dc27}{IP254}} = 254
+, \newline
+\mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a34640fc44e83aa3d75480fc17a9dd6ec}{IP255}} = 255
+ \}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{old_01vers_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}{main}} (int argc, char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}argv)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Typedef Documentation}
+\Hypertarget{old_01vers_8cpp_ad5b7a96255a990ccbef7f7b2065b1897}\label{old_01vers_8cpp_ad5b7a96255a990ccbef7f7b2065b1897} 
+\index{old vers.cpp@{old vers.cpp}!SIO\_Errors\_t@{SIO\_Errors\_t}}
+\index{SIO\_Errors\_t@{SIO\_Errors\_t}!old vers.cpp@{old vers.cpp}}
+\doxysubsubsection{\texorpdfstring{SIO\_Errors\_t}{SIO\_Errors\_t}}
+{\footnotesize\ttfamily typedef enum \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dc}{SIO\+\_\+\+Errors}} \mbox{\hyperlink{old_01vers_8cpp_ad5b7a96255a990ccbef7f7b2065b1897}{SIO\+\_\+\+Errors\+\_\+t}}}
+
+
+
+\doxysubsection{Enumeration Type Documentation}
+\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38} 
+\index{old vers.cpp@{old vers.cpp}!IP@{IP}}
+\index{IP@{IP}!old vers.cpp@{old vers.cpp}}
+\doxysubsubsection{\texorpdfstring{IP}{IP}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38}{IP}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IP0@{IP0}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!IP0@{IP0}}}\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a21e8a8615e2f17464c1d3630ac3b0c52}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a21e8a8615e2f17464c1d3630ac3b0c52} 
+IP0&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IP128@{IP128}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!IP128@{IP128}}}\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a2e35d27edcbe8634913943cba8a0a2a4}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a2e35d27edcbe8634913943cba8a0a2a4} 
+IP128&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IP192@{IP192}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!IP192@{IP192}}}\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a43a29111c34c23a891143e025a3e76bb}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a43a29111c34c23a891143e025a3e76bb} 
+IP192&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IP224@{IP224}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!IP224@{IP224}}}\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38adefe65056ca8084bdf682ae182f41fc1}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38adefe65056ca8084bdf682ae182f41fc1} 
+IP224&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IP240@{IP240}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!IP240@{IP240}}}\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38afa958b184b1d2b2af77df6366f9e3890}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38afa958b184b1d2b2af77df6366f9e3890} 
+IP240&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IP248@{IP248}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!IP248@{IP248}}}\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38af23db5c4af676d855a475735b4aa8cbd}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38af23db5c4af676d855a475735b4aa8cbd} 
+IP248&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IP252@{IP252}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!IP252@{IP252}}}\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a731b001d42421ad060b4a2a4344c2c43}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a731b001d42421ad060b4a2a4344c2c43} 
+IP252&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IP254@{IP254}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!IP254@{IP254}}}\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a51db5d4ca6fb58d49ade96b02a99dc27}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a51db5d4ca6fb58d49ade96b02a99dc27} 
+IP254&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{IP255@{IP255}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!IP255@{IP255}}}\Hypertarget{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a34640fc44e83aa3d75480fc17a9dd6ec}\label{old_01vers_8cpp_a16e3cb232d173c8a2ef726cc184d5c38a34640fc44e83aa3d75480fc17a9dd6ec} 
+IP255&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dc}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dc} 
+\index{old vers.cpp@{old vers.cpp}!SIO\_Errors@{SIO\_Errors}}
+\index{SIO\_Errors@{SIO\_Errors}!old vers.cpp@{old vers.cpp}}
+\doxysubsubsection{\texorpdfstring{SIO\_Errors}{SIO\_Errors}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dc}{SIO\+\_\+\+Errors}}}
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_NO@{ERROR\_NO}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!ERROR\_NO@{ERROR\_NO}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca18bbd975653ed24f2333c30c9f7f7386}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca18bbd975653ed24f2333c30c9f7f7386} 
+ERROR\+\_\+\+NO&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_01@{ERROR\_01}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!ERROR\_01@{ERROR\_01}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcad72fa90dba5570304cd5b3a84f50c1ae}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcad72fa90dba5570304cd5b3a84f50c1ae} 
+ERROR\+\_\+01&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_02@{ERROR\_02}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!ERROR\_02@{ERROR\_02}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca22d6c6941824c64153e763d87c3dfab1}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca22d6c6941824c64153e763d87c3dfab1} 
+ERROR\+\_\+02&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_GPIO\_INIT@{ERROR\_GPIO\_INIT}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!ERROR\_GPIO\_INIT@{ERROR\_GPIO\_INIT}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcacccb923bfec6f6cc4ba96f00d4183eea}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcacccb923bfec6f6cc4ba96f00d4183eea} 
+ERROR\+\_\+\+GPIO\+\_\+\+INIT&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_UNKNOWN\_COMMAND@{ERROR\_UNKNOWN\_COMMAND}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!ERROR\_UNKNOWN\_COMMAND@{ERROR\_UNKNOWN\_COMMAND}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca42498341943a91e1ca862ed65d90eb3a}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca42498341943a91e1ca862ed65d90eb3a} 
+ERROR\+\_\+\+UNKNOWN\+\_\+\+COMMAND&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_CRC@{ERROR\_CRC}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!ERROR\_CRC@{ERROR\_CRC}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca47a6be599d7b86d6078e5e150674a206}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca47a6be599d7b86d6078e5e150674a206} 
+ERROR\+\_\+\+CRC&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_RELAY\_NOT\_FOUND@{ERROR\_RELAY\_NOT\_FOUND}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!ERROR\_RELAY\_NOT\_FOUND@{ERROR\_RELAY\_NOT\_FOUND}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca9d17c253865c9710657678184c797906}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca9d17c253865c9710657678184c797906} 
+ERROR\+\_\+\+RELAY\+\_\+\+NOT\+\_\+\+FOUND&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{USAGE\_ERROR@{USAGE\_ERROR}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!USAGE\_ERROR@{USAGE\_ERROR}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcac0cc91a9cc383c6ff98e9b311b8acf8f}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcac0cc91a9cc383c6ff98e9b311b8acf8f} 
+USAGE\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ARGUMENT\_ERROR@{ARGUMENT\_ERROR}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!ARGUMENT\_ERROR@{ARGUMENT\_ERROR}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca49ccf277a69dd938c591928aa27c66cc}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca49ccf277a69dd938c591928aa27c66cc} 
+ARGUMENT\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{RESOURCE\_BUSY\_ERROR@{RESOURCE\_BUSY\_ERROR}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!RESOURCE\_BUSY\_ERROR@{RESOURCE\_BUSY\_ERROR}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcac3958e7f70de9a0bfb39499d8edbd376}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcac3958e7f70de9a0bfb39499d8edbd376} 
+RESOURCE\+\_\+\+BUSY\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{INTERNAL\_ERROR@{INTERNAL\_ERROR}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!INTERNAL\_ERROR@{INTERNAL\_ERROR}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcaa6160da3d147c897d800efe3a69c941e}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcaa6160da3d147c897d800efe3a69c941e} 
+INTERNAL\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{WRONG\_ESSID@{WRONG\_ESSID}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!WRONG\_ESSID@{WRONG\_ESSID}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcae0952253ee25621baf8a985cc5562974}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dcae0952253ee25621baf8a985cc5562974} 
+WRONG\+\_\+\+ESSID&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{WRONG\_PASSWORD@{WRONG\_PASSWORD}!old vers.cpp@{old vers.cpp}}\index{old vers.cpp@{old vers.cpp}!WRONG\_PASSWORD@{WRONG\_PASSWORD}}}\Hypertarget{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca7bdbbb61ad55ab29d66443526141d46e}\label{old_01vers_8cpp_ac5fbadb68891ea7ccc621054e1ee58dca7bdbbb61ad55ab29d66443526141d46e} 
+WRONG\+\_\+\+PASSWORD&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{old_01vers_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}\label{old_01vers_8cpp_a3c04138a5bfe5d72780bb7e82a18e627} 
+\index{old vers.cpp@{old vers.cpp}!main@{main}}
+\index{main@{main}!old vers.cpp@{old vers.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}}]{argv }\end{DoxyParamCaption})}
+

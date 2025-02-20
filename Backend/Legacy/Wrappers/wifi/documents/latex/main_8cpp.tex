@@ -1,0 +1,46 @@
+\doxysection{main.\+cpp File Reference}
+\hypertarget{main_8cpp}{}\label{main_8cpp}\index{main.cpp@{main.cpp}}
+{\ttfamily \#include $<$cstdio$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include \"{}Wifi\+Manager.\+h\"{}}\newline
+{\ttfamily \#include \"{}Input\+Parametrs.\+h\"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{main_8cpp_a692031ffd69ebc3167811003bc17578c}{my\+\_\+exit}} ()
+\item 
+int \mbox{\hyperlink{main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}{main}} (int argc, char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}argv)
+\begin{DoxyCompactList}\small\item\em Main function for the Wi-\/\+Fi management program. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627}\label{main_8cpp_a3c04138a5bfe5d72780bb7e82a18e627} 
+\index{main.cpp@{main.cpp}!main@{main}}
+\index{main@{main}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}\item[{int}]{argc,  }\item[{char \texorpdfstring{$\ast$}{*}\texorpdfstring{$\ast$}{*}}]{argv }\end{DoxyParamCaption})}
+
+
+
+Main function for the Wi-\/\+Fi management program. 
+
+This function initializes an \doxylink{class_input_parametrs}{Input\+Parametrs} object with the given command-\/line arguments and then calls the execute\+Command() method to perform the specified Wi-\/\+Fi management operation.
+
+
+\begin{DoxyParams}{Parameters}
+{\em argc} & Number of command-\/line arguments \\
+\hline
+{\em argv} & Array of command-\/line arguments \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+int Program exit code (0 for success, non-\/zero for failure) 
+\end{DoxyReturn}
+\Hypertarget{main_8cpp_a692031ffd69ebc3167811003bc17578c}\label{main_8cpp_a692031ffd69ebc3167811003bc17578c} 
+\index{main.cpp@{main.cpp}!my\_exit@{my\_exit}}
+\index{my\_exit@{my\_exit}!main.cpp@{main.cpp}}
+\doxysubsubsection{\texorpdfstring{my\_exit()}{my\_exit()}}
+{\footnotesize\ttfamily void my\+\_\+exit (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+

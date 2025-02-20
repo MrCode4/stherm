@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="_def__values_8h_source" xml:lang="en-US">
+<title>def_values.h</title>
+Go to the documentation of this file.<programlisting linenumbering="unnumbered">1 
+10 <emphasis role="preprocessor">#pragma&#32;once</emphasis>
+11 <emphasis role="preprocessor">#include&#32;&lt;iostream&gt;</emphasis>
+12 <emphasis role="preprocessor">#define&#32;ARGUMENT_MIN_COUNT&#32;2&#32;</emphasis>
+13 <emphasis role="preprocessor">#define&#32;ARGUMENT_MAX_COUNT&#32;10&#32;</emphasis>
+14 std::string&#32;<link linkend="_def__values_8h_1a5c0ab853e6a30eddea2d99170d3c6235">my_cmd_array</link>[]&#32;=&#32;{&#32;<emphasis role="stringliteral">&quot;search&quot;</emphasis>,<emphasis role="stringliteral">&quot;manual&quot;</emphasis>,<emphasis role="stringliteral">&quot;connect&quot;</emphasis>,<emphasis role="stringliteral">&quot;disconnect&quot;</emphasis>,<emphasis role="stringliteral">&quot;forget&quot;</emphasis>,<emphasis role="stringliteral">&quot;active&quot;</emphasis>,<emphasis role="stringliteral">&quot;connections&quot;</emphasis>,<emphasis role="stringliteral">&quot;secret_delete_all&quot;</emphasis>};&#32;
+15 <emphasis role="keywordtype">int</emphasis>&#32;<link linkend="_def__values_8h_1aa48092da58e408f7c494391206a06953">my_arr_size</link>&#32;=&#32;8;
+19 <emphasis role="keyword">enum</emphasis>&#32;<link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aa">COMMANDS</link>
+20 {
+21 &#32;&#32;&#32;&#32;<link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaae632e034f0e0f24df29cb4502326f905">COMMAND_SEARCH</link>=100,
+22 &#32;&#32;&#32;&#32;<link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa32c65618324e254bde22218da6789ad3">COMMAND_MANUAL</link>,
+23 &#32;&#32;&#32;&#32;<link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa5dc59f40ce77d4d2de3323e5167f8dbf">COMMAND_CONNECT</link>,
+24 &#32;&#32;&#32;&#32;<link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa0c32be477bcfbdc0dd6f6cc108474105">COMMAND_DISCONNECT</link>,
+25 &#32;&#32;&#32;&#32;<link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa7724e2f443b45bfef9160b23733a0e7b">COMMAND_FORGET</link>,
+26 &#32;&#32;&#32;&#32;<link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaa2e93d85f9245e6c3d027c0ed441ca88b">COMMAND_SHOW_ACTIVE_CONNECTIONS</link>,
+27 &#32;&#32;&#32;&#32;<link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaaa70755d4d95e9fc0011da162908f696f">COMMAND_SHOW_CONNECTIONS</link>,
+28 &#32;&#32;&#32;&#32;<link linkend="_def__values_8h_1a73b52bb10772a6ec22fce9998c6549aaaa66a94b953985435949834d0ec98224e">COMMAND_DELETE_ALL</link>,
+29 };
+33 std::string&#32;<link linkend="_def__values_8h_1ad1f977e33f17a8666d02657032a6be40">wifi_manual</link>&#32;=&#32;<emphasis role="stringliteral">&quot;essid:LanTekIV&#32;ip:172.16.0.227&#32;subnet:255.255.255.0&#32;gtw:172.16.0.1&#32;dns:8.8.8.8&#32;dns2:4.4.4.4&#32;pass:IdealNetworks123*&quot;</emphasis>;
+</programlisting></section>

@@ -1,0 +1,753 @@
+\doxysection{Wifi\+Manager Class Reference}
+\hypertarget{class_wifi_manager}{}\label{class_wifi_manager}\index{WifiManager@{WifiManager}}
+
+
+A class for managing Wi\+Fi connections using nmcli.  
+
+
+
+
+{\ttfamily \#include $<$Wifi\+Manager.\+h$>$}
+
+\doxysubsubsection*{Public Types}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2}{ERROR}} \{ \newline
+\mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ad0c2672612cf635978a1ca1af06a3d53}{ERROR\+\_\+\+NO}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a573c5a56e0fb643b66eb9d005739b747}{ERROR\+\_\+\+UNKNOWN}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ac3724ca761a551e219a6741f136ed7c3}{ERROR\+\_\+\+INPUT}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a31746db4adf6cf1e6c2bef77c05fdb22}{ERROR\+\_\+\+TIMEOUT}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2aeb2e94f826b2714cf1c19d06e5a3513e}{ERROR\+\_\+\+Con\+Act\+Fail}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5dc507d122945b5374d6488fb8a67248}{ERROR\+\_\+\+Con\+Dact\+Fail}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2aeea659600608de8feee9609360ecde4d}{ERROR\+\_\+\+Disc\+Dev\+Fail}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a0859a6f2e21e31cae35d11a5b449993e}{ERROR\+\_\+\+Con\+Del\+Fail}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5fb427515d5908910c20fdbcd0729bbe}{ERROR\+\_\+\+Net\+Mng}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a30c0afb8d2ea34e44d732fb8331b7a39}{ERROR\+\_\+\+Not\+Exsist}} =10
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ae5b7a18718ca41a4998850fe71ca814f}{ERROR\+\_\+\+WRONG\+\_\+\+BSSID}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5c4d2e6dd3c3645998fb47263a16cff1}{ERROR\+\_\+\+WRONG\+\_\+\+NAME}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a51f69506a8ee7d5a97b47063b79ef6f8}{ERROR\+\_\+\+WRONG\+\_\+\+PASS}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2af26c18fa212a2a7f209d00371e23a619}{ERROR\+\_\+\+NO\+\_\+\+ACTIVE\+\_\+\+WIFI}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5942e5a85ea9558670adf32211025d66}{ERROR\+\_\+\+WRONG\+\_\+\+ARGUMENTS}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a04e48b051fbc93930d40d0c2d80a7e18}{ERROR\+\_\+\+CRITICAL\+\_\+\+DELETE}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a0d00edaf2a28cb932191a32e6e158c44}{ERROR\+\_\+\+INTERNAL\+\_\+\+ERROR}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a782d2521e6eb0e30afb0a0772bd1181f}{ERROR\+\_\+\+CONNECTION\+\_\+\+ALREADY\+\_\+\+EXISTS}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2afff600cc95e3158d44357d2d9acc7179}{ERROR\+\_\+\+INTERNAL\+\_\+\+ERROR\+\_\+\+PARSING}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2afb08987831dfa9af4e19b95c394952d1}{ERROR\+\_\+\+WRONG\+\_\+\+SUBNET}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a7f082c4e19f31d1e60593c8310db3206}{ERROR\+\_\+\+WRONG\+\_\+\+IP}}
+, \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ac73ddd21a8739ed28ac3afb4f40bf6c2}{ERROR\+\_\+\+WRONG\+\_\+\+ESSID}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration of error codes used by the \doxylink{class_wifi_manager}{Wifi\+Manager} class. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056}{Manual\+\_\+connection}} \{ \newline
+\mbox{\hyperlink{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a31cf4dc4bb83a9dfca5cdbaa74c2f2ae}{essid}}
+, \mbox{\hyperlink{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a88e2917d8d569d668dcb657ab45a8bd0}{ip}}
+, \mbox{\hyperlink{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a7233d2647818a879d177cf750dd30441}{subnet}}
+, \mbox{\hyperlink{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056acef094b94eec361d9dc7ff82898282d0}{gtw}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056abdb3bd4a2476895d15a8c32f5c2f4431}{dns}}
+, \mbox{\hyperlink{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a388355d0055d91c257bf08d399db8b3f}{dns2}}
+, \mbox{\hyperlink{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a3521042f8fea20d18dff8ea6345cd1fe}{pass}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration of manual connection parameter indices. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{class_wifi_manager_acf5921477f30bdbe8471b4f64c002b2e}{get\+\_\+wifi\+\_\+list}} ()
+\begin{DoxyCompactList}\small\item\em Descritpion -\/ Printing a list of available Wi\+Fi networks and their properties. This function uses the \"{}nmcli\"{} command to get a list of available Wi\+Fi networks and their properties. The properties include ESSID, unique name, connection status, security status, and signal strength. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_aa738fe9e3945e0b7dd4df9f13a9aad2a}{get\+\_\+wifi\+\_\+state}} (std\+::string \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df}{name}})
+\begin{DoxyCompactList}\small\item\em Retrieves the list of available Wi-\/\+Fi networks and prints it in \doxylink{}{test.\+json} format. This function uses the \textquotesingle{}nmcli\textquotesingle{} command to obtain the list of available Wi-\/\+Fi networks. It then formats and prints the Wi-\/\+Fi networks as a JSON object. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a352b0302b30e1977745ec33da20716e4}{wifi\+\_\+connect}} (std\+::vector$<$ std\+::string $>$ \&wifi\+\_\+params)
+\begin{DoxyCompactList}\small\item\em Attempts to connect to a Wi-\/\+Fi network with the specified parameters. This function attempts to connect to a Wi-\/\+Fi network with the specified name and optional password. It first checks if a connection with the same name already exists, in which case it returns an error. If the network requires a password and a password is not provided or the wrong number of arguments are provided, it returns an error. If the connection is successful, it returns 0. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a7decdde89e6bd2dcc6aee7cf6a3d3bd0}{wifi\+\_\+disconnect}} (std\+::string \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df}{name}})
+\begin{DoxyCompactList}\small\item\em Disconnects from the specified Wi-\/\+Fi network by name. This function searches for the specified Wi-\/\+Fi network name and disconnects from it if it\textquotesingle{}s active. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a0a054ea8fc1fd4b2d2213e1f0df5bf6e}{wifi\+\_\+forget}} (std\+::string \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df}{name}})
+\begin{DoxyCompactList}\small\item\em Forget a Wi\+Fi connection from the nmcli connection list. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a4d4b48ee7d7fc5e8da0da608f2350bee}{wifi\+\_\+con\+\_\+up}} (std\+::string \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df}{name}})
+\begin{DoxyCompactList}\small\item\em Helper method for connecting to a previously disconnected Wi\+Fi connection. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a066abd63052739888fbb9037cc80f012}{get\+\_\+active\+\_\+wifi}} ()
+\begin{DoxyCompactList}\small\item\em Get the currently active Wi\+Fi connection/s. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a05280c77c4a505667a193b1503acdd66}{get\+\_\+wifi\+\_\+connections}} ()
+\begin{DoxyCompactList}\small\item\em Get the list of Wi\+Fi connections. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a5d4bdb1032b12c944292c3b2e6319e52}{delete\+\_\+all\+\_\+con}} ()
+\begin{DoxyCompactList}\small\item\em Delete all saved connections. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_ac0f6da08291108d80b372688f144a005}{bssid\+\_\+to\+\_\+ssid}} (std\+::string \&\mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea54d8cf8e5832d08805b2b828dd19ad54}{bssid}})
+\begin{DoxyCompactList}\small\item\em Convert a BSSID to an SSID. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a3ac184a0cbc1480eb648269316fdb9c9}{write\+\_\+wifi\+\_\+signal}} ()
+\begin{DoxyCompactList}\small\item\em Write the Wi\+Fi signal level. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a3abcb45ca58dc3f44c42796d18c80baf}{wifi\+\_\+manual\+\_\+connect}} (std\+::vector$<$ std\+::string $>$ \&args)
+\begin{DoxyCompactList}\small\item\em Manually connects to a Wi-\/\+Fi network using the provided network settings. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Types}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553e}{Wifi\+Search\+Word\+\_\+e}} \{ \newline
+\mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df}{name}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eab94b43346fb55895677a0541141cf474}{ssid}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eabe02eaddd261f190e1b07a9ef65dd07d}{ssid\+\_\+hex}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea54d8cf8e5832d08805b2b828dd19ad54}{bssid}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea35f8e7a63d2b3fffbbe2a8f8e0d05fff}{mode}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eac92f1f56dc9284ee2d155816d3493a56}{chan}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eae3e349fd977e5ef0d50be1f7b98a39de}{freq}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea33c8aae8465db9d072f73107ac88ce12}{rate}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eabf76cace6c2a1e6bc0bfc4f8696f8d57}{signal}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eaa392cf3d2f1665aba41df3df42729fb4}{bars}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea80fc324c06b513231c4e90eff7c67417}{security}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea9c95a132c391cfcd637adbe2391645c7}{wpa\+\_\+flags}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea3d6d92b655b460e781a67d60d717d031}{rsn\+\_\+flags}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ead847ecd4af8d0ec8433148bce1fc2d1d}{device}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eaf193a35ee4531c9d763f71ae9a395f60}{active}}
+, \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eaaa9b0d75d03094bc0fa8f86c17b39e79}{in\+\_\+use}}
+, \newline
+\mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eab76b0ec903ffff74c7f4ae55b605a59d}{dbus\+\_\+path}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration of search words used for parsing Wi\+Fi data. \end{DoxyCompactList}\item 
+typedef std\+::pair$<$ std\+::string, std\+::vector$<$ std\+::string $>$ $>$ \mbox{\hyperlink{class_wifi_manager_a7fc6fa986cd4b696f9c373ec7e0509a7}{pair}}
+\begin{DoxyCompactList}\small\item\em A pair containing a string and a vector of strings. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{class_wifi_manager_a25ca3676d8b2f91982f9d1a3abfe9177}{get\+\_\+data}} (std\+::vector$<$ std\+::string $>$ \&data, const char set\+\_\+call\mbox{[}$\,$\mbox{]})
+\begin{DoxyCompactList}\small\item\em Retrieves data from the output of a system command related to Wi-\/\+Fi settings and stores it in a vector of strings. This method executes the given system command (set\+\_\+call) using popen and reads the output line by line. The output is then stored in the provided std\+::vector (data), with each line being a separate string. If the method is successful in retrieving the data, it returns true; otherwise, it returns false. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_wifi_manager_acd9d3d36bf6cba464856a5853450ee7d}{remove\+Spaces\+From\+Back}} (std\+::string \&data)
+\begin{DoxyCompactList}\small\item\em Helper method to remove trailing spaces from a given string. This method iterates through the input string (data) from the end to the beginning. It stops at the first non-\/space character encountered and trims the string accordingly. The modified string is passed back by reference. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_wifi_manager_a852971d21e0725b8739f1789f59c89e1}{find\+\_\+words}} (std\+::vector$<$ std\+::string $>$ \&data, const std\+::vector$<$ std\+::string $>$ findable\+\_\+words, std\+::vector$<$ size\+\_\+t $>$ \&start\+\_\+pos\+\_\+vector, std\+::vector$<$ size\+\_\+t $>$ \&end\+\_\+pos\+\_\+vector)
+\begin{DoxyCompactList}\small\item\em Searches for specified words in the first line of the given data and records their start and end positions. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{class_wifi_manager_a37305ca5f5439969206f8669737fbdd7}{parser}} (const char set\+\_\+call\mbox{[}$\,$\mbox{]}, const std\+::vector$<$ std\+::string $>$ findable\+\_\+words, std\+::map$<$ std\+::string, std\+::vector$<$ std\+::string $>$ $>$ \&base\+\_\+map, int key)
+\begin{DoxyCompactList}\small\item\em Parses the output of a command, extracting specified words and populating a map with the results. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+const std\+::string \mbox{\hyperlink{class_wifi_manager_a235d82100b057a43a0bfdfb9fa52f6cf}{m\+\_\+dev\+\_\+nul}} = \"{} $>$ /dev/null 2$>$\&1\"{}
+\begin{DoxyCompactList}\small\item\em /// Redirects output to /dev/null to suppress any output or error messages. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A class for managing Wi\+Fi connections using nmcli. 
+
+using nmcli commands for search/connect/disconnect/forget/manual connect wifi 
+
+\doxysubsection{Member Typedef Documentation}
+\Hypertarget{class_wifi_manager_a7fc6fa986cd4b696f9c373ec7e0509a7}\label{class_wifi_manager_a7fc6fa986cd4b696f9c373ec7e0509a7} 
+\index{WifiManager@{WifiManager}!pair@{pair}}
+\index{pair@{pair}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{pair}{pair}}
+{\footnotesize\ttfamily \mbox{\hyperlink{class_wifi_manager_a7fc6fa986cd4b696f9c373ec7e0509a7}{Wifi\+Manager\+::pair}}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+A pair containing a string and a vector of strings. 
+
+\begin{DoxyNote}{Note}
+only for insert safety 
+\end{DoxyNote}
+
+
+\doxysubsection{Member Enumeration Documentation}
+\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2} 
+\index{WifiManager@{WifiManager}!ERROR@{ERROR}}
+\index{ERROR@{ERROR}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{ERROR}{ERROR}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{class_wifi_manager_a605dd0a12241bf833af71229b59962b2}{Wifi\+Manager\+::\+ERROR}}}
+
+
+
+Enumeration of error codes used by the \doxylink{class_wifi_manager}{Wifi\+Manager} class. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_NO@{ERROR\_NO}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_NO@{ERROR\_NO}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ad0c2672612cf635978a1ca1af06a3d53}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ad0c2672612cf635978a1ca1af06a3d53} 
+ERROR\+\_\+\+NO&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_UNKNOWN@{ERROR\_UNKNOWN}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_UNKNOWN@{ERROR\_UNKNOWN}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a573c5a56e0fb643b66eb9d005739b747}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a573c5a56e0fb643b66eb9d005739b747} 
+ERROR\+\_\+\+UNKNOWN&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_INPUT@{ERROR\_INPUT}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_INPUT@{ERROR\_INPUT}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ac3724ca761a551e219a6741f136ed7c3}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ac3724ca761a551e219a6741f136ed7c3} 
+ERROR\+\_\+\+INPUT&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_TIMEOUT@{ERROR\_TIMEOUT}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_TIMEOUT@{ERROR\_TIMEOUT}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a31746db4adf6cf1e6c2bef77c05fdb22}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a31746db4adf6cf1e6c2bef77c05fdb22} 
+ERROR\+\_\+\+TIMEOUT&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_ConActFail@{ERROR\_ConActFail}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_ConActFail@{ERROR\_ConActFail}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2aeb2e94f826b2714cf1c19d06e5a3513e}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2aeb2e94f826b2714cf1c19d06e5a3513e} 
+ERROR\+\_\+\+Con\+Act\+Fail&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_ConDactFail@{ERROR\_ConDactFail}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_ConDactFail@{ERROR\_ConDactFail}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5dc507d122945b5374d6488fb8a67248}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5dc507d122945b5374d6488fb8a67248} 
+ERROR\+\_\+\+Con\+Dact\+Fail&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_DiscDevFail@{ERROR\_DiscDevFail}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_DiscDevFail@{ERROR\_DiscDevFail}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2aeea659600608de8feee9609360ecde4d}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2aeea659600608de8feee9609360ecde4d} 
+ERROR\+\_\+\+Disc\+Dev\+Fail&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_ConDelFail@{ERROR\_ConDelFail}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_ConDelFail@{ERROR\_ConDelFail}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a0859a6f2e21e31cae35d11a5b449993e}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a0859a6f2e21e31cae35d11a5b449993e} 
+ERROR\+\_\+\+Con\+Del\+Fail&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_NetMng@{ERROR\_NetMng}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_NetMng@{ERROR\_NetMng}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5fb427515d5908910c20fdbcd0729bbe}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5fb427515d5908910c20fdbcd0729bbe} 
+ERROR\+\_\+\+Net\+Mng&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_NotExsist@{ERROR\_NotExsist}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_NotExsist@{ERROR\_NotExsist}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a30c0afb8d2ea34e44d732fb8331b7a39}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a30c0afb8d2ea34e44d732fb8331b7a39} 
+ERROR\+\_\+\+Not\+Exsist&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_WRONG\_BSSID@{ERROR\_WRONG\_BSSID}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_WRONG\_BSSID@{ERROR\_WRONG\_BSSID}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ae5b7a18718ca41a4998850fe71ca814f}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ae5b7a18718ca41a4998850fe71ca814f} 
+ERROR\+\_\+\+WRONG\+\_\+\+BSSID&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_WRONG\_NAME@{ERROR\_WRONG\_NAME}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_WRONG\_NAME@{ERROR\_WRONG\_NAME}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5c4d2e6dd3c3645998fb47263a16cff1}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5c4d2e6dd3c3645998fb47263a16cff1} 
+ERROR\+\_\+\+WRONG\+\_\+\+NAME&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_WRONG\_PASS@{ERROR\_WRONG\_PASS}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_WRONG\_PASS@{ERROR\_WRONG\_PASS}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a51f69506a8ee7d5a97b47063b79ef6f8}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a51f69506a8ee7d5a97b47063b79ef6f8} 
+ERROR\+\_\+\+WRONG\+\_\+\+PASS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_NO\_ACTIVE\_WIFI@{ERROR\_NO\_ACTIVE\_WIFI}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_NO\_ACTIVE\_WIFI@{ERROR\_NO\_ACTIVE\_WIFI}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2af26c18fa212a2a7f209d00371e23a619}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2af26c18fa212a2a7f209d00371e23a619} 
+ERROR\+\_\+\+NO\+\_\+\+ACTIVE\+\_\+\+WIFI&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_WRONG\_ARGUMENTS@{ERROR\_WRONG\_ARGUMENTS}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_WRONG\_ARGUMENTS@{ERROR\_WRONG\_ARGUMENTS}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5942e5a85ea9558670adf32211025d66}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a5942e5a85ea9558670adf32211025d66} 
+ERROR\+\_\+\+WRONG\+\_\+\+ARGUMENTS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_CRITICAL\_DELETE@{ERROR\_CRITICAL\_DELETE}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_CRITICAL\_DELETE@{ERROR\_CRITICAL\_DELETE}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a04e48b051fbc93930d40d0c2d80a7e18}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a04e48b051fbc93930d40d0c2d80a7e18} 
+ERROR\+\_\+\+CRITICAL\+\_\+\+DELETE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_INTERNAL\_ERROR@{ERROR\_INTERNAL\_ERROR}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_INTERNAL\_ERROR@{ERROR\_INTERNAL\_ERROR}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a0d00edaf2a28cb932191a32e6e158c44}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a0d00edaf2a28cb932191a32e6e158c44} 
+ERROR\+\_\+\+INTERNAL\+\_\+\+ERROR&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_CONNECTION\_ALREADY\_EXISTS@{ERROR\_CONNECTION\_ALREADY\_EXISTS}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_CONNECTION\_ALREADY\_EXISTS@{ERROR\_CONNECTION\_ALREADY\_EXISTS}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a782d2521e6eb0e30afb0a0772bd1181f}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a782d2521e6eb0e30afb0a0772bd1181f} 
+ERROR\+\_\+\+CONNECTION\+\_\+\+ALREADY\+\_\+\+EXISTS&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_INTERNAL\_ERROR\_PARSING@{ERROR\_INTERNAL\_ERROR\_PARSING}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_INTERNAL\_ERROR\_PARSING@{ERROR\_INTERNAL\_ERROR\_PARSING}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2afff600cc95e3158d44357d2d9acc7179}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2afff600cc95e3158d44357d2d9acc7179} 
+ERROR\+\_\+\+INTERNAL\+\_\+\+ERROR\+\_\+\+PARSING&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_WRONG\_SUBNET@{ERROR\_WRONG\_SUBNET}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_WRONG\_SUBNET@{ERROR\_WRONG\_SUBNET}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2afb08987831dfa9af4e19b95c394952d1}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2afb08987831dfa9af4e19b95c394952d1} 
+ERROR\+\_\+\+WRONG\+\_\+\+SUBNET&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_WRONG\_IP@{ERROR\_WRONG\_IP}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_WRONG\_IP@{ERROR\_WRONG\_IP}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a7f082c4e19f31d1e60593c8310db3206}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2a7f082c4e19f31d1e60593c8310db3206} 
+ERROR\+\_\+\+WRONG\+\_\+\+IP&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ERROR\_WRONG\_ESSID@{ERROR\_WRONG\_ESSID}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ERROR\_WRONG\_ESSID@{ERROR\_WRONG\_ESSID}}}\Hypertarget{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ac73ddd21a8739ed28ac3afb4f40bf6c2}\label{class_wifi_manager_a605dd0a12241bf833af71229b59962b2ac73ddd21a8739ed28ac3afb4f40bf6c2} 
+ERROR\+\_\+\+WRONG\+\_\+\+ESSID&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056}\label{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056} 
+\index{WifiManager@{WifiManager}!Manual\_connection@{Manual\_connection}}
+\index{Manual\_connection@{Manual\_connection}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{Manual\_connection}{Manual\_connection}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056}{Wifi\+Manager\+::\+Manual\+\_\+connection}}}
+
+
+
+Enumeration of manual connection parameter indices. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{essid@{essid}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!essid@{essid}}}\Hypertarget{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a31cf4dc4bb83a9dfca5cdbaa74c2f2ae}\label{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a31cf4dc4bb83a9dfca5cdbaa74c2f2ae} 
+essid&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ip@{ip}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ip@{ip}}}\Hypertarget{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a88e2917d8d569d668dcb657ab45a8bd0}\label{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a88e2917d8d569d668dcb657ab45a8bd0} 
+ip&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{subnet@{subnet}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!subnet@{subnet}}}\Hypertarget{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a7233d2647818a879d177cf750dd30441}\label{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a7233d2647818a879d177cf750dd30441} 
+subnet&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{gtw@{gtw}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!gtw@{gtw}}}\Hypertarget{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056acef094b94eec361d9dc7ff82898282d0}\label{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056acef094b94eec361d9dc7ff82898282d0} 
+gtw&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{dns@{dns}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!dns@{dns}}}\Hypertarget{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056abdb3bd4a2476895d15a8c32f5c2f4431}\label{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056abdb3bd4a2476895d15a8c32f5c2f4431} 
+dns&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{dns2@{dns2}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!dns2@{dns2}}}\Hypertarget{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a388355d0055d91c257bf08d399db8b3f}\label{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a388355d0055d91c257bf08d399db8b3f} 
+dns2&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{pass@{pass}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!pass@{pass}}}\Hypertarget{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a3521042f8fea20d18dff8ea6345cd1fe}\label{class_wifi_manager_a5363e2cd9db2eafc01a595e41aa08056a3521042f8fea20d18dff8ea6345cd1fe} 
+pass&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553e}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553e} 
+\index{WifiManager@{WifiManager}!WifiSearchWord\_e@{WifiSearchWord\_e}}
+\index{WifiSearchWord\_e@{WifiSearchWord\_e}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{WifiSearchWord\_e}{WifiSearchWord\_e}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553e}{Wifi\+Manager\+::\+Wifi\+Search\+Word\+\_\+e}}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Enumeration of search words used for parsing Wi\+Fi data. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{name@{name}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!name@{name}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea14bf5b4a12ba53414cac42fe855770df} 
+name&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ssid@{ssid}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ssid@{ssid}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eab94b43346fb55895677a0541141cf474}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eab94b43346fb55895677a0541141cf474} 
+ssid&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{ssid\_hex@{ssid\_hex}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!ssid\_hex@{ssid\_hex}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eabe02eaddd261f190e1b07a9ef65dd07d}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eabe02eaddd261f190e1b07a9ef65dd07d} 
+ssid\+\_\+hex&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{bssid@{bssid}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!bssid@{bssid}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea54d8cf8e5832d08805b2b828dd19ad54}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea54d8cf8e5832d08805b2b828dd19ad54} 
+bssid&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{mode@{mode}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!mode@{mode}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea35f8e7a63d2b3fffbbe2a8f8e0d05fff}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea35f8e7a63d2b3fffbbe2a8f8e0d05fff} 
+mode&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{chan@{chan}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!chan@{chan}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eac92f1f56dc9284ee2d155816d3493a56}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eac92f1f56dc9284ee2d155816d3493a56} 
+chan&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{freq@{freq}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!freq@{freq}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eae3e349fd977e5ef0d50be1f7b98a39de}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eae3e349fd977e5ef0d50be1f7b98a39de} 
+freq&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{rate@{rate}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!rate@{rate}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea33c8aae8465db9d072f73107ac88ce12}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea33c8aae8465db9d072f73107ac88ce12} 
+rate&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{signal@{signal}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!signal@{signal}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eabf76cace6c2a1e6bc0bfc4f8696f8d57}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eabf76cace6c2a1e6bc0bfc4f8696f8d57} 
+signal&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{bars@{bars}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!bars@{bars}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eaa392cf3d2f1665aba41df3df42729fb4}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eaa392cf3d2f1665aba41df3df42729fb4} 
+bars&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{security@{security}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!security@{security}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea80fc324c06b513231c4e90eff7c67417}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea80fc324c06b513231c4e90eff7c67417} 
+security&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{wpa\_flags@{wpa\_flags}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!wpa\_flags@{wpa\_flags}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea9c95a132c391cfcd637adbe2391645c7}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea9c95a132c391cfcd637adbe2391645c7} 
+wpa\+\_\+flags&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{rsn\_flags@{rsn\_flags}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!rsn\_flags@{rsn\_flags}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea3d6d92b655b460e781a67d60d717d031}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ea3d6d92b655b460e781a67d60d717d031} 
+rsn\+\_\+flags&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{device@{device}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!device@{device}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ead847ecd4af8d0ec8433148bce1fc2d1d}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553ead847ecd4af8d0ec8433148bce1fc2d1d} 
+device&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{active@{active}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!active@{active}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eaf193a35ee4531c9d763f71ae9a395f60}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eaf193a35ee4531c9d763f71ae9a395f60} 
+active&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{in\_use@{in\_use}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!in\_use@{in\_use}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eaaa9b0d75d03094bc0fa8f86c17b39e79}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eaaa9b0d75d03094bc0fa8f86c17b39e79} 
+in\+\_\+use&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{dbus\_path@{dbus\_path}!WifiManager@{WifiManager}}\index{WifiManager@{WifiManager}!dbus\_path@{dbus\_path}}}\Hypertarget{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eab76b0ec903ffff74c7f4ae55b605a59d}\label{class_wifi_manager_a2449ec4a6581b56893d9896e6a12553eab76b0ec903ffff74c7f4ae55b605a59d} 
+dbus\+\_\+path&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_wifi_manager_ac0f6da08291108d80b372688f144a005}\label{class_wifi_manager_ac0f6da08291108d80b372688f144a005} 
+\index{WifiManager@{WifiManager}!bssid\_to\_ssid@{bssid\_to\_ssid}}
+\index{bssid\_to\_ssid@{bssid\_to\_ssid}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{bssid\_to\_ssid()}{bssid\_to\_ssid()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::bssid\+\_\+to\+\_\+ssid (\begin{DoxyParamCaption}\item[{std\+::string \&}]{bssid }\end{DoxyParamCaption})}
+
+
+
+Convert a BSSID to an SSID. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em bssid} & The BSSID to be converted. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+bssid is referance 
+\end{DoxyNote}
+\begin{DoxyWarning}{Warning}
+used pass by reference 
+\end{DoxyWarning}
+\Hypertarget{class_wifi_manager_a5d4bdb1032b12c944292c3b2e6319e52}\label{class_wifi_manager_a5d4bdb1032b12c944292c3b2e6319e52} 
+\index{WifiManager@{WifiManager}!delete\_all\_con@{delete\_all\_con}}
+\index{delete\_all\_con@{delete\_all\_con}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{delete\_all\_con()}{delete\_all\_con()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::delete\+\_\+all\+\_\+con (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Delete all saved connections. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em NO} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+nmcli connection show is not the available Wi\+Fi list, it is a list that saves your added connections. 
+
+this function use \doxylink{}{wifi\+\_\+forget(std\+::string name) } 
+\end{DoxyNote}
+\Hypertarget{class_wifi_manager_a852971d21e0725b8739f1789f59c89e1}\label{class_wifi_manager_a852971d21e0725b8739f1789f59c89e1} 
+\index{WifiManager@{WifiManager}!find\_words@{find\_words}}
+\index{find\_words@{find\_words}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{find\_words()}{find\_words()}}
+{\footnotesize\ttfamily void Wifi\+Manager\+::find\+\_\+words (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::string $>$ \&}]{data,  }\item[{const std\+::vector$<$ std\+::string $>$}]{findable\+\_\+words,  }\item[{std\+::vector$<$ size\+\_\+t $>$ \&}]{start\+\_\+pos\+\_\+vector,  }\item[{std\+::vector$<$ size\+\_\+t $>$ \&}]{end\+\_\+pos\+\_\+vector }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Searches for specified words in the first line of the given data and records their start and end positions. 
+
+This function iterates through a list of words to be found in the first line of the provided data. It then stores the start and end positions of each found word in separate vectors.
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & A reference to a std\+::vector of std\+::string containing the data in which the words will be searched. \\
+\hline
+{\em findable\+\_\+words} & A const std\+::vector of std\+::string containing the words to be searched in the data. \\
+\hline
+{\em start\+\_\+pos\+\_\+vector} & A reference to a std\+::vector of size\+\_\+t that will be populated with the start positions of the found words. \\
+\hline
+{\em end\+\_\+pos\+\_\+vector} & A reference to a std\+::vector of size\+\_\+t that will be populated with the end positions of the found words. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_wifi_manager_a066abd63052739888fbb9037cc80f012}\label{class_wifi_manager_a066abd63052739888fbb9037cc80f012} 
+\index{WifiManager@{WifiManager}!get\_active\_wifi@{get\_active\_wifi}}
+\index{get\_active\_wifi@{get\_active\_wifi}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{get\_active\_wifi()}{get\_active\_wifi()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::get\+\_\+active\+\_\+wifi (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Get the currently active Wi\+Fi connection/s. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em NO} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+Debugging information 
+\end{DoxyNote}
+\Hypertarget{class_wifi_manager_a25ca3676d8b2f91982f9d1a3abfe9177}\label{class_wifi_manager_a25ca3676d8b2f91982f9d1a3abfe9177} 
+\index{WifiManager@{WifiManager}!get\_data@{get\_data}}
+\index{get\_data@{get\_data}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{get\_data()}{get\_data()}}
+{\footnotesize\ttfamily bool Wifi\+Manager\+::get\+\_\+data (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::string $>$ \&}]{data,  }\item[{const char}]{set\+\_\+call\mbox{[}$\,$\mbox{]} }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Retrieves data from the output of a system command related to Wi-\/\+Fi settings and stores it in a vector of strings. This method executes the given system command (set\+\_\+call) using popen and reads the output line by line. The output is then stored in the provided std\+::vector (data), with each line being a separate string. If the method is successful in retrieving the data, it returns true; otherwise, it returns false. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em data} & Reference to a std\+::vector of std\+::string objects, where the retrieved data will be stored. \\
+\hline
+{\em set\+\_\+call} & A const char array representing the system command to be executed. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns true if the data is successfully retrieved and stored in the data vector; otherwise, returns false. 
+\end{DoxyReturn}
+\Hypertarget{class_wifi_manager_a05280c77c4a505667a193b1503acdd66}\label{class_wifi_manager_a05280c77c4a505667a193b1503acdd66} 
+\index{WifiManager@{WifiManager}!get\_wifi\_connections@{get\_wifi\_connections}}
+\index{get\_wifi\_connections@{get\_wifi\_connections}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{get\_wifi\_connections()}{get\_wifi\_connections()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::get\+\_\+wifi\+\_\+connections (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Get the list of Wi\+Fi connections. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em NO} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\Hypertarget{class_wifi_manager_acf5921477f30bdbe8471b4f64c002b2e}\label{class_wifi_manager_acf5921477f30bdbe8471b4f64c002b2e} 
+\index{WifiManager@{WifiManager}!get\_wifi\_list@{get\_wifi\_list}}
+\index{get\_wifi\_list@{get\_wifi\_list}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{get\_wifi\_list()}{get\_wifi\_list()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::get\+\_\+wifi\+\_\+list (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Descritpion -\/ Printing a list of available Wi\+Fi networks and their properties. This function uses the \"{}nmcli\"{} command to get a list of available Wi\+Fi networks and their properties. The properties include ESSID, unique name, connection status, security status, and signal strength. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em NO} & \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+wifi parametrs are printing in json format \doxylink{}{test.\+json} 
+
+nmcli command that used \"{}nmcli -\/f ALL dev wifi\"{} 
+\end{DoxyNote}
+\Hypertarget{class_wifi_manager_aa738fe9e3945e0b7dd4df9f13a9aad2a}\label{class_wifi_manager_aa738fe9e3945e0b7dd4df9f13a9aad2a} 
+\index{WifiManager@{WifiManager}!get\_wifi\_state@{get\_wifi\_state}}
+\index{get\_wifi\_state@{get\_wifi\_state}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{get\_wifi\_state()}{get\_wifi\_state()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::get\+\_\+wifi\+\_\+state (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption})}
+
+
+
+Retrieves the list of available Wi-\/\+Fi networks and prints it in \doxylink{}{test.\+json} format. This function uses the \textquotesingle{}nmcli\textquotesingle{} command to obtain the list of available Wi-\/\+Fi networks. It then formats and prints the Wi-\/\+Fi networks as a JSON object. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & The active Wi\+Fi SSID. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+This member is for debugging. 
+\end{DoxyNote}
+\begin{DoxyWarning}{Warning}
+working only if connection is active 
+\end{DoxyWarning}
+\begin{DoxyNote}{Note}
+nmcli command that used \"{}nmcli -\/f ALL dev wifi\"{} 
+\end{DoxyNote}
+\Hypertarget{class_wifi_manager_a37305ca5f5439969206f8669737fbdd7}\label{class_wifi_manager_a37305ca5f5439969206f8669737fbdd7} 
+\index{WifiManager@{WifiManager}!parser@{parser}}
+\index{parser@{parser}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{parser()}{parser()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::parser (\begin{DoxyParamCaption}\item[{const char}]{set\+\_\+call\mbox{[}$\,$\mbox{]},  }\item[{const std\+::vector$<$ std\+::string $>$}]{findable\+\_\+words,  }\item[{std\+::map$<$ std\+::string, std\+::vector$<$ std\+::string $>$ $>$ \&}]{base\+\_\+map,  }\item[{int}]{key }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Parses the output of a command, extracting specified words and populating a map with the results. 
+
+This function executes the given command, reads its output, and then searches for the specified words. It constructs a map where the key is a specified element from each line, and the value is a vector containing the extracted words from each line.
+
+
+\begin{DoxyParams}{Parameters}
+{\em set\+\_\+call} & A const char array containing the command to be executed. \\
+\hline
+{\em findable\+\_\+words} & A std\+::vector of std\+::string containing the words to be searched in the command output. \\
+\hline
+{\em base\+\_\+map} & A reference to a std\+::map that will be populated with the extracted words from the command output. The key is the \textquotesingle{}key\textquotesingle{}-\/th element from each line, and the value is a std\+::vector containing the extracted words from each line. \\
+\hline
+{\em key} & An integer specifying which element from each line should be used as the key for the map.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns true if the parsing was successful, and false otherwise. 
+\end{DoxyReturn}
+\Hypertarget{class_wifi_manager_acd9d3d36bf6cba464856a5853450ee7d}\label{class_wifi_manager_acd9d3d36bf6cba464856a5853450ee7d} 
+\index{WifiManager@{WifiManager}!removeSpacesFromBack@{removeSpacesFromBack}}
+\index{removeSpacesFromBack@{removeSpacesFromBack}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{removeSpacesFromBack()}{removeSpacesFromBack()}}
+{\footnotesize\ttfamily void Wifi\+Manager\+::remove\+Spaces\+From\+Back (\begin{DoxyParamCaption}\item[{std\+::string \&}]{data }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+Helper method to remove trailing spaces from a given string. This method iterates through the input string (data) from the end to the beginning. It stops at the first non-\/space character encountered and trims the string accordingly. The modified string is passed back by reference. 
+
+\begin{DoxyNote}{Note}
+This method is a helper function and may be used internally within the \doxylink{class_wifi_manager}{Wifi\+Manager} class. 
+\end{DoxyNote}
+
+\begin{DoxyParams}{Parameters}
+{\em data} & Reference to a std\+::string object, which will have its trailing spaces removed. \\
+\hline
+\end{DoxyParams}
+\Hypertarget{class_wifi_manager_a4d4b48ee7d7fc5e8da0da608f2350bee}\label{class_wifi_manager_a4d4b48ee7d7fc5e8da0da608f2350bee} 
+\index{WifiManager@{WifiManager}!wifi\_con\_up@{wifi\_con\_up}}
+\index{wifi\_con\_up@{wifi\_con\_up}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{wifi\_con\_up()}{wifi\_con\_up()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::wifi\+\_\+con\+\_\+up (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption})}
+
+
+
+Helper method for connecting to a previously disconnected Wi\+Fi connection. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & The Wi\+Fi SSID that is in the nmcli connection list. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+nmcli connection show is not the available Wi\+Fi list, it is a list that saves your added connections. 
+\end{DoxyNote}
+\Hypertarget{class_wifi_manager_a352b0302b30e1977745ec33da20716e4}\label{class_wifi_manager_a352b0302b30e1977745ec33da20716e4} 
+\index{WifiManager@{WifiManager}!wifi\_connect@{wifi\_connect}}
+\index{wifi\_connect@{wifi\_connect}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{wifi\_connect()}{wifi\_connect()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::wifi\+\_\+connect (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::string $>$ \&}]{wifi\+\_\+params }\end{DoxyParamCaption})}
+
+
+
+Attempts to connect to a Wi-\/\+Fi network with the specified parameters. This function attempts to connect to a Wi-\/\+Fi network with the specified name and optional password. It first checks if a connection with the same name already exists, in which case it returns an error. If the network requires a password and a password is not provided or the wrong number of arguments are provided, it returns an error. If the connection is successful, it returns 0. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em wifi\+\_\+params} & A vector containing the name of the network to connect to and an optional password. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+for connecting use \"{} nmcli d wifi connect \textquotesingle{}\"{} + name + \"{}\textquotesingle{}\"{} + \"{} password \textquotesingle{}\"{} + pass + \"{}\textquotesingle{}\"{} 
+\end{DoxyNote}
+\Hypertarget{class_wifi_manager_a7decdde89e6bd2dcc6aee7cf6a3d3bd0}\label{class_wifi_manager_a7decdde89e6bd2dcc6aee7cf6a3d3bd0} 
+\index{WifiManager@{WifiManager}!wifi\_disconnect@{wifi\_disconnect}}
+\index{wifi\_disconnect@{wifi\_disconnect}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{wifi\_disconnect()}{wifi\_disconnect()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::wifi\+\_\+disconnect (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption})}
+
+
+
+Disconnects from the specified Wi-\/\+Fi network by name. This function searches for the specified Wi-\/\+Fi network name and disconnects from it if it\textquotesingle{}s active. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & A std\+::string containing the name of the Wi-\/\+Fi network to disconnect from. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyWarning}{Warning}
+working only if connection is active 
+
+disconnect and forget is differetn things 
+\end{DoxyWarning}
+\begin{DoxyNote}{Note}
+for disconnecting use nmcli c down + name 
+\end{DoxyNote}
+\Hypertarget{class_wifi_manager_a0a054ea8fc1fd4b2d2213e1f0df5bf6e}\label{class_wifi_manager_a0a054ea8fc1fd4b2d2213e1f0df5bf6e} 
+\index{WifiManager@{WifiManager}!wifi\_forget@{wifi\_forget}}
+\index{wifi\_forget@{wifi\_forget}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{wifi\_forget()}{wifi\_forget()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::wifi\+\_\+forget (\begin{DoxyParamCaption}\item[{std\+::string}]{name }\end{DoxyParamCaption})}
+
+
+
+Forget a Wi\+Fi connection from the nmcli connection list. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em name} & The Wi\+Fi SSID. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyWarning}{Warning}
+You may have big problem if these method have problem 
+\end{DoxyWarning}
+\begin{DoxyNote}{Note}
+nmcli connection show is not the available Wi\+Fi list, it is a list that saves your added connections. 
+\end{DoxyNote}
+\Hypertarget{class_wifi_manager_a3abcb45ca58dc3f44c42796d18c80baf}\label{class_wifi_manager_a3abcb45ca58dc3f44c42796d18c80baf} 
+\index{WifiManager@{WifiManager}!wifi\_manual\_connect@{wifi\_manual\_connect}}
+\index{wifi\_manual\_connect@{wifi\_manual\_connect}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{wifi\_manual\_connect()}{wifi\_manual\_connect()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::wifi\+\_\+manual\+\_\+connect (\begin{DoxyParamCaption}\item[{std\+::vector$<$ std\+::string $>$ \&}]{args }\end{DoxyParamCaption})}
+
+
+
+Manually connects to a Wi-\/\+Fi network using the provided network settings. 
+
+This function scans for available Wi-\/\+Fi networks, finds the one matching the input SSID, creates a new connection with the specified IP address, subnet, gateway, and DNS settings, and then connects to it.
+
+
+\begin{DoxyParams}{Parameters}
+{\em args} & A std\+::vector of std\+::string containing the following network settings\+:
+\begin{DoxyItemize}
+\item args\mbox{[}0\mbox{]}\+: SSID of the Wi-\/\+Fi network to connect to
+\item args\mbox{[}1\mbox{]}\+: IP address for the connection
+\item args\mbox{[}2\mbox{]}\+: Subnet mask for the connection
+\item args\mbox{[}3\mbox{]}\+: Gateway address for the connection
+\item args\mbox{[}4\mbox{]}\+: Primary DNS server for the connection
+\item args\mbox{[}5\mbox{]}\+: Secondary DNS server for the connection
+\item args\mbox{[}6\mbox{]}\+: Wi-\/\+Fi password for the connection
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns 0 on successful connection, ERROR\+\_\+\+INTERNAL\+\_\+\+ERROR if the parser function fails, ERROR\+\_\+\+CONNECTION\+\_\+\+ALREADY\+\_\+\+EXISTS if a connection with the specified SSID already exists, ERROR\+\_\+\+WRONG\+\_\+\+ARGUMENTS if the specified SSID is not found in the available networks, or the error code returned by the system() function when executing nmcli commands. 
+\end{DoxyReturn}
+\Hypertarget{class_wifi_manager_a3ac184a0cbc1480eb648269316fdb9c9}\label{class_wifi_manager_a3ac184a0cbc1480eb648269316fdb9c9} 
+\index{WifiManager@{WifiManager}!write\_wifi\_signal@{write\_wifi\_signal}}
+\index{write\_wifi\_signal@{write\_wifi\_signal}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{write\_wifi\_signal()}{write\_wifi\_signal()}}
+{\footnotesize\ttfamily int Wifi\+Manager\+::write\+\_\+wifi\+\_\+signal (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Write the Wi\+Fi signal level. 
+
+using for load currenct wifi signal level to dtabase \begin{DoxyReturn}{Returns}
+An integer indicating the success or failure of the function return code is here \doxylink{}{ERROR } 
+\end{DoxyReturn}
+\begin{DoxyWarning}{Warning}
+if .php file or destination will be changed change function 
+\end{DoxyWarning}
+
+
+\doxysubsection{Member Data Documentation}
+\Hypertarget{class_wifi_manager_a235d82100b057a43a0bfdfb9fa52f6cf}\label{class_wifi_manager_a235d82100b057a43a0bfdfb9fa52f6cf} 
+\index{WifiManager@{WifiManager}!m\_dev\_nul@{m\_dev\_nul}}
+\index{m\_dev\_nul@{m\_dev\_nul}!WifiManager@{WifiManager}}
+\doxysubsubsection{\texorpdfstring{m\_dev\_nul}{m\_dev\_nul}}
+{\footnotesize\ttfamily const std\+::string Wifi\+Manager\+::m\+\_\+dev\+\_\+nul = \"{} $>$ /dev/null 2$>$\&1\"{}\hspace{0.3cm}{\ttfamily [private]}}
+
+
+
+/// Redirects output to /dev/null to suppress any output or error messages. 
+
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{_wifi_manager_8h}{Wifi\+Manager.\+h}}\item 
+\mbox{\hyperlink{_wifi_manager_8cpp}{Wifi\+Manager.\+cpp}}\end{DoxyCompactItemize}

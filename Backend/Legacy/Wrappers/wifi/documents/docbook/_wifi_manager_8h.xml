@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='UTF-8' standalone='no'?>
+<section xmlns="http://docbook.org/ns/docbook" version="5.0" xmlns:xlink="http://www.w3.org/1999/xlink" xml:id="__wifi_manager_8h" xml:lang="en-US">
+<title>WifiManager.h File Reference</title>
+<indexterm><primary>WifiManager.h</primary></indexterm>
+<para>
+
+<para>Header file for the <link linkend="_class_wifi_manager">WifiManager</link> class. </para>
+ 
+</para>
+<programlisting linenumbering="unnumbered">#include &lt;string&gt;<?linebreak?>#include &lt;map&gt;<?linebreak?>#include &lt;vector&gt;<?linebreak?>#include &lt;unistd.h&gt;<?linebreak?>#include &lt;iostream&gt;<?linebreak?></programlisting><simplesect>
+    <title>Classes    </title>
+        <itemizedlist>
+            <listitem><para>class <link linkend="_class_wifi_manager">WifiManager</link></para>
+
+<para>A class for managing WiFi connections using nmcli. </para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<simplesect>
+    <title>Macros    </title>
+        <itemizedlist>
+            <listitem><para>#define <link linkend="__wifi_manager_8h_1ad72dbcf6d0153db1b8d8a58001feed83">DEBUG</link></para>
+</listitem>
+        </itemizedlist>
+</simplesect>
+<section>
+<title>Detailed Description</title>
+
+<para>Header file for the <link linkend="_class_wifi_manager">WifiManager</link> class. </para>
+
+<para><formalpara><title>Author</title>
+
+<para>Gor Danielyan </para>
+
+<para>Contact <link xlink:href="https://t.me/Gorynych_DuO">https://t.me/Gorynych_DuO</link> </para>
+</formalpara>
+</para>
+</section>
+<section>
+<title>Macro Definition Documentation</title>
+<anchor xml:id="__wifi_manager_8h_1ad72dbcf6d0153db1b8d8a58001feed83"/><section>
+    <title>DEBUG</title>
+<indexterm><primary>DEBUG</primary><secondary>WifiManager.h</secondary></indexterm>
+<indexterm><primary>WifiManager.h</primary><secondary>DEBUG</secondary></indexterm>
+<para><computeroutput>#define DEBUG</computeroutput></para></section>
+</section>
+</section>

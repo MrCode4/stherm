@@ -1,0 +1,23 @@
+\chapter{CPU Serial Number Extractor}
+\hypertarget{index}{}\label{index}\index{CPU Serial Number Extractor@{CPU Serial Number Extractor}}
+\hypertarget{index_intro}{}\doxysection{\texorpdfstring{Introduction}{Introduction}}\label{index_intro}
+This program is designed to extract the serial number of the CPU from the /proc/cpuinfo file. The extracted serial number is then printed to the console. This program is for the web to get the serial number, they use it later. \hypertarget{index_usage}{}\doxysection{\texorpdfstring{Usage}{Usage}}\label{index_usage}
+
+\begin{DoxyItemize}
+\item Compile 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{g++\ \mbox{\hyperlink{main_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}}.cpp\ -\/o\ GetUid.o}
+
+\end{DoxyCode}
+
+\item Run the compiled executable. 
+\begin{DoxyCode}{0}
+\DoxyCodeLine{./GetUid.o}
+
+\end{DoxyCode}
+
+\item The serial number of the CPU will be printed to the console.
+\end{DoxyItemize}\hypertarget{index_details}{}\doxysection{\texorpdfstring{Implementation Details}{Implementation Details}}\label{index_details}
+The program reads the /proc/cpuinfo file line by line and searches for the line containing \"{}\+Serial.\"{} If found, it extracts the serial number and prints it to the console. If not found, it prints -\/1 to indicate that the serial number was not found.\hypertarget{index_note}{}\doxysection{\texorpdfstring{Note}{Note}}\label{index_note}
+This program assumes that the CPU\textquotesingle{}s serial number is listed in the /proc/cpuinfo file under the \"{}\+Serial\"{} entry. If the format of the file changes or the information is located differently, this program may not work as expected.\hypertarget{index_author}{}\doxysection{\texorpdfstring{Author}{Author}}\label{index_author}
+Gor Danielyan 

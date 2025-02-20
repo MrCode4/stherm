@@ -1,0 +1,66 @@
+\doxysection{Input\+Parametrs.\+h}
+\hypertarget{_input_parametrs_8h_source}{}\label{_input_parametrs_8h_source}\mbox{\hyperlink{_input_parametrs_8h}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ }
+\DoxyCodeLine{00002\ }
+\DoxyCodeLine{00012\ \textcolor{preprocessor}{\#pragma\ once}}
+\DoxyCodeLine{00013\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00014\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#include"{}\mbox{\hyperlink{_wifi_manager_8h}{WifiManager.h}}"{}}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#include<assert.h>}}
+\DoxyCodeLine{00025\ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_input_parametrs}{InputParametrs}}}
+\DoxyCodeLine{00026\ \{}
+\DoxyCodeLine{00027\ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00036\ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_ad69894f7986b7adf80c1dc3d2dba3688}{InputParametrs}}(\textcolor{keywordtype}{char}**\ argv,\ \textcolor{keywordtype}{int}\ argc):\mbox{\hyperlink{class_input_parametrs_aa91548481f15eaeee623afdb483042bb}{ip\_argc}}(argc),\mbox{\hyperlink{class_input_parametrs_a099c739a0b71c059a1ce57465f550488}{ip\_argv}}(argv)}
+\DoxyCodeLine{00037\ \ \ \ \ \{}
+\DoxyCodeLine{00038\ \ \ \ \ \}}
+\DoxyCodeLine{00046\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_input_parametrs_a756b798df75030eef5f159b88900e9ba}{executeCommand}}();}
+\DoxyCodeLine{00047\ }
+\DoxyCodeLine{00048\ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00056\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_input_parametrs_a9d3ba1d07e069018fcaabbbb5d343b44}{find\_words}}(std::vector<std::string>\&\ args,\ std::string\&\ data,\ \textcolor{keyword}{const}\ std::vector<std::string>\ findable\_words);}
+\DoxyCodeLine{00064\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_input_parametrs_a3e5e2f95b79a8a2d0700b426864da812}{get\_arguments}}(\textcolor{keywordtype}{char}**\ argv,\ \textcolor{keywordtype}{int}\ argc,\ std::vector<std::string>\&\ all\_argunments);}
+\DoxyCodeLine{00065\ }
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_input_parametrs_a9e96458cdc5ab59bd8b1348bc2561a8d}{get\_command}}(\textcolor{keywordtype}{char}**\ argv,\ \textcolor{keywordtype}{int}\ argc);}
+\DoxyCodeLine{00084\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_input_parametrs_adbb5ff2b695f1df8608af058ae8be1cd}{check\_arg\_count}}(\textcolor{keywordtype}{char}**\ argv,\ \textcolor{keywordtype}{int}\ argc);\textcolor{comment}{//arguments\ is\ correct}}
+\DoxyCodeLine{00095\ \textcolor{comment}{}\ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_input_parametrs_ae8801a48e08ae50b33aa315e63d3e235}{print\_errors}}(\textcolor{keywordtype}{int}\ err\_code);}
+\DoxyCodeLine{00109\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_input_parametrs_a7e9242b9dde105009632e02232609abc}{manual\_connect\_arguments}}(std::vector<std::string>\&\ args,\ std::string\&\ data);}
+\DoxyCodeLine{00122\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_input_parametrs_a39e216c81ffc8927d363bef11180ce49}{is\_ip}}(std::string\ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9ac4872bbcc68002400a08320bfbe09734}{ip}});\ \textcolor{comment}{//not\ \&\ because\ eraseing\ string}}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00137\ \ \ \ \ \textcolor{keywordtype}{bool}\ \mbox{\hyperlink{class_input_parametrs_a030cfa4c12827043ad55586423f1556f}{subet\_reformating}}(std::string\&\ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9aab289660335c687680292888e037cd84}{subnet}});}
+\DoxyCodeLine{00147\ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_input_parametrs_aa4440fd7b625c3eab67087fef0126827}{removeSpacesFromBack}}(std::string\&\ data);}
+\DoxyCodeLine{00148\ }
+\DoxyCodeLine{00149\ \ \ \ \ std::vector<std::string>\ \mbox{\hyperlink{class_input_parametrs_a46b4d7e9baa63b6d55db4d76a972b7b6}{ip\_arguments}};}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \ \ \textcolor{keywordtype}{char}**\ \mbox{\hyperlink{class_input_parametrs_a099c739a0b71c059a1ce57465f550488}{ip\_argv}};}
+\DoxyCodeLine{00152\ }
+\DoxyCodeLine{00153\ \ \ \ \ \textcolor{keywordtype}{int}\ \mbox{\hyperlink{class_input_parametrs_aa91548481f15eaeee623afdb483042bb}{ip\_argc}};}
+\DoxyCodeLine{00154\ }
+\DoxyCodeLine{00155\ \ \ \ \ \mbox{\hyperlink{class_wifi_manager}{WifiManager}}\ \mbox{\hyperlink{class_input_parametrs_a7f4ca6a3e45a51dc4a259bd0f58791fa}{wifi\_function}};\ }
+\DoxyCodeLine{00161\ \ \ \ \ \textcolor{keyword}{enum}\ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9}{Manual\_connection}}}
+\DoxyCodeLine{00162\ \ \ \ \ \{}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a005a3af08773c7fc15fb0792cf184dad}{essid}},}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9ac4872bbcc68002400a08320bfbe09734}{ip}},}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9aab289660335c687680292888e037cd84}{subnet}},}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9adc87e1b94ef6cbea98ced8137277ddfb}{gtw}},}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a5159d5de2ae328a292dfbe3982ba341f}{dns}},}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a18709b455fdfebbea0dbd1209514c35e}{dns2}},}
+\DoxyCodeLine{00169\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a9313f87d3b33e142ca0e31799e711fa9a4953979681e6c099c905962af8af274e}{pass}}}
+\DoxyCodeLine{00170\ \ \ \ \ \};}
+\DoxyCodeLine{00176\ \ \ \ \ \textcolor{keyword}{enum}\ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eb}{Subnet}}}
+\DoxyCodeLine{00177\ \ \ \ \ \{}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba2ec77594bd0a2cd322d23078d4e9c84d}{SUBNET\_0}},}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebac7aaf54c7d51e8089f135ec020c529c0}{SUBNET\_128}},}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaacacf513053871fafb5938f772bafa7e}{SUBNET\_192}},}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaaf52c97fecb010c06c1ea83fedbb17c6}{SUBNET\_224}},}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba0e438f7539ed47f97ad051640c3c4abf}{SUBNET\_240}},}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba3afc75d3828a5b4e093005eb542bb6e0}{SUBNET\_248}},}
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6ebaf927d532f76ed7a7137d1e03bc262990}{SUBNET\_252}},}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba699bf1abb6b13d47b83965fcb01b32ca}{SUBNET\_254}},}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \mbox{\hyperlink{class_input_parametrs_a0d5790f00adf8365ad4015eca2e8a6eba45c0503ce0f816784ae6b5c0a637959a}{SUBNET\_255}}}
+\DoxyCodeLine{00187\ }
+\DoxyCodeLine{00188\ \ \ \ \ \};}
+\DoxyCodeLine{00189\ \};}
+\DoxyCodeLine{00190\ }
+\DoxyCodeLine{00191\ }
+
+\end{DoxyCode}

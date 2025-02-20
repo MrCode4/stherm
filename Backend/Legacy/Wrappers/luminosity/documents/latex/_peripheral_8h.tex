@@ -1,0 +1,488 @@
+\doxysection{Peripheral.\+h File Reference}
+\hypertarget{_peripheral_8h}{}\label{_peripheral_8h}\index{Peripheral.h@{Peripheral.h}}
+
+
+Contains enums, structures, and function prototypes required for communication between threads and peripherals.  
+
+
+{\ttfamily \#include $<$sys/ioctl.\+h$>$}\newline
+{\ttfamily \#include $<$stdio.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+{\ttfamily \#include $<$string$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+{\ttfamily \#include $<$cstring$>$}\newline
+{\ttfamily \#include $<$errno.\+h$>$}\newline
+{\ttfamily \#include $<$termios.\+h$>$}\newline
+{\ttfamily \#include $<$fcntl.\+h$>$}\newline
+{\ttfamily \#include $<$sys/stat.\+h$>$}\newline
+{\ttfamily \#include $<$sys/types.\+h$>$}\newline
+{\ttfamily \#include $<$unistd.\+h$>$}\newline
+{\ttfamily \#include $<$poll.\+h$>$}\newline
+{\ttfamily \#include $<$syslog.\+h$>$}\newline
+{\ttfamily \#include $<$signal.\+h$>$}\newline
+{\ttfamily \#include \"{}serial\+\_\+drv.\+h\"{}}\newline
+{\ttfamily \#include \"{}crc.\+h\"{}}\newline
+{\ttfamily \#include $<$fstream$>$}\newline
+{\ttfamily \#include $<$algorithm$>$}\newline
+{\ttfamily \#include $<$linux/uinput.\+h$>$}\newline
+\doxysubsubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structthread___data}{thread\+\_\+\+Data}}
+\begin{DoxyCompactList}\small\item\em Structure for thread data. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_ac3d144aa01e765a1fae62ab5491c7cc1}{\+\_\+\+POSIX\+\_\+\+SOURCE}}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a627f4c6e2b3a40a122f4303affea486b}{EXPORT\+\_\+\+PATH}}~\"{}/sys/class/gpio/export\textbackslash{}0\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_ad258ec733b750eea64b71e311127cc43}{IPLEN}}~512
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a7014099b8cad599b95fc210010481264}{MAX\+\_\+\+PAIED\+\_\+\+CNT}}~16
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a7f3fcfb97c7d2fd5527c86e39e1d48b9}{NRF\+\_\+\+GPIO\+\_\+4}}~21
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a5dbe74bdbffd6b868d61d4117a15f508}{NRF\+\_\+\+GPIO\+\_\+5}}~22
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a684cd213a89f7596462ffeaf027d97cc}{NRF\+\_\+\+SERRIAL\+\_\+\+PORT}}~\"{}/dev/ttymxc1\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a0a401bd015d69aae4f8f49c7de192851}{POLL\+\_\+\+GPIO}}~POLLPRI \texorpdfstring{$\vert$}{|} POLLERR
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a834b016b8521023fdfb7b18c50b9458a}{POLLERRVAL}}~(POLLERR \texorpdfstring{$\vert$}{|} POLLHUP \texorpdfstring{$\vert$}{|} POLLNVAL)
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_ac64e53fe7e097630c6ad9f110c3db809}{RELAY\+\_\+\+OUT\+\_\+\+CNT}}~10
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a9b46b3f6050b866c2e76f2090c61784e}{SQUARE}}(X)~((X)\texorpdfstring{$\ast$}{*}(X))
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_aa1a49ac2d72ab0d9451ca6f2dde7cb8c}{SW\+\_\+\+DIR\+\_\+\+PATH}}~\"{}/sys/class/gpio/gpio\%d/direction\textbackslash{}0\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a374f1ac434d7e80e2b7a5e95f5169bbb}{SW\+\_\+\+INT\+\_\+\+PATH}}~\"{}/sys/class/gpio/gpio\%d/edge\textbackslash{}0\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_ab7be1e95ae664461a33d3447179b9b74}{SW\+\_\+\+VAL\+\_\+\+PATH}}~\"{}/sys/class/gpio/gpio\%d/value\textbackslash{}0\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a618591461e48cf046b8f88670d9963a9}{SYS\+\_\+\+KEY\+\_\+\+EVNT}}~\"{}/usr/share/apache2/default-\/site/htdocs/engine/ydotool type \textquotesingle{}\%c\textquotesingle{}\textbackslash{}0\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a3a82594d5c2b3bf34a70694bb1b7038a}{TI\+\_\+\+SERRIAL\+\_\+\+PORT}}~\"{}/dev/ttymxc3\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_adfda67db9dcdc881fe33428768647b0a}{UNUSED\+\_\+\+VARIABLE}}(X)~((void)(X))
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a54d041e085ffc72292d5ad64fe0264f0}{VERSION\+\_\+\+FILE}}~\"{}/usr/share/apache2/default-\/site/htdocs/configuration/version.\+ini\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a68a10b73fd53e42a4cd56aa1ed2e022e}{VERSION\+\_\+\+HEAD}}~\"{}\mbox{[}version\mbox{]}\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_ac13c7c184bce03fae9202c0c8ec71363}{VERSION\+\_\+\+HW}}~\"{}HARDWARE\+\_\+\+VERSION =\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_ab615790bc0aac00648b3083652a9958b}{VERSION\+\_\+\+SW}}~\"{}SOFTWARE\+\_\+\+VERSION =\"{}
+\item 
+\#define \mbox{\hyperlink{_peripheral_8h_a71ac3c04346072b7c7083b1787dbde6f}{WIRING\+\_\+\+IN\+\_\+\+CNT}}~10
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{_peripheral_8h_af687b996a669fd319a85ad1595a0f715}{Alert\+\_\+lvl\+\_\+en}} \{ \mbox{\hyperlink{_peripheral_8h_af687b996a669fd319a85ad1595a0f715a568a09d940fd67a27b4d06d708953232}{LVL\+\_\+\+Emergency}} = 1
+, \mbox{\hyperlink{_peripheral_8h_af687b996a669fd319a85ad1595a0f715a913fbf82278b8d8a3b9e4d8f10dc8c87}{LVL\+\_\+\+Warning}}
+, \mbox{\hyperlink{_peripheral_8h_af687b996a669fd319a85ad1595a0f715af33a6bd2620b02320bd09dfbc68d5bdf}{LVL\+\_\+\+UNIMPORTANT}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration for alert levels for the web interface. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfe}{Alert\+\_\+types\+\_\+en}} \{ \newline
+\mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea70cd5e640d9a4c66d1eafa94321916a6}{Alert\+\_\+temp\+\_\+high}} = 1
+, \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea01f495f473befb2b902187215aa8bfcc}{Alert\+\_\+temp\+\_\+low}}
+, \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeafe534a4942d084ca5901451ead8c8f3b}{Alert\+\_\+\+Tvoc\+\_\+high}}
+, \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea8b48b06b20d5808d270a68c17c720c93}{Alert\+\_\+etoh\+\_\+high}}
+, \newline
+\mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeadf35cd7df0d73c36789faca1b3b32a92}{Alert\+\_\+iaq\+\_\+high}}
+, \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeaa52fa4d837c31f3f607f51eddba58853}{Alert\+\_\+humidity\+\_\+high}}
+, \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea881adbd64fc71379482bf38f29b5cc34}{Alert\+\_\+humidity\+\_\+low}}
+, \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfead518fd35b8d3e773f91071e62e6cc2ee}{Alert\+\_\+pressure\+\_\+high}}
+, \newline
+\mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea3b85e6ad0fe8b9093f489887f2483829}{Alert\+\_\+c02\+\_\+high}}
+, \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea1a011066e10fa3714a5a0f2c99f717dc}{Alert\+\_\+wiring\+\_\+not\+\_\+connected}}
+, \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea6e6cd1d150ed3233a02ca6f8dc31d075}{Alert\+\_\+could\+\_\+not\+\_\+set\+\_\+relay}}
+, \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea6aab032c367ac121e41bcf8352c461ff}{NO\+\_\+\+ALlert}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration for alert types for the web interface. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589e}{In\+Thread\+CMDS}} \{ \newline
+\mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ead351bdac23a8797f605fa9bbbad245b0}{Set\+\_\+limits}} = 0x00
+, \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea2d97fb9b67632fa1de103cccc43496fc}{Set\+\_\+time}}
+, \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589eace11109f92b197a07d8c6e380f4e8a96}{Set\+\_\+paired}}
+, \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ead5ceb9a06382d55da21acbcbf66e8382}{Unpair}}
+, \newline
+\mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea5361a19a00a5d460a218977fa6bf7f50}{Set\+\_\+ignore}}
+, \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea80dee5065a4bad794e965f43039788bf}{Get\+\_\+wiring}}
+, \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea4d35166f18a7ba35fdfd94a58cdf9c50}{Wiring\+\_\+check}}
+, \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea46030ccc1a0f7679b80514370d3fa466}{Set\+\_\+relays}}
+, \newline
+\mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea785693a1d550a18688638e9124af41d0}{NO\+\_\+\+CMD}} = 0x\+FF
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration for inter-\/thread communication commands. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdac}{Led\+\_\+effect\+\_\+e}} \{ \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdacaa725582579b273bd04c92aed8418c317}{LED\+\_\+\+STABLE}} = 0
+, \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdacadd24a832f79ede3eb64d90d8d387201e}{LED\+\_\+\+FADE}}
+, \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdaca1577011fa256979ac1ad588c8d17d917}{LED\+\_\+\+BLINK}}
+, \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdaca539413348482e435ca05667deee23076}{LED\+\_\+\+NO\+\_\+\+MODE}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration for LED behavior. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{_peripheral_8h_ab69a1e305b76fce28a08b78fb2ddce50}{configure\+\_\+pins}} (int gpio)
+\begin{DoxyCompactList}\small\item\em Function to configure a GPIO pin as input for interrupt handling. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{_peripheral_8h_a7b2850ecb5a45a1df997e40f9eb33871}{set\+\_\+tty}} (termios \texorpdfstring{$\ast$}{*}tty)
+\begin{DoxyCompactList}\small\item\em Function to set the TTY configuration. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Contains enums, structures, and function prototypes required for communication between threads and peripherals. 
+
+This file includes necessary header files, defines required macros, and declares structures and function prototypes for handling the communication between threads and peripherals. It is mainly used for managing various alerts and the configuration of GPIO pins and serial ports. 
+
+\doxysubsection{Macro Definition Documentation}
+\Hypertarget{_peripheral_8h_ac3d144aa01e765a1fae62ab5491c7cc1}\label{_peripheral_8h_ac3d144aa01e765a1fae62ab5491c7cc1} 
+\index{Peripheral.h@{Peripheral.h}!\_POSIX\_SOURCE@{\_POSIX\_SOURCE}}
+\index{\_POSIX\_SOURCE@{\_POSIX\_SOURCE}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{\_POSIX\_SOURCE}{\_POSIX\_SOURCE}}
+{\footnotesize\ttfamily \#define \+\_\+\+POSIX\+\_\+\+SOURCE}
+
+\Hypertarget{_peripheral_8h_a627f4c6e2b3a40a122f4303affea486b}\label{_peripheral_8h_a627f4c6e2b3a40a122f4303affea486b} 
+\index{Peripheral.h@{Peripheral.h}!EXPORT\_PATH@{EXPORT\_PATH}}
+\index{EXPORT\_PATH@{EXPORT\_PATH}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{EXPORT\_PATH}{EXPORT\_PATH}}
+{\footnotesize\ttfamily \#define EXPORT\+\_\+\+PATH~\"{}/sys/class/gpio/export\textbackslash{}0\"{}}
+
+\Hypertarget{_peripheral_8h_ad258ec733b750eea64b71e311127cc43}\label{_peripheral_8h_ad258ec733b750eea64b71e311127cc43} 
+\index{Peripheral.h@{Peripheral.h}!IPLEN@{IPLEN}}
+\index{IPLEN@{IPLEN}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{IPLEN}{IPLEN}}
+{\footnotesize\ttfamily \#define IPLEN~512}
+
+\Hypertarget{_peripheral_8h_a7014099b8cad599b95fc210010481264}\label{_peripheral_8h_a7014099b8cad599b95fc210010481264} 
+\index{Peripheral.h@{Peripheral.h}!MAX\_PAIED\_CNT@{MAX\_PAIED\_CNT}}
+\index{MAX\_PAIED\_CNT@{MAX\_PAIED\_CNT}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{MAX\_PAIED\_CNT}{MAX\_PAIED\_CNT}}
+{\footnotesize\ttfamily \#define MAX\+\_\+\+PAIED\+\_\+\+CNT~16}
+
+\Hypertarget{_peripheral_8h_a7f3fcfb97c7d2fd5527c86e39e1d48b9}\label{_peripheral_8h_a7f3fcfb97c7d2fd5527c86e39e1d48b9} 
+\index{Peripheral.h@{Peripheral.h}!NRF\_GPIO\_4@{NRF\_GPIO\_4}}
+\index{NRF\_GPIO\_4@{NRF\_GPIO\_4}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{NRF\_GPIO\_4}{NRF\_GPIO\_4}}
+{\footnotesize\ttfamily \#define NRF\+\_\+\+GPIO\+\_\+4~21}
+
+\Hypertarget{_peripheral_8h_a5dbe74bdbffd6b868d61d4117a15f508}\label{_peripheral_8h_a5dbe74bdbffd6b868d61d4117a15f508} 
+\index{Peripheral.h@{Peripheral.h}!NRF\_GPIO\_5@{NRF\_GPIO\_5}}
+\index{NRF\_GPIO\_5@{NRF\_GPIO\_5}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{NRF\_GPIO\_5}{NRF\_GPIO\_5}}
+{\footnotesize\ttfamily \#define NRF\+\_\+\+GPIO\+\_\+5~22}
+
+\Hypertarget{_peripheral_8h_a684cd213a89f7596462ffeaf027d97cc}\label{_peripheral_8h_a684cd213a89f7596462ffeaf027d97cc} 
+\index{Peripheral.h@{Peripheral.h}!NRF\_SERRIAL\_PORT@{NRF\_SERRIAL\_PORT}}
+\index{NRF\_SERRIAL\_PORT@{NRF\_SERRIAL\_PORT}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{NRF\_SERRIAL\_PORT}{NRF\_SERRIAL\_PORT}}
+{\footnotesize\ttfamily \#define NRF\+\_\+\+SERRIAL\+\_\+\+PORT~\"{}/dev/ttymxc1\"{}}
+
+\Hypertarget{_peripheral_8h_a0a401bd015d69aae4f8f49c7de192851}\label{_peripheral_8h_a0a401bd015d69aae4f8f49c7de192851} 
+\index{Peripheral.h@{Peripheral.h}!POLL\_GPIO@{POLL\_GPIO}}
+\index{POLL\_GPIO@{POLL\_GPIO}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{POLL\_GPIO}{POLL\_GPIO}}
+{\footnotesize\ttfamily \#define POLL\+\_\+\+GPIO~POLLPRI \texorpdfstring{$\vert$}{|} POLLERR}
+
+\Hypertarget{_peripheral_8h_a834b016b8521023fdfb7b18c50b9458a}\label{_peripheral_8h_a834b016b8521023fdfb7b18c50b9458a} 
+\index{Peripheral.h@{Peripheral.h}!POLLERRVAL@{POLLERRVAL}}
+\index{POLLERRVAL@{POLLERRVAL}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{POLLERRVAL}{POLLERRVAL}}
+{\footnotesize\ttfamily \#define POLLERRVAL~(POLLERR \texorpdfstring{$\vert$}{|} POLLHUP \texorpdfstring{$\vert$}{|} POLLNVAL)}
+
+\Hypertarget{_peripheral_8h_ac64e53fe7e097630c6ad9f110c3db809}\label{_peripheral_8h_ac64e53fe7e097630c6ad9f110c3db809} 
+\index{Peripheral.h@{Peripheral.h}!RELAY\_OUT\_CNT@{RELAY\_OUT\_CNT}}
+\index{RELAY\_OUT\_CNT@{RELAY\_OUT\_CNT}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{RELAY\_OUT\_CNT}{RELAY\_OUT\_CNT}}
+{\footnotesize\ttfamily \#define RELAY\+\_\+\+OUT\+\_\+\+CNT~10}
+
+\Hypertarget{_peripheral_8h_a9b46b3f6050b866c2e76f2090c61784e}\label{_peripheral_8h_a9b46b3f6050b866c2e76f2090c61784e} 
+\index{Peripheral.h@{Peripheral.h}!SQUARE@{SQUARE}}
+\index{SQUARE@{SQUARE}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{SQUARE}{SQUARE}}
+{\footnotesize\ttfamily \#define SQUARE(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((X)\texorpdfstring{$\ast$}{*}(X))}
+
+\Hypertarget{_peripheral_8h_aa1a49ac2d72ab0d9451ca6f2dde7cb8c}\label{_peripheral_8h_aa1a49ac2d72ab0d9451ca6f2dde7cb8c} 
+\index{Peripheral.h@{Peripheral.h}!SW\_DIR\_PATH@{SW\_DIR\_PATH}}
+\index{SW\_DIR\_PATH@{SW\_DIR\_PATH}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{SW\_DIR\_PATH}{SW\_DIR\_PATH}}
+{\footnotesize\ttfamily \#define SW\+\_\+\+DIR\+\_\+\+PATH~\"{}/sys/class/gpio/gpio\%d/direction\textbackslash{}0\"{}}
+
+\Hypertarget{_peripheral_8h_a374f1ac434d7e80e2b7a5e95f5169bbb}\label{_peripheral_8h_a374f1ac434d7e80e2b7a5e95f5169bbb} 
+\index{Peripheral.h@{Peripheral.h}!SW\_INT\_PATH@{SW\_INT\_PATH}}
+\index{SW\_INT\_PATH@{SW\_INT\_PATH}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{SW\_INT\_PATH}{SW\_INT\_PATH}}
+{\footnotesize\ttfamily \#define SW\+\_\+\+INT\+\_\+\+PATH~\"{}/sys/class/gpio/gpio\%d/edge\textbackslash{}0\"{}}
+
+\Hypertarget{_peripheral_8h_ab7be1e95ae664461a33d3447179b9b74}\label{_peripheral_8h_ab7be1e95ae664461a33d3447179b9b74} 
+\index{Peripheral.h@{Peripheral.h}!SW\_VAL\_PATH@{SW\_VAL\_PATH}}
+\index{SW\_VAL\_PATH@{SW\_VAL\_PATH}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{SW\_VAL\_PATH}{SW\_VAL\_PATH}}
+{\footnotesize\ttfamily \#define SW\+\_\+\+VAL\+\_\+\+PATH~\"{}/sys/class/gpio/gpio\%d/value\textbackslash{}0\"{}}
+
+\Hypertarget{_peripheral_8h_a618591461e48cf046b8f88670d9963a9}\label{_peripheral_8h_a618591461e48cf046b8f88670d9963a9} 
+\index{Peripheral.h@{Peripheral.h}!SYS\_KEY\_EVNT@{SYS\_KEY\_EVNT}}
+\index{SYS\_KEY\_EVNT@{SYS\_KEY\_EVNT}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{SYS\_KEY\_EVNT}{SYS\_KEY\_EVNT}}
+{\footnotesize\ttfamily \#define SYS\+\_\+\+KEY\+\_\+\+EVNT~\"{}/usr/share/apache2/default-\/site/htdocs/engine/ydotool type \textquotesingle{}\%c\textquotesingle{}\textbackslash{}0\"{}}
+
+\Hypertarget{_peripheral_8h_a3a82594d5c2b3bf34a70694bb1b7038a}\label{_peripheral_8h_a3a82594d5c2b3bf34a70694bb1b7038a} 
+\index{Peripheral.h@{Peripheral.h}!TI\_SERRIAL\_PORT@{TI\_SERRIAL\_PORT}}
+\index{TI\_SERRIAL\_PORT@{TI\_SERRIAL\_PORT}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{TI\_SERRIAL\_PORT}{TI\_SERRIAL\_PORT}}
+{\footnotesize\ttfamily \#define TI\+\_\+\+SERRIAL\+\_\+\+PORT~\"{}/dev/ttymxc3\"{}}
+
+\Hypertarget{_peripheral_8h_adfda67db9dcdc881fe33428768647b0a}\label{_peripheral_8h_adfda67db9dcdc881fe33428768647b0a} 
+\index{Peripheral.h@{Peripheral.h}!UNUSED\_VARIABLE@{UNUSED\_VARIABLE}}
+\index{UNUSED\_VARIABLE@{UNUSED\_VARIABLE}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{UNUSED\_VARIABLE}{UNUSED\_VARIABLE}}
+{\footnotesize\ttfamily \#define UNUSED\+\_\+\+VARIABLE(\begin{DoxyParamCaption}\item[{}]{X }\end{DoxyParamCaption})~((void)(X))}
+
+\Hypertarget{_peripheral_8h_a54d041e085ffc72292d5ad64fe0264f0}\label{_peripheral_8h_a54d041e085ffc72292d5ad64fe0264f0} 
+\index{Peripheral.h@{Peripheral.h}!VERSION\_FILE@{VERSION\_FILE}}
+\index{VERSION\_FILE@{VERSION\_FILE}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{VERSION\_FILE}{VERSION\_FILE}}
+{\footnotesize\ttfamily \#define VERSION\+\_\+\+FILE~\"{}/usr/share/apache2/default-\/site/htdocs/configuration/version.\+ini\"{}}
+
+\Hypertarget{_peripheral_8h_a68a10b73fd53e42a4cd56aa1ed2e022e}\label{_peripheral_8h_a68a10b73fd53e42a4cd56aa1ed2e022e} 
+\index{Peripheral.h@{Peripheral.h}!VERSION\_HEAD@{VERSION\_HEAD}}
+\index{VERSION\_HEAD@{VERSION\_HEAD}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{VERSION\_HEAD}{VERSION\_HEAD}}
+{\footnotesize\ttfamily \#define VERSION\+\_\+\+HEAD~\"{}\mbox{[}version\mbox{]}\"{}}
+
+\Hypertarget{_peripheral_8h_ac13c7c184bce03fae9202c0c8ec71363}\label{_peripheral_8h_ac13c7c184bce03fae9202c0c8ec71363} 
+\index{Peripheral.h@{Peripheral.h}!VERSION\_HW@{VERSION\_HW}}
+\index{VERSION\_HW@{VERSION\_HW}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{VERSION\_HW}{VERSION\_HW}}
+{\footnotesize\ttfamily \#define VERSION\+\_\+\+HW~\"{}HARDWARE\+\_\+\+VERSION =\"{}}
+
+\Hypertarget{_peripheral_8h_ab615790bc0aac00648b3083652a9958b}\label{_peripheral_8h_ab615790bc0aac00648b3083652a9958b} 
+\index{Peripheral.h@{Peripheral.h}!VERSION\_SW@{VERSION\_SW}}
+\index{VERSION\_SW@{VERSION\_SW}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{VERSION\_SW}{VERSION\_SW}}
+{\footnotesize\ttfamily \#define VERSION\+\_\+\+SW~\"{}SOFTWARE\+\_\+\+VERSION =\"{}}
+
+\Hypertarget{_peripheral_8h_a71ac3c04346072b7c7083b1787dbde6f}\label{_peripheral_8h_a71ac3c04346072b7c7083b1787dbde6f} 
+\index{Peripheral.h@{Peripheral.h}!WIRING\_IN\_CNT@{WIRING\_IN\_CNT}}
+\index{WIRING\_IN\_CNT@{WIRING\_IN\_CNT}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{WIRING\_IN\_CNT}{WIRING\_IN\_CNT}}
+{\footnotesize\ttfamily \#define WIRING\+\_\+\+IN\+\_\+\+CNT~10}
+
+
+
+\doxysubsection{Enumeration Type Documentation}
+\Hypertarget{_peripheral_8h_af687b996a669fd319a85ad1595a0f715}\label{_peripheral_8h_af687b996a669fd319a85ad1595a0f715} 
+\index{Peripheral.h@{Peripheral.h}!Alert\_lvl\_en@{Alert\_lvl\_en}}
+\index{Alert\_lvl\_en@{Alert\_lvl\_en}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{Alert\_lvl\_en}{Alert\_lvl\_en}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{_peripheral_8h_af687b996a669fd319a85ad1595a0f715}{Alert\+\_\+lvl\+\_\+en}}}
+
+
+
+Enumeration for alert levels for the web interface. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LVL\_Emergency@{LVL\_Emergency}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!LVL\_Emergency@{LVL\_Emergency}}}\Hypertarget{_peripheral_8h_af687b996a669fd319a85ad1595a0f715a568a09d940fd67a27b4d06d708953232}\label{_peripheral_8h_af687b996a669fd319a85ad1595a0f715a568a09d940fd67a27b4d06d708953232} 
+LVL\+\_\+\+Emergency&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LVL\_Warning@{LVL\_Warning}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!LVL\_Warning@{LVL\_Warning}}}\Hypertarget{_peripheral_8h_af687b996a669fd319a85ad1595a0f715a913fbf82278b8d8a3b9e4d8f10dc8c87}\label{_peripheral_8h_af687b996a669fd319a85ad1595a0f715a913fbf82278b8d8a3b9e4d8f10dc8c87} 
+LVL\+\_\+\+Warning&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LVL\_UNIMPORTANT@{LVL\_UNIMPORTANT}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!LVL\_UNIMPORTANT@{LVL\_UNIMPORTANT}}}\Hypertarget{_peripheral_8h_af687b996a669fd319a85ad1595a0f715af33a6bd2620b02320bd09dfbc68d5bdf}\label{_peripheral_8h_af687b996a669fd319a85ad1595a0f715af33a6bd2620b02320bd09dfbc68d5bdf} 
+LVL\+\_\+\+UNIMPORTANT&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfe}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfe} 
+\index{Peripheral.h@{Peripheral.h}!Alert\_types\_en@{Alert\_types\_en}}
+\index{Alert\_types\_en@{Alert\_types\_en}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{Alert\_types\_en}{Alert\_types\_en}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfe}{Alert\+\_\+types\+\_\+en}}}
+
+
+
+Enumeration for alert types for the web interface. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_temp\_high@{Alert\_temp\_high}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_temp\_high@{Alert\_temp\_high}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea70cd5e640d9a4c66d1eafa94321916a6}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea70cd5e640d9a4c66d1eafa94321916a6} 
+Alert\+\_\+temp\+\_\+high&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_temp\_low@{Alert\_temp\_low}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_temp\_low@{Alert\_temp\_low}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea01f495f473befb2b902187215aa8bfcc}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea01f495f473befb2b902187215aa8bfcc} 
+Alert\+\_\+temp\+\_\+low&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_Tvoc\_high@{Alert\_Tvoc\_high}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_Tvoc\_high@{Alert\_Tvoc\_high}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeafe534a4942d084ca5901451ead8c8f3b}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeafe534a4942d084ca5901451ead8c8f3b} 
+Alert\+\_\+\+Tvoc\+\_\+high&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_etoh\_high@{Alert\_etoh\_high}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_etoh\_high@{Alert\_etoh\_high}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea8b48b06b20d5808d270a68c17c720c93}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea8b48b06b20d5808d270a68c17c720c93} 
+Alert\+\_\+etoh\+\_\+high&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_iaq\_high@{Alert\_iaq\_high}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_iaq\_high@{Alert\_iaq\_high}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeadf35cd7df0d73c36789faca1b3b32a92}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeadf35cd7df0d73c36789faca1b3b32a92} 
+Alert\+\_\+iaq\+\_\+high&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_humidity\_high@{Alert\_humidity\_high}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_humidity\_high@{Alert\_humidity\_high}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeaa52fa4d837c31f3f607f51eddba58853}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfeaa52fa4d837c31f3f607f51eddba58853} 
+Alert\+\_\+humidity\+\_\+high&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_humidity\_low@{Alert\_humidity\_low}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_humidity\_low@{Alert\_humidity\_low}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea881adbd64fc71379482bf38f29b5cc34}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea881adbd64fc71379482bf38f29b5cc34} 
+Alert\+\_\+humidity\+\_\+low&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_pressure\_high@{Alert\_pressure\_high}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_pressure\_high@{Alert\_pressure\_high}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfead518fd35b8d3e773f91071e62e6cc2ee}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfead518fd35b8d3e773f91071e62e6cc2ee} 
+Alert\+\_\+pressure\+\_\+high&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_c02\_high@{Alert\_c02\_high}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_c02\_high@{Alert\_c02\_high}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea3b85e6ad0fe8b9093f489887f2483829}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea3b85e6ad0fe8b9093f489887f2483829} 
+Alert\+\_\+c02\+\_\+high&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_wiring\_not\_connected@{Alert\_wiring\_not\_connected}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_wiring\_not\_connected@{Alert\_wiring\_not\_connected}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea1a011066e10fa3714a5a0f2c99f717dc}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea1a011066e10fa3714a5a0f2c99f717dc} 
+Alert\+\_\+wiring\+\_\+not\+\_\+connected&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Alert\_could\_not\_set\_relay@{Alert\_could\_not\_set\_relay}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Alert\_could\_not\_set\_relay@{Alert\_could\_not\_set\_relay}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea6e6cd1d150ed3233a02ca6f8dc31d075}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea6e6cd1d150ed3233a02ca6f8dc31d075} 
+Alert\+\_\+could\+\_\+not\+\_\+set\+\_\+relay&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NO\_ALlert@{NO\_ALlert}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!NO\_ALlert@{NO\_ALlert}}}\Hypertarget{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea6aab032c367ac121e41bcf8352c461ff}\label{_peripheral_8h_a74cc538b65d2704be149d63ca89bedfea6aab032c367ac121e41bcf8352c461ff} 
+NO\+\_\+\+ALlert&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589e}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589e} 
+\index{Peripheral.h@{Peripheral.h}!InThreadCMDS@{InThreadCMDS}}
+\index{InThreadCMDS@{InThreadCMDS}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{InThreadCMDS}{InThreadCMDS}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589e}{In\+Thread\+CMDS}}}
+
+
+
+Enumeration for inter-\/thread communication commands. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Set\_limits@{Set\_limits}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Set\_limits@{Set\_limits}}}\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ead351bdac23a8797f605fa9bbbad245b0}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ead351bdac23a8797f605fa9bbbad245b0} 
+Set\+\_\+limits&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Set\_time@{Set\_time}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Set\_time@{Set\_time}}}\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea2d97fb9b67632fa1de103cccc43496fc}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea2d97fb9b67632fa1de103cccc43496fc} 
+Set\+\_\+time&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Set\_paired@{Set\_paired}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Set\_paired@{Set\_paired}}}\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589eace11109f92b197a07d8c6e380f4e8a96}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589eace11109f92b197a07d8c6e380f4e8a96} 
+Set\+\_\+paired&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Unpair@{Unpair}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Unpair@{Unpair}}}\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ead5ceb9a06382d55da21acbcbf66e8382}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ead5ceb9a06382d55da21acbcbf66e8382} 
+Unpair&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Set\_ignore@{Set\_ignore}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Set\_ignore@{Set\_ignore}}}\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea5361a19a00a5d460a218977fa6bf7f50}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea5361a19a00a5d460a218977fa6bf7f50} 
+Set\+\_\+ignore&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Get\_wiring@{Get\_wiring}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Get\_wiring@{Get\_wiring}}}\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea80dee5065a4bad794e965f43039788bf}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea80dee5065a4bad794e965f43039788bf} 
+Get\+\_\+wiring&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Wiring\_check@{Wiring\_check}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Wiring\_check@{Wiring\_check}}}\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea4d35166f18a7ba35fdfd94a58cdf9c50}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea4d35166f18a7ba35fdfd94a58cdf9c50} 
+Wiring\+\_\+check&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{Set\_relays@{Set\_relays}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!Set\_relays@{Set\_relays}}}\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea46030ccc1a0f7679b80514370d3fa466}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea46030ccc1a0f7679b80514370d3fa466} 
+Set\+\_\+relays&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{NO\_CMD@{NO\_CMD}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!NO\_CMD@{NO\_CMD}}}\Hypertarget{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea785693a1d550a18688638e9124af41d0}\label{_peripheral_8h_ad8c31be00c4783cf5ebc5f31fffc589ea785693a1d550a18688638e9124af41d0} 
+NO\+\_\+\+CMD&\\
+\hline
+
+\end{DoxyEnumFields}
+\Hypertarget{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdac}\label{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdac} 
+\index{Peripheral.h@{Peripheral.h}!Led\_effect\_e@{Led\_effect\_e}}
+\index{Led\_effect\_e@{Led\_effect\_e}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{Led\_effect\_e}{Led\_effect\_e}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdac}{Led\+\_\+effect\+\_\+e}}}
+
+
+
+Enumeration for LED behavior. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LED\_STABLE@{LED\_STABLE}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!LED\_STABLE@{LED\_STABLE}}}\Hypertarget{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdacaa725582579b273bd04c92aed8418c317}\label{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdacaa725582579b273bd04c92aed8418c317} 
+LED\+\_\+\+STABLE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LED\_FADE@{LED\_FADE}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!LED\_FADE@{LED\_FADE}}}\Hypertarget{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdacadd24a832f79ede3eb64d90d8d387201e}\label{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdacadd24a832f79ede3eb64d90d8d387201e} 
+LED\+\_\+\+FADE&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LED\_BLINK@{LED\_BLINK}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!LED\_BLINK@{LED\_BLINK}}}\Hypertarget{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdaca1577011fa256979ac1ad588c8d17d917}\label{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdaca1577011fa256979ac1ad588c8d17d917} 
+LED\+\_\+\+BLINK&\\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{LED\_NO\_MODE@{LED\_NO\_MODE}!Peripheral.h@{Peripheral.h}}\index{Peripheral.h@{Peripheral.h}!LED\_NO\_MODE@{LED\_NO\_MODE}}}\Hypertarget{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdaca539413348482e435ca05667deee23076}\label{_peripheral_8h_a381e29efe5915ea36bc3d0ae07f6bdaca539413348482e435ca05667deee23076} 
+LED\+\_\+\+NO\+\_\+\+MODE&\\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{_peripheral_8h_ab69a1e305b76fce28a08b78fb2ddce50}\label{_peripheral_8h_ab69a1e305b76fce28a08b78fb2ddce50} 
+\index{Peripheral.h@{Peripheral.h}!configure\_pins@{configure\_pins}}
+\index{configure\_pins@{configure\_pins}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{configure\_pins()}{configure\_pins()}}
+{\footnotesize\ttfamily int configure\+\_\+pins (\begin{DoxyParamCaption}\item[{int}]{gpio }\end{DoxyParamCaption})}
+
+
+
+Function to configure a GPIO pin as input for interrupt handling. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em gpio} & Integer representing the GPIO pin number. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+EXIT\+\_\+\+SUCCESS on successful system call, EXIT\+\_\+\+FAILURE otherwise.
+\end{DoxyReturn}
+Function to configure a GPIO pin as input for interrupt handling.
+
+
+\begin{DoxyParams}{Parameters}
+{\em gpio} & The GPIO pin number to be configured. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Returns EXIT\+\_\+\+SUCCESS if successful, or EXIT\+\_\+\+FAILURE if an error occurred. 
+\end{DoxyReturn}
+\Hypertarget{_peripheral_8h_a7b2850ecb5a45a1df997e40f9eb33871}\label{_peripheral_8h_a7b2850ecb5a45a1df997e40f9eb33871} 
+\index{Peripheral.h@{Peripheral.h}!set\_tty@{set\_tty}}
+\index{set\_tty@{set\_tty}!Peripheral.h@{Peripheral.h}}
+\doxysubsubsection{\texorpdfstring{set\_tty()}{set\_tty()}}
+{\footnotesize\ttfamily void set\+\_\+tty (\begin{DoxyParamCaption}\item[{termios \texorpdfstring{$\ast$}{*}}]{tty }\end{DoxyParamCaption})}
+
+
+
+Function to set the TTY configuration. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em tty} & Pointer to a termios structure to store the configuration.\\
+\hline
+\end{DoxyParams}
+Function to set the TTY configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em tty} & Pointer to the termios struct to be configured. \\
+\hline
+\end{DoxyParams}

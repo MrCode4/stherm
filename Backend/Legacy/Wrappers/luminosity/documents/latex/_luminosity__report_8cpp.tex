@@ -1,0 +1,26 @@
+\doxysection{Luminosity\+\_\+report.\+cpp File Reference}
+\hypertarget{_luminosity__report_8cpp}{}\label{_luminosity__report_8cpp}\index{Luminosity\_report.cpp@{Luminosity\_report.cpp}}
+{\ttfamily \#include \"{}Peripheral.\+h\"{}}\newline
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \mbox{\hyperlink{_luminosity__report_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}{main}} ()
+\begin{DoxyCompactList}\small\item\em Main function for acquiring the Luminosity value from a TOF sensor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\Hypertarget{_luminosity__report_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4}\label{_luminosity__report_8cpp_ae66f6b31b5ad750f1fe042a706a4e3d4} 
+\index{Luminosity\_report.cpp@{Luminosity\_report.cpp}!main@{main}}
+\index{main@{main}!Luminosity\_report.cpp@{Luminosity\_report.cpp}}
+\doxysubsubsection{\texorpdfstring{main()}{main()}}
+{\footnotesize\ttfamily int main (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Main function for acquiring the Luminosity value from a TOF sensor. 
+
+This function initializes UART communication with an n\+RF device, sends a command to read TOF data from the sensor, and retrieves the Luminosity and Range (in millimeters) values. The Luminosity value is then printed.
+
+\begin{DoxyReturn}{Returns}
+int Returns 0 if the process is completed, non-\/zero error code if unsuccessful. 
+\end{DoxyReturn}
