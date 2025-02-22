@@ -12,6 +12,7 @@
 
 #include <csignal>
 
+#include "heartbeatsender.h"
 #include "UtilityHelper.h"
 #include "LogHelper.h"
 
@@ -45,6 +46,14 @@ int main(int argc, char *argv[])
 #endif
     }
 
+    QCoreApplication a(argc, argv);
+    //starting watchdog for checking the cpu usage and ui aliveness
+    HeartbeatSender heartbeat;
+    if(!heartbeat.runWatchdogProcess())
+        return 255;
+
+    return a.exec();
+    
 #ifdef __unix__
     if (counter > 3) {
         TRACE << "can not read validated uid, rebooting...";
