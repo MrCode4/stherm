@@ -6,7 +6,6 @@
 #include <QProcess>
 #include <QRegularExpression>
 #include <QTextStream>
-#include "LogHelper.h"
 
 Watchdog::Watchdog(QObject *parent)
     : QObject(parent),
@@ -99,7 +98,7 @@ void Watchdog::onMemoryCheckTimeout()
     qDebug() << "Current Memory Usage:" << memoryUsage << "%";
 
     if (memoryUsage >= 95.0) {
-        TRACE << "Memory usage is critical! Rebooting system...";
+        qDebug() << "Memory usage is critical! Rebooting system...";
         memoryTimer_->stop();
 
         createWatchdogReport("Memory usage is critical!");
@@ -126,7 +125,7 @@ void Watchdog::onHeartbeatTimeout()
                 qDebug() << "Delayed heartbeat detected:" << interval << "ms";
                 ++laggyCounter_;
                 if (laggyCounter_ >= laggyThreshold_) {
-                    TRACE << "Persistent delayed heartbeat ("
+                    qDebug() << "Persistent delayed heartbeat ("
                           << (laggyThreshold_ * 1.5)
                           << " seconds threshold reached). Rebooting system.";
                     heartbeatTimer_->stop();
@@ -155,7 +154,7 @@ void Watchdog::onHeartbeatTimeout()
         ++timeoutCounter_;
         qDebug() << "No heartbeat received. Timeout count:" << timeoutCounter_;
         if (timeoutCounter_ >= timeoutThreshold_) {
-            TRACE << "No heartbeat received for " << timeoutThreshold_
+            qDebug() << "No heartbeat received for " << timeoutThreshold_
                   << " seconds. Rebooting system.";
             heartbeatTimer_->stop();
 
