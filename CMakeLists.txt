@@ -25,7 +25,7 @@ option (INITIAL_SETUP_MODE "Force the app to run in the initial setup pages" OFF
 option (FAKE_UID_MODE "Run the app with a fake UID set in FAKE_UID" OFF)
 option (TROUBLESHOOTING_MODE "Run the app in troubleshooting device mode" OFF)
 option (SERIAL_TEST_MODE "Run the app in serial number testing mode" OFF)
-option (DISABLE_PROTOBUF "Disable Protobuf on unsupported platforms" OFF)
+option (DISABLE_PROTOBUF "Disable Protobuf on unsupported platforms" ON)
 
 find_package(Qt6 REQUIRED COMPONENTS
     Quick
@@ -44,6 +44,7 @@ set(QT_QML_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/qml)
 
 add_subdirectory(QtQuickStream)
 add_subdirectory(Ronia ${QT_QML_OUTPUT_DIRECTORY}/Ronia)
+add_subdirectory(watchdog)
 
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend)
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR}/Backend/Core)
@@ -363,6 +364,8 @@ qt6_add_qml_module(appStherm
         UiCore/Dialogs/ForgetWifiDialog.qml
 
     SOURCES
+        heartbeatsender.h
+        heartbeatsender.cpp
         Backend/Property.h
         Backend/Config.h
         Backend/LogCategoires.h
